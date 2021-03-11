@@ -3,74 +3,44 @@ name: CMake
 on: [push]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
 
 jobs:
   build:
-    # The CMake configure and build commands are platform agnostic and should work equally
-    # well on Windows or Mac.  You can convert this to a matrix build if you need
-    # cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    # Use the chgray_repo:pandoc Docker container - this containers Dockerfile is part of this enlistment and
+    # contains the build tools to support pandoc and related document production tooling
     runs-on: ubuntu-latest
     container: chgray123/chgray_repro:pandoc
-    #container: ubuntu:20.04
-#container: wpilib/ubuntu-base:18.04
-
-
-
-    #https://github.com/actions/checkout/issues/116
-    #https://docs.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key
-    #https://ehlers.berlin/blog/private-submodules-in-github-ci/
+    #container: ubuntu:20.04   <-- alternative docker, that doesnt contain pandoc (included for reference of a blank slate)
 
     steps:
     - uses: actions/checkout@v2
       with:
           fetch-depth: 0
-#          token: ${{ secrets.CODE_PAT }}
-#          submodules: 'recursive'
 
-    - name: Setup SSL Cert
-      env:
-        SSH_KEY_FOR_SUBMODULE: ${{secrets.SSH_KEY_FOR_DEVDIR_RENDERED_SUBMODULE}}
-        SSH_KNOWN_HOSTS: ${{secrets.KNOWN_HOSTS}}
-      run: |
-        mkdir /root/.ssh
-        echo "$SSH_KEY_FOR_SUBMODULE" > /root/.ssh/id_rsa
-        echo "$SSH_KNOWN_HOSTS" > /root/.ssh/known_hosts
-        chmod 600 /root/.ssh/id_rsa
-        chmod 600 /root/.ssh/known_hosts
-
-
-    - name: Print Environment Variables
+    # Print environment variables, useful for CI/CD debugging - should things go wrong
+    - name: Print Environment Variables (useful in debugging CI/CD)
       run: printenv
 
-    - name: List files in  root/.ssh
-      run: ls -l /root/.ssh
-
-    - name: Print Files (before submodule sync)
+    # Print files variables, useful for CI/CD debugging - should things go wrong
+    - name: Print Files (useful in debugging CI/CD)
       run: find .
 
+    # Configure CMake to use the /build directory to construct Makefiles
     - name: Create Build Environment
-      # Some projects don't allow in-source building, so create a separate build directory
-      # We'll use this as our working directory for all subsequent commands
       run: cmake -E make_directory $GITHUB_WORKSPACE/build
 
-    - name: Look Around
-      run: find $GITHUB_WORKSPACE
-
     - name: Configure CMake
-      # Use a bash shell so we can use the same syntax for environment variable
-      # access regardless of the host operating system
       shell: bash
       working-directory: ${{github.workspace}}/build
-      # Note the current convention is to use the -S and -B options here to specify source
-      # and build directories, but this is only available with CMake 3.13 and higher.
-      # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
+    # Actually do the build
     - name: Build
       working-directory: ${{github.workspace}}/build
       shell: bash
-      # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE
+
+    # Print final files, useful for CI/CD debugging - should things go wrong
+    - name: Print Final Files (useful in debugging CI/CD)
+      run: find .
