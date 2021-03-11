@@ -51,30 +51,6 @@ jobs:
     - name: Print Files (before submodule sync)
       run: find .
 
-    - name: git sync submodules
-      run: |
-        ls
-        git config --list
-        git submodule set-url ./DevDir_Rendered git@github.com:chgray/DevDir_Rendered.git
-        git diff
-        git submodule update --init
-
-
-    - name: Update Rendered to point to main
-      working-directory: ${{github.workspace}}/DevDir_Rendered
-      shell: bash
-      run: |
-        git checkout main
-        git branch
-        dir
-
-    #git submodule set-url ./DevDir_Rendered git@github.com:chgray/DevDir_Rendered.git
-    #git diff
-
-
-    - name: Print Files (after submodule sync)
-      run: find .
-
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
       # We'll use this as our working directory for all subsequent commands
@@ -98,47 +74,3 @@ jobs:
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE
-
-    - name: Config git
-      working-directory: ${{github.workspace}}
-      shell: bash
-      run: |
-        git config --global user.email "chgray@gmail.com"
-        git config --global user.name "Auto Generated"
-
-    - name: Add Autogen
-      working-directory: ${{github.workspace}}/DevDir_Rendered
-      shell: bash
-      run: |
-        git add *
-
-    - name: Commit Autogen
-      working-directory: ${{github.workspace}}/DevDir_Rendered
-      shell: bash
-      run: |
-        git status
-        if git commit --message "Rendered AutoGen" -a; then git push origin HEAD:main; fi
-
-    #- name: Commit MainDir
-    #  working-directory: ${{github.workspace}}
-    #  shell: bash
-    #  run: |
-    #    git submodule set-url ./DevDir_Rendered https://github.com/chgray/DevDir_Rendered.git
-    #    git add DevDir_Rendered
-    #    if git commit --message "Rendered AutoGen" -a; then git push origin HEAD:main; fi
-
-#    - name: Push
-#      working-directory: ${{github.workspace}}
-#      shell: bash
-#      run: |
-#        git push --set-upstream origin user/chgray/rendered_pandocs
-#        git push
-
-
-
- #   - name: Test
- #     working-directory: ${{github.workspace}}/build
- #     shell: bash
-      # Execute tests defined by the CMake configuration.
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-#      run: ctest -C $BUILD_TYPE
