@@ -48,3 +48,10 @@ jobs:
     # Print $(CMAKE_SOURCE_DIR), useful for CI/CD debugging - should things go wrong
     - name: Print $(CMAKE_SOURCE_DIR) Files (useful in debugging CI/CD)
       run: find $(CMAKE_SOURCE_DIR)
+
+
+    - name: Save build artifacts for download
+      uses: actions/upload-artifact@v2
+      with:
+        name: Store Rendered Documents, for download
+        path: $(CMAKE_SOURCE_DIR)/
