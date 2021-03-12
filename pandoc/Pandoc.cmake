@@ -67,10 +67,10 @@ function(GENERATE_PDFS)
 
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 
-            COMMENT "pandoc -t slidy -s ./${arg} -o ${HTML_OUTPUT_FILE} --lua-filter /lua-filters/include-files.lua -F mermaid-filter --filter pandoc-plantuml"
+            COMMENT "pandoc -s ./${arg} -o ${HTML_OUTPUT_FILE} --lua-filter /lua-filters/include-files.lua -F mermaid-filter"
 
             COMMAND mkdir -p ${OUTPUT_DIR}
-            COMMAND pandoc -t slidy -s ./${arg} -o ${HTML_OUTPUT_FILE} --lua-filter /lua-filters/include-files.lua -F mermaid-filter --filter pandoc-plantuml
+            COMMAND pandoc -s ./${arg} -o ${HTML_OUTPUT_FILE} --lua-filter /lua-filters/include-files.lua -F mermaid-filter
         )
 
         message(STATUS ">>>>>>> Pandoc Source File = ${RAW_FILENAME} output = ${HTML_HASH_FILE}")
