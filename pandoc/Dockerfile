@@ -3,9 +3,14 @@ FROM ubuntu:20.04
 
 MAINTAINER chgray@gmail.com
 
-#docker images prune
-#docker system prune
 
+# ------------------------------------------------------------------------------
+#
+# Helpful commands: this section is the 'junk drawer' of handy command
+#    one could argue they shouldnt be here
+#
+#
+#
 #docker build -t "chgray123/chgray_repro:pandoc" .
 
 #docker run -i -v //c/DevDir:/home/runner/work/DevDir -t chgray123/chgray_repro:pandoc /bin/bash
@@ -14,11 +19,8 @@ MAINTAINER chgray@gmail.com
 
 #	/usr/local/lib/node_modules/mermaid-filter/node_modules/.bin/mmdc
 #pandoc -t slidy -s ./IntroSlides.md -o ./X.html --lua-filter /lua-filters/include-files.lua -F mermaid-filter --filter pandoc-plantuml
-
 #pandoc -t slidy -s ./BugCorralOverview.md -o ./X.html --lua-filter /lua-filters/include-files.lua -F mermaid-filter --filter pandoc-plantuml
-
 #pandoc -t slidy -s ./TelemetryWorkshop_#1.md -o ./TelemetryWorkshop_Slides.html --lua-filter /lua-filters/include-files.lua -F mermaid-filter --filter pandoc-plantuml
-
 
 #PlantUML
 #	a) Run a docker
@@ -38,8 +40,9 @@ MAINTAINER chgray@gmail.com
 #https://github.com/tewarid/docker-pandoc
 
 #"/usr/local/lib/node_modules/mermaid-filter/node_modules/.bin/mmdc"    -w 800 -f -i /tmp/tmp-3202jXrRkQGrlXQb.tmp -t default -o /tmp/tmp-3202jXrRkQGrlXQb.tmp.png /tmp/tmp-3202jXrRkQGrlXQb.tmp.png
-
 #"/usr/local/lib/node_modules/mermaid-filter/node_modules/.bin/mmdc"    -w 800 -f -i /tmp/tmp-464aMUdXGJJuPCI.tmp  -t default -o /tmp/tmp-3202jXrRkQGrlXQb.tmp.png /tmp/tmp-3202jXrRkQGrlXQb.tmp.png
+
+# ------------------------------------------------------------------------------
 
 
 ENV TZ=America/Los_Angeles
@@ -52,24 +55,24 @@ RUN apt-get update \
 # RUN useradd -m docker && echo "docker:docker" | chpasswd && adduser docker sudo
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
-  && export DEBIAN_FRONTEND=noninteractive \
-  && apt-get update \
-  && apt-get install -y -q \
-  python3-pip \
-  libnss3-dev \
-  npm \
-  wget \
-  yarn
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get update \
+    && apt-get install -y -q \
+    python3-pip \
+    libnss3-dev \
+    npm \
+    wget \
+    yarn
 
 RUN wget -O- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add \
-  && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
-  && rm -rf /var/lib/apt/lists/
+    && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
+    && rm -rf /var/lib/apt/lists/
 
 RUN (npm install --global mermaid-filter --suppess-warnings | exit 0) \
-  && ln -sf /node_modules/.bin/mmdc /usr/bin/mmdc \
-  && wget https://github.com/jgm/pandoc/releases/download/2.9.1/pandoc-2.9.1-linux-amd64.tar.gz \
-  && tar zxf pandoc-2.9.1-linux-amd64.tar.gz \
-  && mv pandoc-2.9.1/bin/* /usr/bin/
+    && ln -sf /node_modules/.bin/mmdc /usr/bin/mmdc \
+    && wget https://github.com/jgm/pandoc/releases/download/2.9.1/pandoc-2.9.1-linux-amd64.tar.gz \
+    && tar zxf pandoc-2.9.1-linux-amd64.tar.gz \
+    && mv pandoc-2.9.1/bin/* /usr/bin/
 
 RUN apt-get update \
     && apt-get install -y -q yarn \
@@ -77,17 +80,14 @@ RUN apt-get update \
 
 RUN apt-get install -y -q cups \
     libxss1 \
-	aptitude \
-	libasound2-dev \
-	libatk1.0-0 \
-	libatk-bridge2.0-0 \
-	libpangocairo-1.0-0 \
-	libgtk-3-0
+    aptitude \
+    libasound2-dev \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libpangocairo-1.0-0 \
+    libgtk-3-0
 
 RUN apt-get install -y -q libgbm-dev
-
-RUN cd /usr/local/lib/node_modules/mermaid-filter/node_modules/.bin \
-    && npm install puppeteer --unsafe-perm=true --allow-root
 
 RUN pip3 install panflute
 
@@ -111,7 +111,14 @@ RUN apt-get install -y -q cabal-install
 
 RUN cabal update
 
-RUN cabal install pandoc-plot
+COPY Pandoc.cmake /Pandoc.cmake
 
+
+# ------------------------------------------------------------------------------
+# TODO - below here are tools yet to be integrated
+#RUN cd /usr/local/lib/node_modules/mermaid-filter/node_modules/.bin \
+#    && npm install puppeteer --unsafe-perm=true --allow-root
+#RUN cabal install pandoc-plot
+# ------------------------------------------------------------------------------
 
 WORKDIR /
