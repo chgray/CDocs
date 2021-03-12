@@ -1,4 +1,4 @@
-set(PANDOC_DEST_DIR ${CMAKE_SOURCE_DIR}/DevDir_Rendered)
+set(PANDOC_DEST_DIR ${CMAKE_SOURCE_DIR}/Rendered)
 
 function(GENERATE_PANDOC_SLIDES)
     set(library ${ARGV0})

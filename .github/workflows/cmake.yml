@@ -44,3 +44,7 @@ jobs:
     # Print final files, useful for CI/CD debugging - should things go wrong
     - name: Print Final Files (useful in debugging CI/CD)
       run: find .
+
+    # Print $(CMAKE_SOURCE_DIR), useful for CI/CD debugging - should things go wrong
+    - name: Print $(CMAKE_SOURCE_DIR) Files (useful in debugging CI/CD)
+      run: find $(CMAKE_SOURCE_DIR)
