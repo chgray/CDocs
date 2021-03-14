@@ -68,7 +68,7 @@ RUN wget -O- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add \
     && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
     && rm -rf /var/lib/apt/lists/
 
-RUN (npm install --global mermaid-filter --suppess-warnings | exit 0) \
+RUN (npm install --global mermaid-filter --suppess-warnings --unsafe-perm=true --allow-root) \
     && ln -sf /node_modules/.bin/mmdc /usr/bin/mmdc \
     && wget https://github.com/jgm/pandoc/releases/download/2.9.1/pandoc-2.9.1-linux-amd64.tar.gz \
     && tar zxf pandoc-2.9.1-linux-amd64.tar.gz \
@@ -89,6 +89,8 @@ RUN apt-get install -y -q cups \
 
 RUN apt-get install -y -q libgbm-dev
 
+RUN npm install puppeteer --unsafe-perm=true --allow-root
+
 RUN pip3 install panflute
 
 RUN apt-get install -y -q plantuml \
@@ -107,11 +109,11 @@ COPY puppeteer-config.json /puppeteer-config.json
 RUN apt-get install -y -q cmake \
     git
 
-RUN apt-get install -y -q cabal-install
+#RUN apt-get install -y -q cabal-install
 
-RUN cabal update
+#RUN cabal update
 
-COPY Pandoc.cmake /Pandoc.cmake
+#COPY Pandoc.cmake /Pandoc.cmake
 
 
 # ------------------------------------------------------------------------------
