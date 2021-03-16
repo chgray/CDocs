@@ -1,8 +1,7 @@
 #This is a sample Image
 FROM ubuntu:20.04
 
-MAINTAINER chgray@gmail.com
-
+LABEL maintainer chgray@gmail.com
 
 # ------------------------------------------------------------------------------
 #
@@ -41,9 +40,7 @@ MAINTAINER chgray@gmail.com
 
 #"/usr/local/lib/node_modules/mermaid-filter/node_modules/.bin/mmdc"    -w 800 -f -i /tmp/tmp-3202jXrRkQGrlXQb.tmp -t default -o /tmp/tmp-3202jXrRkQGrlXQb.tmp.png /tmp/tmp-3202jXrRkQGrlXQb.tmp.png
 #"/usr/local/lib/node_modules/mermaid-filter/node_modules/.bin/mmdc"    -w 800 -f -i /tmp/tmp-464aMUdXGJJuPCI.tmp  -t default -o /tmp/tmp-3202jXrRkQGrlXQb.tmp.png /tmp/tmp-3202jXrRkQGrlXQb.tmp.png
-
 # ------------------------------------------------------------------------------
-
 
 ENV TZ=America/Los_Angeles
 
@@ -102,15 +99,8 @@ RUN git clone https://github.com/LaurentRDC/pandoc-plot \
 
 RUN cp /root/.cabal/bin/* /usr/sbin/
 
-# RUN cabal install pandoc-plot
-
 RUN (npm install --global mermaid-filter --suppess-warnings --unsafe-perm=true --allow-root) \
     && ln -sf /node_modules/.bin/mmdc /usr/bin/mmdc
-
-#     \
-#    && wget https://github.com/jgm/pandoc/releases/download/2.9.1/pandoc-2.9.1-linux-amd64.tar.gz \
-#    && tar zxf pandoc-2.9.1-linux-amd64.tar.gz \
-#    && mv pandoc-2.9.1/bin/* /usr/bin/
 
 RUN yarn add mermaid mermaid.cli
 
@@ -132,16 +122,8 @@ RUN pip3 install bokeh
 RUN pip3 install selenium
 RUN pip3 install pandas
 
-
 # Install PDFLatex and friends
 RUN apt-get install -y -q texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
-
-
-# Conda
-#RUN apt-get install -y -q libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
-#RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-#RUN bash ~/miniconda.sh -b -p $HOME/miniconda
-
 
 COPY updated_mermaid_index.js /usr/local/lib/node_modules/mermaid-filter/index.js
 
@@ -152,6 +134,5 @@ RUN dos2unix /usr/local/lib/node_modules/mermaid-filter/index.js
 COPY puppeteer-config.json /puppeteer-config.json
 
 COPY Pandoc.cmake /Pandoc.cmake
-
 
 WORKDIR /
