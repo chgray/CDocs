@@ -10,7 +10,23 @@
         C-->|Loop!!|A
 ```
 
+# Example of file
+```{.gnuplot}
+splot "sample.data.dat"  using 1:2:3
+```
+
+# Example
+```{.matplotlib}
+import matplotlib.pyplot as plt
+
+plt.figure()
+plt.plot([0,1,2,3,4], [1,2,3,4,5])
+plt.title('This is an example figure')
+```
+
 # MatPlotLib
+Plotting using Python nd pyplot
+
 ```{.matplotlib}
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,6 +46,8 @@ c = ax.scatter(theta, r, c=colors, s=area, cmap='hsv', alpha=0.75)
 ```
 
 # GNUPlot
+Plot using GNUPlot
+
 ```{.gnuplot}
 set title "Simple Plots" font ",20"
 set key left box
@@ -40,6 +58,8 @@ plot [-10:10] sin(x),atan(x),cos(atan(x))
 ```
 
 # GNUPlot2
+A second GNU Plot
+
 ```{.gnuplot}
 set format z "%.1f"
 unset key
