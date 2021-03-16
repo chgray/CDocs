@@ -125,11 +125,16 @@ RUN apt-get install -y -q dos2unix
 
 RUN apt-get install -y -q python3-matplotlib
 RUN apt-get install -y -q python3-pip
-#RUN apt-get install -y -q gnuplot
+RUN DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration
+RUN apt-get install -y -q gnuplot
 
 RUN pip3 install bokeh
 RUN pip3 install selenium
 RUN pip3 install pandas
+
+
+# Install PDFLatex and friends
+RUN apt-get install -y -q texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
 
 
 # Conda
