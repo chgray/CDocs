@@ -27,10 +27,10 @@ function(GENERATE_PANDOC_SLIDES)
 
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 
-            COMMENT "pandoc -t slidy -s ${arg} -o ${HTML_OUTPUT_FILE} --lua-filter /lua-filters/include-files.lua -F mermaid-filter --filter pandoc-plantuml"
+            COMMENT "pandoc -t slidy --self-contained -s ${arg} -o ${HTML_OUTPUT_FILE} --filter pandoc-plot --lua-filter /lua-filters/include-files.lua -F mermaid-filter --filter pandoc-plantuml"
 
             COMMAND mkdir -p ${OUTPUT_DIR}
-            COMMAND pandoc -t slidy -s ${arg} -o ${HTML_OUTPUT_FILE} --lua-filter /lua-filters/include-files.lua -F mermaid-filter --filter pandoc-plantuml
+            COMMAND pandoc -t slidy --self-contained -s ${arg} -o ${HTML_OUTPUT_FILE} --filter pandoc-plot --lua-filter /lua-filters/include-files.lua -F mermaid-filter --filter pandoc-plantuml
         )
 
         message(STATUS ">>>>>>> Pandoc Source File = ${RAW_FILENAME} output = ${HTML_HASH_FILE}")
@@ -54,8 +54,8 @@ function(GENERATE_PDFS)
     foreach(arg IN LISTS ARGV)
         get_filename_component(RAW_FILENAME ${arg} NAME)
 
-        set(HTML_HASH_FILE ${RAW_FILENAME}.docx)
-        set(HTML_OUTPUT_FILE ${PANDOC_DEST_DIR}/${arg}.docx)
+        set(HTML_HASH_FILE ${RAW_FILENAME}.pdf)
+        set(HTML_OUTPUT_FILE ${PANDOC_DEST_DIR}/${arg}.pdf)
         get_filename_component(OUTPUT_DIR ${HTML_OUTPUT_FILE} DIRECTORY)
 
         message(STATUS "OutputFile : ${HTML_OUTPUT_FILE} coming from ${arg}")
@@ -67,10 +67,10 @@ function(GENERATE_PDFS)
 
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 
-            COMMENT "pandoc -s ./${arg} -o ${HTML_OUTPUT_FILE} --lua-filter /lua-filters/include-files.lua -F mermaid-filter"
+            COMMENT "pandoc  --self-contained -s ./${arg} -o ${HTML_OUTPUT_FILE} --filter pandoc-plot --lua-filter /lua-filters/include-files.lua -F mermaid-filter"
 
             COMMAND mkdir -p ${OUTPUT_DIR}
-            COMMAND pandoc -s ./${arg} -o ${HTML_OUTPUT_FILE} --lua-filter /lua-filters/include-files.lua -F mermaid-filter
+            COMMAND pandoc  --self-contained -s ./${arg} -o ${HTML_OUTPUT_FILE} --filter pandoc-plot --lua-filter /lua-filters/include-files.lua -F mermaid-filter
         )
 
         message(STATUS ">>>>>>> Pandoc Source File = ${RAW_FILENAME} output = ${HTML_HASH_FILE}")

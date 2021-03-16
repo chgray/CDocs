@@ -52,8 +52,6 @@ COPY include-files.lua /lua-filters/
 RUN apt-get update \
     && apt-get -y install sudo
 
-# RUN useradd -m docker && echo "docker:docker" | chpasswd && adduser docker sudo
-
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
@@ -68,15 +66,8 @@ RUN wget -O- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add \
     && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
     && rm -rf /var/lib/apt/lists/
 
-RUN (npm install --global mermaid-filter --suppess-warnings --unsafe-perm=true --allow-root) \
-    && ln -sf /node_modules/.bin/mmdc /usr/bin/mmdc \
-    && wget https://github.com/jgm/pandoc/releases/download/2.9.1/pandoc-2.9.1-linux-amd64.tar.gz \
-    && tar zxf pandoc-2.9.1-linux-amd64.tar.gz \
-    && mv pandoc-2.9.1/bin/* /usr/bin/
 
-RUN apt-get update \
-    && apt-get install -y -q yarn \
-    && yarn add mermaid mermaid.cli
+RUN apt-get update
 
 RUN apt-get install -y -q cups \
     libxss1 \
@@ -87,7 +78,41 @@ RUN apt-get install -y -q cups \
     libpangocairo-1.0-0 \
     libgtk-3-0
 
+RUN apt-get install -y -q yarn
+
 RUN apt-get install -y -q libgbm-dev
+
+RUN apt-get install -y -q cmake \
+    cabal-install \
+    git
+
+
+RUN apt-get install -y -q locales
+
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
+
+RUN cabal update
+RUN git clone https://github.com/LaurentRDC/pandoc-plot \
+    && cd /pandoc-plot \
+    && cabal install
+
+RUN cp /root/.cabal/bin/* /usr/sbin/
+
+# RUN cabal install pandoc-plot
+
+RUN (npm install --global mermaid-filter --suppess-warnings --unsafe-perm=true --allow-root) \
+    && ln -sf /node_modules/.bin/mmdc /usr/bin/mmdc
+
+#     \
+#    && wget https://github.com/jgm/pandoc/releases/download/2.9.1/pandoc-2.9.1-linux-amd64.tar.gz \
+#    && tar zxf pandoc-2.9.1-linux-amd64.tar.gz \
+#    && mv pandoc-2.9.1/bin/* /usr/bin/
+
+RUN yarn add mermaid mermaid.cli
 
 RUN npm install puppeteer --unsafe-perm=true --allow-root
 
@@ -98,6 +123,21 @@ RUN apt-get install -y -q plantuml \
 
 RUN apt-get install -y -q dos2unix
 
+RUN apt-get install -y -q python3-matplotlib
+RUN apt-get install -y -q python3-pip
+#RUN apt-get install -y -q gnuplot
+
+RUN pip3 install bokeh
+RUN pip3 install selenium
+RUN pip3 install pandas
+
+
+# Conda
+#RUN apt-get install -y -q libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
+#RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+#RUN bash ~/miniconda.sh -b -p $HOME/miniconda
+
+
 COPY updated_mermaid_index.js /usr/local/lib/node_modules/mermaid-filter/index.js
 
 RUN chmod +x /usr/local/lib/node_modules/mermaid-filter/index.js
@@ -106,21 +146,7 @@ RUN dos2unix /usr/local/lib/node_modules/mermaid-filter/index.js
 
 COPY puppeteer-config.json /puppeteer-config.json
 
-RUN apt-get install -y -q cmake \
-    git
+COPY Pandoc.cmake /Pandoc.cmake
 
-#RUN apt-get install -y -q cabal-install
-
-#RUN cabal update
-
-#COPY Pandoc.cmake /Pandoc.cmake
-
-
-# ------------------------------------------------------------------------------
-# TODO - below here are tools yet to be integrated
-#RUN cd /usr/local/lib/node_modules/mermaid-filter/node_modules/.bin \
-#    && npm install puppeteer --unsafe-perm=true --allow-root
-#RUN cabal install pandoc-plot
-# ------------------------------------------------------------------------------
 
 WORKDIR /
