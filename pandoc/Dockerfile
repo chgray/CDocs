@@ -15,6 +15,8 @@ LABEL maintainer chgray@gmail.com
 #docker run -i -v //c/DevDir:/home/runner/work/DevDir -t chgray123/chgray_repro:pandoc /bin/bash
 #docker run -i -v ~/DevDir:/home/runner/work/DevDir -t chgray123/chgray_repro:pandoc /bin/bash
 
+# Pusing the container
+# docker push chgray123/chgray_repro:pandoc
 
 #	/usr/local/lib/node_modules/mermaid-filter/node_modules/.bin/mmdc
 #pandoc -t slidy -s ./IntroSlides.md -o ./X.html --lua-filter /lua-filters/include-files.lua -F mermaid-filter --filter pandoc-plantuml
