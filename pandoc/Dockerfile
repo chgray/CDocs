@@ -1,5 +1,5 @@
 #This is a sample Image
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 LABEL maintainer chgray@gmail.com
 
@@ -61,9 +61,9 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
     wget \
     yarn
 
-RUN wget -O- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add \
-    && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
-    && rm -rf /var/lib/apt/lists/
+# RUN wget -O- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add \
+#     && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
+#     && rm -rf /var/lib/apt/lists/
 
 
 RUN apt-get update
@@ -78,9 +78,7 @@ RUN apt-get install -y -q cups \
     libgtk-3-0
 
 RUN apt-get install -y -q yarn
-
 RUN apt-get install -y -q libgbm-dev
-
 RUN apt-get install -y -q cmake \
     cabal-install \
     git
@@ -94,24 +92,29 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 
-RUN cabal update
-RUN git clone https://github.com/LaurentRDC/pandoc-plot \
-    && cd /pandoc-plot \
-    && cabal install
+# RUN cabal update
+# RUN git clone https://github.com/LaurentRDC/pandoc-plot \
+#     && cd /pandoc-plot \
+#     && cabal install
 
-RUN cp /root/.cabal/bin/* /usr/sbin/
+# RUN cp /root/.cabal/bin/* /usr/sbin/
 
-RUN (npm install --global mermaid-filter --suppess-warnings --unsafe-perm=true --allow-root) \
-    && ln -sf /node_modules/.bin/mmdc /usr/bin/mmdc
+# RUN (npm install --global mermaid-filter --suppess-warnings --unsafe-perm=true --allow-root) \
+#     && ln -sf /node_modules/.bin/mmdc /usr/bin/mmdc
 
-RUN yarn add mermaid mermaid.cli
+# RUN yarn add mermaid mermaid.cli
 
-RUN npm install puppeteer --unsafe-perm=true --allow-root
+#RUN apt-get install -y -q nodejs npm 
+RUN apt-get install -y -q chromium-browser
+# RUN apt-get install -y -q libx11-xcb1 libxcomposite1 libasound2 libatk1.0-0 libatk-bridge2.0-0 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libgcc1 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 
 
-RUN pip3 install panflute
 
-RUN apt-get install -y -q plantuml \
-    && pip3 install pandoc-plantuml-filter
+# RUN npm install puppeteer --unsafe-perm=true --allow-root
+
+# RUN pip3 install panflute
+
+# RUN apt-get install -y -q plantuml \
+#     && pip3 install pandoc-plantuml-filter
 
 RUN apt-get install -y -q dos2unix
 
@@ -120,20 +123,24 @@ RUN apt-get install -y -q python3-pip
 RUN DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration
 RUN apt-get install -y -q gnuplot
 
-RUN pip3 install bokeh
-RUN pip3 install selenium
-RUN pip3 install pandas
+# RUN pip3 install bokeh
+# RUN pip3 install selenium
+# RUN pip3 install pandas
 
 # Install PDFLatex and friends
-RUN apt-get install -y -q texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
+# RUN apt-get install -y -q texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
 
-COPY updated_mermaid_index.js /usr/local/lib/node_modules/mermaid-filter/index.js
+RUN apt-get install -y -q pandoc
 
-RUN chmod +x /usr/local/lib/node_modules/mermaid-filter/index.js
+RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+RUN npm install -g @mermaid-js/mermaid-cli
+RUN nvm install node
 
-RUN dos2unix /usr/local/lib/node_modules/mermaid-filter/index.js
+#COPY updated_mermaid_index.js /usr/local/lib/node_modules/mermaid-filter/index.js
+#RUN chmod +x /usr/local/lib/node_modules/mermaid-filter/index.js
+#RUN dos2unix /usr/local/lib/node_modules/mermaid-filter/index.js
 
-COPY puppeteer-config.json /puppeteer-config.json
+#COPY puppeteer-config.json /puppeteer-config.json
 
 COPY Pandoc.cmake /Pandoc.cmake
 
