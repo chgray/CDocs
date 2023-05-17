@@ -77,9 +77,10 @@ RUN (npm install --global mermaid-filter --suppess-warnings --unsafe-perm=true -
 
 RUN npm install puppeteer --unsafe-perm=true --allow-root
 
-
 COPY puppeteer-config.json /puppeteer.config.js
-COPY Pandoc.cmake /Pandoc.cmakemmdc
+COPY Pandoc.cmake /Pandoc.cmake
+COPY ConvertDocument.sh /ConvertDocument.sh
+
 
 WORKDIR /
 
