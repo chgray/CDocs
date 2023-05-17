@@ -84,9 +84,8 @@ fi
 
 
 if [ "1" == "$word" ]; then
-    cd /src
-    ls
-    args="${embedResources} ${inputFile} ${mermaid} -o ${inputFile}.docx"
+    cd ~
+    args="${embedResources} /src/${inputFile} ${mermaid} -o /src/${inputFile}.docx"
     echo "CONVERT WORD: ${args}"
     pandoc $args 
     exit 1

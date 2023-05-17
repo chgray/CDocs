@@ -61,25 +61,32 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
+RUN apk add sudo
 RUN apk add dos2unix
 RUN apk add pandoc
 RUN apk add bash
 RUN apk add npm
-RUN npm install -g @mermaid-js/mermaid-cli
-WORKDIR /root
+RUN apk add chromium
+RUN apk add nano
+
+
+RUN adduser pptruser --disabled-password 
+USER pptruser
+WORKDIR /home/pptruser
+RUN npm install @mermaid-js/mermaid-cli
 
 # We don't need the standalone Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-RUN apk add chromium
-RUN apk add nano
-RUN (npm install --global mermaid-filter --suppess-warnings --unsafe-perm=true --allow-root) \
-     && ln -sf /node_modules/.bin/mmdc /usr/bin/mmdc
 
-RUN npm install puppeteer --unsafe-perm=true --allow-root
+RUN npm install mermaid-filter
+ENV PATH $PATH:/home/pptruser/node_modules/.bin
 
-COPY puppeteer-config.json /puppeteer.config.js
+RUN npm install puppeteer
+
+#COPY puppeteer-config.json /puppeteer.config.js
 COPY Pandoc.cmake /Pandoc.cmake
 COPY ConvertDocument.sh /ConvertDocument.sh
+
 
 
 WORKDIR /
