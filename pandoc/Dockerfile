@@ -89,7 +89,7 @@ COPY ConvertDocument.sh /ConvertDocument.sh
 
 
 
-WORKDIR /
+# WORKDIR /
 
 #
 # https://github.com/puppeteer/puppeteer/tree/main
