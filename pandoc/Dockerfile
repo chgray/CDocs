@@ -61,75 +61,24 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-
-# RUN cabal update
-# RUN git clone https://github.com/LaurentRDC/pandoc-plot \
-#     && cd /pandoc-plot \
-#     && cabal install
-
-# RUN cp /root/.cabal/bin/* /usr/sbin/
-
-
-# RUN yarn add mermaid mermaid.cli
-
-#RUN apt-get install -y -q nodejs npm 
-#RUN apt-get install -y -q chromium-browser
-# RUN apt-get install -y -q libx11-xcb1 libxcomposite1 libasound2 libatk1.0-0 libatk-bridge2.0-0 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libgcc1 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 
-
-
-# RUN npm install puppeteer --unsafe-perm=true --allow-root
-
-# RUN pip3 install panflute
-
-# RUN apt-get install -y -q plantuml \
-#     && pip3 install pandoc-plantuml-filter
-
 RUN apk add dos2unix
-
-# RUN pip3 install bokeh
-# RUN pip3 install selenium
-# RUN pip3 install pandas
-
-# Install PDFLatex and friends
-# RUN apt-get install -y -q texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
-
 RUN apk add pandoc
 RUN apk add bash
 RUN apk add npm
-#RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
 RUN npm install -g @mermaid-js/mermaid-cli
-#RUN bash source -c "~/.bashrc"
 WORKDIR /root
-#RUN nvm install node
-#RUN nvm install puppeteer
 
 # We don't need the standalone Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 RUN apk add chromium
+RUN apk add nano
 RUN (npm install --global mermaid-filter --suppess-warnings --unsafe-perm=true --allow-root) \
      && ln -sf /node_modules/.bin/mmdc /usr/bin/mmdc
 
-
-# Install Google Chrome Stable and fonts
-# Note: this installs the necessary libs to make the browser work with Puppeteer.
-# RUN apt-get update && apt-get install curl gnupg -y \
-#   && curl --location --silent https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-#   && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-#   && apt-get update \
-#   && apt-get install google-chrome-stable -y --no-install-recommends \
-#   && rm -rf /var/lib/apt/lists/* \
-#   && apt update
-  
-
-#COPY updated_mermaid_index.js /usr/local/lib/node_modules/mermaid-filter/index.js
-#RUN chmod +x /usr/local/lib/node_modules/mermaid-filter/index.js
-#RUN dos2unix /usr/local/lib/node_modules/mermaid-filter/index.js
-
-#RUN nvm install node
 RUN npm install puppeteer --unsafe-perm=true --allow-root
 
 
-#COPY puppeteer-config.json /puppeteer.config.js
+COPY puppeteer-config.json /puppeteer.config.js
 COPY Pandoc.cmake /Pandoc.cmakemmdc
 
 WORKDIR /
