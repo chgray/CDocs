@@ -10,13 +10,13 @@ LABEL maintainer chgray@gmail.com
 #
 #
 #
-#docker build -t "chgray123/chgray_repro:pandoc" .
+#podman build -t "chgray123/chgray_repro:pandoc" .
 
-#docker run -i -v //c/DevDir:/home/runner/work/DevDir -t chgray123/chgray_repro:pandoc /bin/bash
-#docker run -i -v ~/DevDir:/home/runner/work/DevDir -t chgray123/chgray_repro:pandoc /bin/bash
+#podman run -i -v //c/DevDir:/home/runner/work/DevDir -t chgray123/chgray_repro:pandoc /bin/bash
+#podman run -i -v ~/DevDir:/home/runner/work/DevDir -t chgray123/chgray_repro:pandoc /bin/bash
 
 # Pusing the container
-# docker push chgray123/chgray_repro:pandoc
+# podman push chgray123/chgray_repro:pandoc
 
 #	/usr/local/lib/node_modules/mermaid-filter/node_modules/.bin/mmdc
 #pandoc -t slidy -s ./IntroSlides.md -o ./X.html --lua-filter /lua-filters/include-files.lua -F mermaid-filter --filter pandoc-plantuml
@@ -133,7 +133,7 @@ RUN apt-get install -y -q gnuplot
 RUN apt-get install -y -q pandoc
 
 RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
-RUN npm install -g @mermaid-js/mermaid-cli
+#RUN npm install -g @mermaid-js/mermaid-cli
 #RUN bash source -c "~/.bashrc"
 WORKDIR /root
 #RUN nvm install node
@@ -149,14 +149,24 @@ WORKDIR /root
 #   && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
 #   && apt-get update \
 #   && apt-get install google-chrome-stable -y --no-install-recommends \
-#   && rm -rf /var/lib/apt/lists/*
+#   && rm -rf /var/lib/apt/lists/* \
+#   && apt update
+  
 
 #COPY updated_mermaid_index.js /usr/local/lib/node_modules/mermaid-filter/index.js
 #RUN chmod +x /usr/local/lib/node_modules/mermaid-filter/index.js
 #RUN dos2unix /usr/local/lib/node_modules/mermaid-filter/index.js
 
-#COPY puppeteer-config.json /puppeteer-config.json
+#RUN nvm install node
+#RUN npm install puppeteer --unsafe-perm=true --allow-root
 
-COPY Pandoc.cmake /Pandoc.cmake
+
+COPY puppeteer-config.json /puppeteer.config.js
+COPY Pandoc.cmake /Pandoc.cmakemmdc
 
 WORKDIR /
+
+#
+# https://github.com/puppeteer/puppeteer/tree/main
+# https://pptr.dev/api/puppeteer.puppeteernode
+# NODE_PATH=~/node_modules/ node ./puppeteer.js
