@@ -1,5 +1,6 @@
 #This is a sample Image
-FROM alpine
+FROM ubuntu:22.04
+
 LABEL maintainer chgray@gmail.com
 
 # ------------------------------------------------------------------------------
@@ -47,16 +48,45 @@ ENV TZ=America/Los_Angeles
 
 COPY include-files.lua /lua-filters/
 
+RUN apt-get update \
+    && apt-get -y install sudo
+
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
     && export DEBIAN_FRONTEND=noninteractive \
-    apk add \
-    python3 \
+    && apt-get update \
+    && apt-get install -y -q \
+    python3-pip \
+    libnss3-dev \
     npm \
     wget \
     yarn
 
+# RUN wget -O- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add \
+#     && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
+#     && rm -rf /var/lib/apt/lists/
 
-#RUN locale-gen en_US.UTF-8
+
+RUN apt-get update
+
+RUN apt-get install -y -q cups \
+    libxss1 \
+    aptitude \
+    libasound2-dev \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libpangocairo-1.0-0 \
+    libgtk-3-0
+
+RUN apt-get install -y -q yarn
+RUN apt-get install -y -q libgbm-dev
+RUN apt-get install -y -q cmake \
+    cabal-install \
+    git
+
+
+RUN apt-get install -y -q locales
+
+RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
@@ -69,6 +99,8 @@ ENV LC_ALL en_US.UTF-8
 
 # RUN cp /root/.cabal/bin/* /usr/sbin/
 
+# RUN (npm install --global mermaid-filter --suppess-warnings --unsafe-perm=true --allow-root) \
+#     && ln -sf /node_modules/.bin/mmdc /usr/bin/mmdc
 
 # RUN yarn add mermaid mermaid.cli
 
@@ -84,7 +116,11 @@ ENV LC_ALL en_US.UTF-8
 # RUN apt-get install -y -q plantuml \
 #     && pip3 install pandoc-plantuml-filter
 
-RUN apk add dos2unix
+RUN apt-get install -y -q dos2unix
+RUN apt-get install -y -q python3-matplotlib
+RUN apt-get install -y -q python3-pip
+RUN DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration
+RUN apt-get install -y -q gnuplot
 
 # RUN pip3 install bokeh
 # RUN pip3 install selenium
@@ -93,22 +129,17 @@ RUN apk add dos2unix
 # Install PDFLatex and friends
 # RUN apt-get install -y -q texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
 
-RUN apk add pandoc
-RUN apk add bash
-RUN apk add npm
-#RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
-RUN npm install -g @mermaid-js/mermaid-cli
+RUN apt-get install -y -q pandoc
+
+RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+#RUN npm install -g @mermaid-js/mermaid-cli
 #RUN bash source -c "~/.bashrc"
 WORKDIR /root
 #RUN nvm install node
 #RUN nvm install puppeteer
 
 # We don't need the standalone Chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-RUN apk add chromium
-RUN (npm install --global mermaid-filter --suppess-warnings --unsafe-perm=true --allow-root) \
-     && ln -sf /node_modules/.bin/mmdc /usr/bin/mmdc
-
+#ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
 # Install Google Chrome Stable and fonts
 # Note: this installs the necessary libs to make the browser work with Puppeteer.
@@ -126,10 +157,10 @@ RUN (npm install --global mermaid-filter --suppess-warnings --unsafe-perm=true -
 #RUN dos2unix /usr/local/lib/node_modules/mermaid-filter/index.js
 
 #RUN nvm install node
-RUN npm install puppeteer --unsafe-perm=true --allow-root
+#RUN npm install puppeteer --unsafe-perm=true --allow-root
 
 
-#COPY puppeteer-config.json /puppeteer.config.js
+COPY puppeteer-config.json /puppeteer.config.js
 COPY Pandoc.cmake /Pandoc.cmakemmdc
 
 WORKDIR /
