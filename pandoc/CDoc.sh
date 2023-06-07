@@ -11,7 +11,7 @@ function help() {
     exit 2
 }
 
-while getopts wphmed:i:f:o options; do
+while getopts wphmed:i:f:o: options; do
         case $options in                
                 i)
                     inputFile=$OPTARG
@@ -22,6 +22,7 @@ while getopts wphmed:i:f:o options; do
                     ;;
                 o)
                     outputDir=$OPTARG
+                    echo "OUTPUTDIR: $outputDir"
                     ;;  
         esac
 done
@@ -36,11 +37,11 @@ myDir="$(dirname $inputFile)"         # or  cd "${1%/*}"
 myDir="$(readlink -f $myDir)"
 myFile="$(basename $inputFile)"
 
-echo "MYDIR: $myDir"
-echo "MYFILE: $myFile"
+# echo "MYDIR: $myDir"
+# echo "MYFILE: $myFile"
 
 
 args="$@ -f ./${myFile}"
 echo "ARGS: ${args}"
 echo "--------------------------"
-podman run --rm -it --userns=keep-id -v $myDir:/src localhost/chgray123/chgray_repro:pandoc bash -c "/ConvertDocument.sh ${args}"
+podman run --rm -it --userns=keep-id -v $myDir:/src -v $outputDir:/out localhost/chgray123/chgray_repro:pandoc bash -c "/ConvertDocument.sh ${args}"

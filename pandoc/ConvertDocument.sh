@@ -19,11 +19,11 @@ function help() {
 
 
     echo "-f <file> = input file"                    
-    echo "-o  <dir> = output directory"
+    echo "-o <dir>  = output directory"
     exit 2
 }
 
-while getopts wphmed:i:f:o options; do
+while getopts wphmed:i:f:o: options; do
         case $options in
                 w) 
                     word=1                    
@@ -48,7 +48,7 @@ while getopts wphmed:i:f:o options; do
                     echo "INPUT FILE: $inputFile"
                     ;;
                 o)
-                    outputDir=$OPTARG
+                    # "Output Directory is ignored - all outputs go to /out" 
                     ;;
                     
                 d) 
@@ -61,14 +61,14 @@ while getopts wphmed:i:f:o options; do
         esac
 done
 
-echo "DEBUG: $debug"
-echo "WORD: $word"
-echo "POWERPOINT: $powerpoint"
-echo "HTML: $html"
-echo "MERMAID: $mermaid"
-echo "embedResources: $embedResources"
-echo "INPUT_FILE: $inputFile"
-echo "OUTPUT_DIR: $outputDir"
+# echo "DEBUG: $debug"
+# echo "WORD: $word"
+# echo "POWERPOINT: $powerpoint"
+# echo "HTML: $html"
+# echo "MERMAID: $mermaid"
+# echo "embedResources: $embedResources"
+# echo "INPUT_FILE: $inputFile"
+# echo "OUTPUT_DIR: $outputDir"
 
 
 if [ "1" == "$debug" ]; then
@@ -85,7 +85,7 @@ fi
 
 if [ "1" == "$word" ]; then
     cd ~
-    args="${embedResources} /src/${inputFile} ${mermaid} -o /src/${inputFile}.docx"
+    args="${embedResources} /src/${inputFile} ${mermaid} -o /out/${inputFile}.docx"
     echo "CONVERT WORD: ${args}"
     pandoc $args 
     exit 1
