@@ -78,7 +78,7 @@ namespace Pandoc.Image.Merge
 
                                 if (fi.Length == option.Length)
                                 {
-                                    c[2][0].ReplaceWith("./" + Path.GetRelativePath(Environment.CurrentDirectory, option.FullName));
+                                    c[2][0].ReplaceWith("./" + Path.GetRelativePath(Environment.CurrentDirectory, option.FullName).Replace("\\", "/"));
                                     Console.WriteLine("hit");
                                 }
                             }
@@ -107,7 +107,7 @@ namespace Pandoc.Image.Merge
                     var x = forecastNode!["blocks"];
 
                     Recurse(x, o.ReferenceDir);
-                    
+
                     // Write JSON from a JsonNode
                     var options = new JsonSerializerOptions
                     {
@@ -119,6 +119,6 @@ namespace Pandoc.Image.Merge
                     Console.WriteLine($"...to {o.OutputFile}");
                     //Console.WriteLine(forecastNode!.ToJsonString(options));
                 });
-        }    
+        }
     }
 }
