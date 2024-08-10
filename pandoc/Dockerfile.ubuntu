@@ -165,6 +165,9 @@ COPY Pandoc.cmake /Pandoc.cmakemmdc
 
 WORKDIR /
 
+ENTRYPOINT ["/usr/bin/pandoc"]
+WORKDIR /data
+
 #
 # https://github.com/puppeteer/puppeteer/tree/main
 # https://pptr.dev/api/puppeteer.puppeteernode

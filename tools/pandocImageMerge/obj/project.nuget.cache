@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "U4rsSGKk/Yehn8hPoYcEPhARitn4VkMi1lj6R+CqAohhHER1M5GXRLNkV3aatCQQCnVRI+gK5WXTz5ZIP87y9w==",
+  "success": true,
+  "projectFilePath": "C:\\Source\\CDocs\\tools\\pandocImageMerge\\pandocImageMerge.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\chgray\\.nuget\\packages\\commandlineparser\\2.9.1\\commandlineparser.2.9.1.nupkg.sha512"
+  ],
+  "logs": []
+}
