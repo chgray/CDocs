@@ -3,6 +3,8 @@ FROM ubuntu:22.04
 
 LABEL maintainer chgray@gmail.com
 
+ARG PROC_ARCH=amd64
+
 # ------------------------------------------------------------------------------
 #
 # Helpful commands: this section is the 'junk drawer' of handy command
@@ -10,7 +12,10 @@ LABEL maintainer chgray@gmail.com
 #
 #
 #
-#podman build -f Dockerfile.ubuntu -t "chgray123/chgray_repro:pandoc" .
+# podman build -f Dockerfile.ubuntu --build-arg arm64 -t "chgray123/chgray_repro:pandoc" .
+# podman build -f Dockerfile.ubuntu -t "chgray123/chgray_repro:pandoc" .
+
+
 
 #podman run -i -v //c/DevDir:/home/runner/work/DevDir -t chgray123/chgray_repro:pandoc /bin/bash
 #podman run -i -v ~/DevDir:/home/runner/work/DevDir -t chgray123/chgray_repro:pandoc /bin/bash
@@ -133,8 +138,11 @@ RUN apt-get install -y -q gnuplot
 
 RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
 
-RUN wget https://github.com/jgm/pandoc/releases/download/3.3/pandoc-3.3-1-amd64.deb
-RUN dpkg -i ./pandoc-3.3-1-amd64.deb
+RUN echo "-----------------------------------------"
+RUN echo $PROC_ARCH
+
+RUN wget https://github.com/jgm/pandoc/releases/download/3.3/pandoc-3.3-1-$PROC_ARCH.deb
+RUN dpkg -i ./pandoc-3.3-1-$PROC_ARCH.deb
 
 
 #RUN npm install -g @mermaid-js/mermaid-cli
