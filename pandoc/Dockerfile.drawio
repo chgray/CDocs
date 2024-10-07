@@ -1,0 +1,27 @@
+FROM chgray123/chgray_repro:pandoc
+LABEL maintainer chgray@gmail.com
+
+# ------------------------------------------------------------------------------
+#
+# Helpful commands: this section is the 'junk drawer' of handy command
+#    one could argue they shouldnt be here
+#
+#
+#
+#podman build -f Dockerfile.drawio --platform linux/arm64 -t "chgray123/chgray_repro:drawio" .
+
+# podman login docker.io
+# podman push chgray123/chgray_repro:drawio
+
+
+
+RUN apt update
+RUN apt install -y curl
+RUN curl -s https://api.github.com/repos/jgraph/drawio-desktop/releases/latest | grep browser_download_url | grep $(dpkg --print-architecture) | grep deb | cut -d '"' -f 4 | wget -i -
+RUN apt -y -f install ./drawio-$(dpkg --print-architecture)-*.deb
+
+RUN useradd -m myuser
+USER myuser
+
+ENTRYPOINT ["/usr/bin/bash"]
+WORKDIR /data

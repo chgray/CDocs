@@ -53,6 +53,9 @@ namespace Pandoc.Image.Merge
         {
             foreach (var a in n.JsonNodeChildren().ToArray())
             {
+                if (null == a)
+                    continue;
+
                 if(a.ToString().Contains("png"))
                    Console.WriteLine(a);
 

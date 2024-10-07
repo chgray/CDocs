@@ -12,9 +12,11 @@ ARG PROC_ARCH=amd64
 #
 #
 #
-# podman build -f Dockerfile.ubuntu --build-arg arm64 -t "chgray123/chgray_repro:pandoc" .
+# podman build -f Dockerfile.ubuntu --build-arg PROC_ARCH=arm64 --platform linux/arm64 -t "chgray123/chgray_repro:pandoc" .
 # podman build -f Dockerfile.ubuntu -t "chgray123/chgray_repro:pandoc" .
 
+# podman login docker.io
+# podman push chgray123/chgray_repro:pandoc
 
 
 #podman run -i -v //c/DevDir:/home/runner/work/DevDir -t chgray123/chgray_repro:pandoc /bin/bash

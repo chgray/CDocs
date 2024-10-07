@@ -8,7 +8,12 @@ LABEL maintainer chgray@gmail.com
 #
 #
 #
-#podman build -f Dockerfile.gnuplot.ubuntu -t "chgray123/chgray_repro:gnuplot" .
+#podman build -f Dockerfile.gnuplot.ubuntu --platform linux/arm64 -t "chgray123/chgray_repro:gnuplot" .
+
+# podman login docker.io
+# podman push chgray123/chgray_repro:gnuplot
+
+
 
 RUN apt update
 RUN apt install -y -q gnuplot
