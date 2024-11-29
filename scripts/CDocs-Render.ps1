@@ -28,7 +28,6 @@ $CONTAINER="chgray123/chgray_repro:pandoc"
 $MEDIA_DIR="./orig_media"
 # $CONTAINER="ubuntu:latest"
 
-
 if (!(Test-Path -Path $MEDIA_DIR)) {
     Write-Host "Creating media directory"
     New-Item -Path $MEDIA_DIR -ItemType directory
@@ -58,6 +57,8 @@ $outputDoc = $relativePath -replace ".md", ".md.docx"
 
 # Or arguments as string array:
 $dirMap = "$PROJECT_ROOT\:/data"
+$templateMap = "$PSScriptRoot\:/templates"
+
 
 Write-Host "Running CDocs-Render.ps1"
 Write-Host "     Converting file : $Convert"
@@ -65,11 +66,13 @@ Write-Host "           Container : $CONTAINER"
 Write-Host "   GNUPLOT Container : $CONTAINER_GNUPLOT"
 Write-Host "Found root directory : $PROJECT_ROOT"
 Write-Host "          DirMapping : $dirMap"
+Write-Host "        Template Map : $templateMap "
 Write-Host "     ***  Input File : $relativePath"
 Write-Host "     ***  Output File : $outputDoc"
 
-Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"$CONTAINER","$relativePath","-o","$outputDoc"
-#Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"$CONTAINER","bash"
+Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"$CONTAINER","$relativePath","-o","$outputDoc","--reference-doc","/templates/numbered-sections.docx"
+#Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"ubuntu:latest","bash"
+
 
 
 
