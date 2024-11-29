@@ -26,7 +26,7 @@ $CONTAINER="chgray123/pandoc-arm:extra"
 $CONTAINER_GNUPLOT="chgray123/chgray_repro:gnuplot"
 $CONTAINER="chgray123/chgray_repro:pandoc"
 $MEDIA_DIR="./orig_media"
-$CONTAINER="ubuntu:latest"
+# $CONTAINER="ubuntu:latest"
 
 
 if (!(Test-Path -Path $MEDIA_DIR)) {
