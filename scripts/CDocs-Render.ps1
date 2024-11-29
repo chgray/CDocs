@@ -68,9 +68,9 @@ Write-Host "Found root directory : $PROJECT_ROOT"
 Write-Host "          DirMapping : $dirMap"
 Write-Host "        Template Map : $templateMap "
 Write-Host "     ***  Input File : $relativePath"
-Write-Host "     ***  Output File : $outputDoc"
+Write-Host "    ***  Output File : $outputDoc"
 
-Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"$CONTAINER","$relativePath","-o","$outputDoc","--reference-doc","/templates/numbered-sections.docx"
+Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"$CONTAINER","$relativePath","-o","$outputDoc","--reference-doc","/templates/numbered-sections-6x9.docx"
 #Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"ubuntu:latest","bash"
 
 
