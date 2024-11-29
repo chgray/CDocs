@@ -52,11 +52,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Source\\CDocs\\tools\\pandocImageMerge\\pandocImageMerge.csproj",
+      "projectUniqueName": "c:\\Source\\CDocs\\tools\\pandocImageMerge\\pandocImageMerge.csproj",
       "projectName": "pandocImageMerge",
-      "projectPath": "C:\\Source\\CDocs\\tools\\pandocImageMerge\\pandocImageMerge.csproj",
+      "projectPath": "c:\\Source\\CDocs\\tools\\pandocImageMerge\\pandocImageMerge.csproj",
       "packagesPath": "C:\\Users\\chgray\\.nuget\\packages\\",
-      "outputPath": "C:\\Source\\CDocs\\tools\\pandocImageMerge\\obj\\",
+      "outputPath": "c:\\Source\\CDocs\\tools\\pandocImageMerge\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\chgray\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -109,7 +109,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.402/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.404/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
