@@ -19,7 +19,10 @@
 #>
 param (
     [Parameter(Mandatory = $true)]
-    [string]$Convert = "GlobalSetup"
+    [string]$Convert = "GlobalSetup",
+
+    [Parameter(Mandatory = $false)]
+    [string]$OutputDir = $null
 )
 
 $CONTAINER="chgray123/pandoc-arm:extra"
@@ -51,9 +54,34 @@ while ($True) {
     $PROJECT_ROOT = Split-Path -Path $PROJECT_ROOT -Parent
 }
 
+
 $relativePath = Resolve-Path -Path $Convert -RelativeBasePath $PROJECT_ROOT -Relative
 $relativePath = $relativePath -replace '\\', '/'
-$outputDoc = $relativePath -replace ".md", ".md.docx"
+
+#
+# Determine the destination of output file
+#
+if ($OutputDir -ne $null) {
+
+    if (!(Test-Path -Path $OutputDir)) {
+        Write-Host "Creating output directory"
+        New-Item -Path $OutputDir -ItemType directory
+    }
+
+    $outputDir = Resolve-Path -Path $OutputDir -RelativeBasePath $PROJECT_ROOT -Relative
+
+    $outputDoc = Split-Path -Path $Convert -Leaf
+    Write-Host "OutputDir is set to $OutputDir, outputDoc=$outputDoc"
+    $outputDoc = Join-Path -Path $OutputDir -ChildPath $outputDoc
+    $outputDoc = $outputDoc -replace ".md", ".md.docx"
+    $outputDoc = $outputDoc -replace '\\', '/'
+} else {
+    $outputDoc = $relativePath -replace ".md", ".md.docx"
+}
+
+
+
+
 
 # Or arguments as string array:
 $dirMap = "$PROJECT_ROOT\:/data"
@@ -70,7 +98,7 @@ Write-Host "        Template Map : $templateMap "
 Write-Host "     ***  Input File : $relativePath"
 Write-Host "    ***  Output File : $outputDoc"
 
-Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"$CONTAINER","$relativePath","-o","$outputDoc","--reference-doc","/templates/numbered-sections-6x9.docx"
+Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"$CONTAINER","$relativePath","-o","$outputDoc.json","--reference-doc","/templates/numbered-sections-6x9.docx"
 #Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"ubuntu:latest","bash"
 
 
