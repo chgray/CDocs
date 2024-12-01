@@ -106,7 +106,6 @@ namespace Pandoc.Image.Merge
                     // Create a JsonNode DOM from a JSON string.
                     JsonNode forecastNode = JsonNode.Parse(json)!;
 
-
                     var x = forecastNode!["blocks"];
 
                     Recurse(x, o.ReferenceDir);
@@ -120,7 +119,6 @@ namespace Pandoc.Image.Merge
 
                     File.WriteAllText(o.OutputFile, forecastNode!.ToJsonString(options));
                     Console.WriteLine($"...to {o.OutputFile}");
-                    //Console.WriteLine(forecastNode!.ToJsonString(options));
                 });
         }
     }

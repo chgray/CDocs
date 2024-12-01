@@ -22,7 +22,10 @@ param (
     [string]$Convert = "GlobalSetup",
 
     [Parameter(Mandatory = $false)]
-    [string]$OutputDir = $null
+    [string]$OutputDir = $null,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$ReverseRender = $false
 )
 
 $CONTAINER="chgray123/pandoc-arm:extra"
@@ -61,7 +64,8 @@ $relativePath = $relativePath -replace '\\', '/'
 #
 # Determine the destination of output file
 #
-if ($OutputDir -ne $null) {
+Write-Host "OutputDir is set to [$OutputDir]"
+if (![string]::IsNullOrEmpty($OutputDir)) {
 
     if (!(Test-Path -Path $OutputDir)) {
         Write-Host "Creating output directory"
@@ -69,18 +73,13 @@ if ($OutputDir -ne $null) {
     }
 
     $outputDir = Resolve-Path -Path $OutputDir -RelativeBasePath $PROJECT_ROOT -Relative
-
-    $outputDoc = Split-Path -Path $Convert -Leaf
-    Write-Host "OutputDir is set to $OutputDir, outputDoc=$outputDoc"
-    $outputDoc = Join-Path -Path $OutputDir -ChildPath $outputDoc
-    $outputDoc = $outputDoc -replace ".md", ".md.docx"
-    $outputDoc = $outputDoc -replace '\\', '/'
+    $outputDoc_relative = Split-Path -Path $Convert -Leaf
+    $outputDoc_relative = Join-Path -Path $OutputDir -ChildPath $outputDoc_relative
+    $outputDoc_relative = $outputDoc_relative -replace ".md", ".md.docx"
+    $outputDoc_relative = $outputDoc_relative -replace '\\', '/'
 } else {
-    $outputDoc = $relativePath -replace ".md", ".md.docx"
+    $outputDoc_relative = $relativePath -replace ".md", ".md.docx"
 }
-
-
-
 
 
 # Or arguments as string array:
@@ -95,12 +94,66 @@ Write-Host "   GNUPLOT Container : $CONTAINER_GNUPLOT"
 Write-Host "Found root directory : $PROJECT_ROOT"
 Write-Host "          DirMapping : $dirMap"
 Write-Host "        Template Map : $templateMap "
+Write-Host "          Output Dir : $outputDir"
 Write-Host "     ***  Input File : $relativePath"
-Write-Host "    ***  Output File : $outputDoc"
+Write-Host "     *** Output File : $outputDoc_relative"
 
-Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"$CONTAINER","$relativePath","-o","$outputDoc.json","--reference-doc","/templates/numbered-sections-6x9.docx"
+
+if ($ReverseRender)
+{
+    Write-Host "1. Reverse Mode"
+
+    $originalAST_relative=$outputDoc_relative+"_ast.json"
+    $originalAST=Join-Path -Path $PROJECT_ROOT -ChildPath $outputDoc_relative"_ast.json"
+    $transformedAST=Join-Path -Path $PROJECT_ROOT -ChildPath $outputDoc_relative"_ast.rewrite.json"
+
+    $MergeTool = "c:\\Source\\CDocs\\tools\\pandocImageMerge\\bin\\Debug\\net8.0\\pandocImageMerge.exe"
+
+    Write-Host "         OriginalAST : $originalAST"
+
+    Write-Host "2. Converting $relativePath to AST named $originalAST_relative"
+
+    # Convert the Word document to a pandoc AST
+    Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm",`
+            "-v",$dirMap,`
+            "-v",$templateMap,`
+            "$CONTAINER",`
+            "$relativePath", `
+            "--extract-media", ".", `
+            "-t", "json", `
+            "-o",$originalAST_relative
+
+    # Filter the pandoc AST using our C# image tools
+    Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $originalAST, "-o", $transformedAST,"-r","./orig_media"
+
+    $transformedAST_relative = Resolve-Path -Path $transformedAST -RelativeBasePath $PROJECT_ROOT -Relative
+    $transformedAST_relative = $transformedAST_relative -replace '\\', '/'
+
+    Write-Host "      TransformedAST : $transformedAST"
+    Write-Host "  TransformedAST_Rel : $transformedAST_relative"
+
+    # Convert back to Markdown
+    Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm",`
+            "-v",$dirMap,`
+            "-v",$templateMap,`
+            "$CONTAINER",`
+            $transformedAST_relative, `
+            "-f", "json", `
+            "-o",$relativePath,`
+            "-t","markdown-grid_tables-simple_tables-multiline_tables"
+
+    #docker run -it --rm -v "!CD!:/data" !CONTAINER! !OUTPUT_DOC! --extract-media . -t json -o !OUTPUT_DOC!_ast.json
+
+    #c:\Source\CDocs\tools\pandocImageMerge\bin\Debug\net8.0\pandocImageMerge.exe -i !OUTPUT_DOC!_ast.json -o !OUTPUT_DOC!_ast.rewrite.json -r ./orig_media
+
+    #docker run -it --rm -v "!CD!:/data" !CONTAINER! !OUTPUT_DOC!_ast.rewrite.json -f json -o !INPUT_MD! -t markdown-grid_tables-simple_tables-multiline_tables
+
+}
+else
+{
+Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"$CONTAINER","$relativePath","-o",$outputDoc_relative,"--reference-doc","/templates/numbered-sections-6x9.docx"
 #Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"ubuntu:latest","bash"
-
+}
 
 
 
