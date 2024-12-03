@@ -80,11 +80,42 @@ if (![string]::IsNullOrEmpty($OutputDir)) {
 } else {
     $outputDoc_relative = $relativePath -replace ".md", ".md.docx"
 }
-
-
-# Or arguments as string array:
+#
+# Cleanup maps
+#
 $dirMap = "$PROJECT_ROOT\:/data"
 $templateMap = "$PSScriptRoot\:/templates"
+
+
+
+#
+# Detect if we're using podman or docker
+#
+$CONTAINER_TOOL=$null
+try {
+    $process = Start-Process -NoNewWindow -FilePath "docker" -ArgumentList "-v", -Wait -ErrorAction SilentlyContinue -PassThru
+
+    if ($process.ExitCode -ne 0) {
+        throw "docker failed with exit code $($process.ExitCode)"
+    }
+    $CONTAINER_TOOL="docker"
+} catch {
+} finally {
+}
+
+if ($CONTAINER_TOOL -eq $null) {
+    try {
+        $process = Start-Process -NoNewWindow -FilePath "podman" -ArgumentList "-v" -Wait -ErrorAction SilentlyContinue -PassThru
+
+        if ($process.ExitCode -ne 0) {
+            throw "podman failed with exit code $($process.ExitCode)"
+        }
+        $CONTAINER_TOOL="podman"
+    } catch {
+    } finally {
+    }
+}
+
 
 
 Write-Host "Running CDocs-Render.ps1"
@@ -114,7 +145,7 @@ if ($ReverseRender)
     Write-Host "2. Converting $relativePath to AST named $originalAST_relative"
 
     # Convert the Word document to a pandoc AST
-    Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm",`
+    Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm",`
             "-v",$dirMap,`
             "-v",$templateMap,`
             "$CONTAINER",`
@@ -136,7 +167,7 @@ if ($ReverseRender)
     Write-Host "4. Converting $originalAST_relative back to markdown as $relativePath"
 
     # Convert back to Markdown
-    Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm",`
+    Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm",`
             "-v",$dirMap,`
             "-v",$templateMap,`
             "$CONTAINER",`
@@ -154,7 +185,7 @@ if ($ReverseRender)
 }
 else
 {
-Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"$CONTAINER","$relativePath","-o",$outputDoc_relative,"--reference-doc","/templates/numbered-sections-6x9.docx"
+Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"$CONTAINER","$relativePath","-o",$outputDoc_relative,"--reference-doc","/templates/numbered-sections-6x9.docx"
 #Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"ubuntu:latest","bash"
 }
 
