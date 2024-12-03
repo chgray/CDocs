@@ -118,7 +118,7 @@ if ($ReverseRender)
             "-v",$dirMap,`
             "-v",$templateMap,`
             "$CONTAINER",`
-            "$relativePath", `
+            "$outputDoc_relative", `
             "--extract-media", ".", `
             "-t", "json", `
             "-o",$originalAST_relative
@@ -131,6 +131,9 @@ if ($ReverseRender)
 
     Write-Host "      TransformedAST : $transformedAST"
     Write-Host "  TransformedAST_Rel : $transformedAST_relative"
+
+
+    Write-Host "4. Converting $originalAST_relative back to markdown as $relativePath"
 
     # Convert back to Markdown
     Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm",`
