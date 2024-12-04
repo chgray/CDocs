@@ -51,7 +51,33 @@ namespace Pandoc.Comment.Render
             public string OutputFile { get; set; }
 
         }
+            
 
+        class PandocObject
+        {
+            public string t { get; set; }
+            public object c { get; set; }
+
+            public PandocObject() { }
+            public PandocObject(string _t, string _c)
+            {
+                t = _t;
+                c = _c;
+            }
+
+            public string ToJson()
+            {
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+                };
+
+                string jsonString = JsonSerializer.Serialize(this);
+                return jsonString;
+            }
+        }
+     
         static void Recurse(Options options, JsonNode n)
         {
             foreach (var a in n.JsonNodeChildren().ToArray())
@@ -107,11 +133,51 @@ namespace Pandoc.Comment.Render
                             File.Move(inputFile, cacheContent, true);
                             File.Move(outputFile, cacheImage, true);
 
-                            var c = a["c"];
-                            c[2][0].ReplaceWith(cacheImage);
 
+                            //
+                            // Create a caption
+                            //
+                            PandocObject captionBody = new PandocObject();
+                            captionBody.t = "Str";
+                            captionBody.c = "My Caption";
+
+                            PandocObject captionText = new PandocObject();
+                            captionText.t = "Plain";
+                            captionText.c = new object[] { captionBody };
+
+
+                            //
+                            // Create the image
+                            //
+                            object[] imagePieces = new object[3];
+                            PandocObject image = new PandocObject();
+                            image.t = "Image";
+                            image.c = imagePieces;
+
+                            imagePieces[0] = new object[3] { "", new object[0], new object[0] };
+                            imagePieces[1] = new object[1] { new PandocObject("Str", "Caption") };
+                            imagePieces[2] = new object[2] { "./orig_media/cdocs.png", "" };
 
                            
+                            PandocObject plain = new PandocObject();
+                            plain.t = "Plain";
+                            plain.c = image;
+
+                          
+
+
+                            object [] figurePieces = new object[3];
+                            figurePieces[0] = new object[3] { "", new object[0], new object[0] } ;
+                            figurePieces[1] = new object[2] { null, new object[1] { captionText } };
+                            figurePieces[2] = plain;
+
+
+                            PandocObject figure = new PandocObject();
+                            figure.t = "Figure";
+                            figure.c = figurePieces;
+
+
+                            a.ReplaceWith(figure);
                         }
                     }
                 }

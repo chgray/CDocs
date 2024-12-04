@@ -186,13 +186,15 @@ if ($ReverseRender)
 else
 {
 
-    Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"$CONTAINER","$relativePath","-o",$outputDoc_relative,"--reference-doc","/templates/numbered-sections-6x9.docx"
+#    Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"$CONTAINER","$relativePath","-o",$outputDoc_relative,"--reference-doc","/templates/numbered-sections-6x9.docx"
 
-#Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm", `
- #   "-v",$dirMap,`
- #   "-v",$templateMap,`
- #   "$CONTAINER","$relativePath",`
- #   $outputDoc_relative
+    Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm", `
+            "-v",$dirMap,`
+            "-v",$templateMap,`
+            "$CONTAINER",`
+            "$relativePath",`
+            "-t", "json", `
+            "-o",$outputDoc_relative".json"
 
 
     #,`
