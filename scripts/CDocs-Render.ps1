@@ -49,12 +49,16 @@ $Convert = Resolve-Path -Path $Convert
 # Locate the CDocs project root
 #
 $PROJECT_ROOT = $PWD
-while ($True) {
+while (![string]::IsNullOrEmpty($PROJECT_ROOT)) {
     $root = Join-Path -Path $PROJECT_ROOT -ChildPath ".CDocs.config"
     if (Test-Path -Path $root) {
         break
     }
     $PROJECT_ROOT = Split-Path -Path $PROJECT_ROOT -Parent
+}
+if([string]::IsNullOrEmpty($PROJECT_ROOT)) {
+    Write-Error "Unable to locate CDocs project root"
+    exit 1
 }
 
 

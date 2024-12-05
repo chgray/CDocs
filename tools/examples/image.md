@@ -1,3 +1,3 @@
 # Image Heading
 
-![Image Description Text](./image.png)
+![image footer / description](./orig_media/image.png)
