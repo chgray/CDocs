@@ -50,8 +50,11 @@ namespace Pandoc.Comment.Render
             [Option('o', "output", Required = true, HelpText = "Reference Directory")]
             public string OutputFile { get; set; }
 
+            [Option('r', "reverse", Required = false, Default = false, HelpText = "Reverse Direcion")]
+            public bool Reverse { get; set; }
+
         }
-            
+
 
         class PandocObject
         {
@@ -77,7 +80,7 @@ namespace Pandoc.Comment.Render
                 return jsonString;
             }
         }
-     
+
         static void Recurse(Options options, JsonNode n)
         {
             foreach (var a in n.JsonNodeChildren().ToArray())
@@ -93,7 +96,7 @@ namespace Pandoc.Comment.Render
                     {
                         var blah = t.GetValue<string>();
 
-                        if (blah.Equals("CodeBlock"))
+                        if (blah.Equals("CodeBlock") && !options.Reverse)
                         {
                             string type = a["c"][0][1][0].ToString();
 
@@ -126,8 +129,10 @@ namespace Pandoc.Comment.Render
 
                             string cacheName = inputGuid.ToString() + "." + outputGuid.ToString();
                             string cacheImage = Path.Combine(options.DBDir, cacheName + ".png");
-                            string cacheContent = Path.Combine(options.DBDir, cacheName + ".txt");
-                            File.Move(inputFile, cacheContent, true);
+                            string cacheContent = Path.Combine(options.DBDir, cacheName + ".png.cdocs_orig");
+
+                            File.WriteAllText(cacheContent, a.ToJsonString());
+                            //File.Move(inputFile, cacheContent, true);
                             File.Move(outputFile, cacheImage, true);
 
 
@@ -161,11 +166,11 @@ namespace Pandoc.Comment.Render
                             imagePieces[0] = new object[3] { "", new object[0], new object[0] };
                             imagePieces[1] = new object[1] { new PandocObject("Str", "Caption") };
                             imagePieces[2] = new object[2] { realitivePath, "" };
-                                                       
+
                             PandocObject plain = new PandocObject();
                             plain.t = "Plain";
                             plain.c = new object[1] { image };
-                          
+
                             object [] figurePieces = new object[3];
                             figurePieces[0] = new object[3] { "", new object[0], new object[0] } ;
                             figurePieces[1] = new object[2] { null, new object[1] { captionText } };
@@ -177,6 +182,23 @@ namespace Pandoc.Comment.Render
 
 
                             a.ReplaceWith(figure);
+                        }
+
+                        else if (blah.Equals("Figure") && options.Reverse)
+                        {
+                            string img = a["c"][2][0][1][0][1][2][0].ToString();
+                            Console.WriteLine($"Looking for cache entry for {img}");
+
+                            string cacheFile = Path.Combine(Path.GetDirectoryName(options.InputFile), img.Replace("/", "\\") + ".cdocs_orig");
+                            if(File.Exists(cacheFile))
+                            {
+                                Console.WriteLine("Replacing...!good");
+                                string cache = File.ReadAllText(cacheFile);
+
+                                var x = JsonObject.Parse(cache);
+                                a.ReplaceWith(x);
+                            }
+
                         }
                     }
                 }
@@ -190,7 +212,13 @@ namespace Pandoc.Comment.Render
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed<Options>(o =>
                 {
-                    Console.WriteLine($"Rewriting {o.InputFile}");
+                    Console.WriteLine($"Cache Rewriting:");
+                    Console.WriteLine($"   Input:{o.InputFile}");
+                    Console.WriteLine($"  Output:{o.OutputFile}");
+                    Console.WriteLine($"      DB:{o.DBDir}");
+                    Console.WriteLine($" Reverse:{o.Reverse}");
+
+
                     string json = File.ReadAllText(o.InputFile);
 
                     // Create a JsonNode DOM from a JSON string.
@@ -208,7 +236,7 @@ namespace Pandoc.Comment.Render
                     };
 
                     File.WriteAllText(o.OutputFile, forecastNode!.ToJsonString(options));
-                    Console.WriteLine($"...to {o.OutputFile}");
+                    //Console.WriteLine($"...to {o.OutputFile}");
                 });
         }
     }

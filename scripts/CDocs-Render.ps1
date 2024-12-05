@@ -136,13 +136,15 @@ if ($ReverseRender)
 
     $originalAST_relative=$outputDoc_relative+"_ast.json"
     $originalAST=Join-Path -Path $PROJECT_ROOT -ChildPath $outputDoc_relative"_ast.json"
+    $imageCompletedAST=Join-Path -Path $PROJECT_ROOT -ChildPath $outputDoc_relative"_image.complete.rewrite.json"
     $transformedAST=Join-Path -Path $PROJECT_ROOT -ChildPath $outputDoc_relative"_ast.rewrite.json"
 
     $MergeTool = "c:\\Source\\CDocs\\tools\\pandocImageMerge\\bin\\Debug\\net8.0\\pandocImageMerge.exe"
+    $CommentTool = "C:\\Source\\CDocs\\tools\\CDocsMarkdownCommentRender\\bin\\Debug\\net9.0\\CDocsMarkdownCommentRender.exe"
 
     Write-Host "         OriginalAST : $originalAST"
+    Write-Host "    ImageCompleteAST : $imageCompletedAST"
 
-    Write-Host "2. Converting $relativePath to AST named $originalAST_relative"
 
     # Convert the Word document to a pandoc AST
     Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm",`
@@ -155,7 +157,9 @@ if ($ReverseRender)
             "-o",$originalAST_relative
 
     # Filter the pandoc AST using our C# image tools
-    Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $originalAST, "-o", $transformedAST,"-r","./orig_media"
+    Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $originalAST, "-o", $imageCompletedAST,"-r","./orig_media"
+
+    C:\Source\CDocs\tools\CDocsMarkdownCommentRender\bin\Debug\net9.0\CDocsMarkdownCommentRender.exe -i $imageCompletedAST -o $transformedAST -d C:\Source\TelAnalytics\BigRed\PoC_LookoutTower\docs\web\docs\orig_media --reverse
 
     $transformedAST_relative = Resolve-Path -Path $transformedAST -RelativeBasePath $PROJECT_ROOT -Relative
     $transformedAST_relative = $transformedAST_relative -replace '\\', '/'
@@ -163,10 +167,6 @@ if ($ReverseRender)
     Write-Host "      TransformedAST : $transformedAST"
     Write-Host "  TransformedAST_Rel : $transformedAST_relative"
 
-
-    Write-Host "4. Converting $originalAST_relative back to markdown as $relativePath"
-
-    # Convert back to Markdown
     Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm",`
             "-v",$dirMap,`
             "-v",$templateMap,`
@@ -175,13 +175,6 @@ if ($ReverseRender)
             "-f", "json", `
             "-o",$relativePath,`
             "-t","markdown-grid_tables-simple_tables-multiline_tables"
-
-    #docker run -it --rm -v "!CD!:/data" !CONTAINER! !OUTPUT_DOC! --extract-media . -t json -o !OUTPUT_DOC!_ast.json
-
-    #c:\Source\CDocs\tools\pandocImageMerge\bin\Debug\net8.0\pandocImageMerge.exe -i !OUTPUT_DOC!_ast.json -o !OUTPUT_DOC!_ast.rewrite.json -r ./orig_media
-
-    #docker run -it --rm -v "!CD!:/data" !CONTAINER! !OUTPUT_DOC!_ast.rewrite.json -f json -o !INPUT_MD! -t markdown-grid_tables-simple_tables-multiline_tables
-
 }
 else
 {
@@ -204,7 +197,7 @@ else
         "-v",$templateMap,`
         "$CONTAINER",`
         $outputDoc_relative".new.json",`
-        "-o",$outputDoc_relative".docx"
+        "-o",$outputDoc_relative
     #,`
     #"--reference-doc","/templates/numbered-sections-6x9.docx"
 

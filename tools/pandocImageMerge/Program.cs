@@ -56,8 +56,8 @@ namespace Pandoc.Image.Merge
                 if (null == a)
                     continue;
 
-                if(a.ToString().Contains("png"))
-                   Console.WriteLine(a);
+                //if(a.ToString().Contains("png"))
+                //   Console.WriteLine(a);
 
 
                 if (a is JsonObject)
@@ -118,7 +118,7 @@ namespace Pandoc.Image.Merge
                     };
 
                     File.WriteAllText(o.OutputFile, forecastNode!.ToJsonString(options));
-                    Console.WriteLine($"...to {o.OutputFile}");
+                    //Console.WriteLine($"...to {o.OutputFile}");
                 });
         }
     }
