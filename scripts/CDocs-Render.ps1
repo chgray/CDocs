@@ -197,6 +197,14 @@ else
             "-o",$outputDoc_relative".json"
 
 
+    C:\Source\CDocs\tools\CDocsMarkdownCommentRender\bin\Debug\net9.0\CDocsMarkdownCommentRender.exe -i $outputDoc_relative".json" -o $outputDoc_relative".new.json" -d C:\Source\TelAnalytics\BigRed\PoC_LookoutTower\docs\web\docs\orig_media
+
+    Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm", `
+        "-v",$dirMap,`
+        "-v",$templateMap,`
+        "$CONTAINER",`
+        $outputDoc_relative".new.json",`
+        "-o",$outputDoc_relative".docx"
     #,`
     #"--reference-doc","/templates/numbered-sections-6x9.docx"
 

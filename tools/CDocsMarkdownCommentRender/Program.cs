@@ -120,19 +120,23 @@ namespace Pandoc.Comment.Render
                             p.Start();
                             p.WaitForExit();
 
-
                             byte[] bits = File.ReadAllBytes(outputFile);
                             hash = md5.ComputeHash(bits);
                             Guid outputGuid = new Guid(hash);
 
-
                             string cacheName = inputGuid.ToString() + "." + outputGuid.ToString();
-
                             string cacheImage = Path.Combine(options.DBDir, cacheName + ".png");
                             string cacheContent = Path.Combine(options.DBDir, cacheName + ".txt");
                             File.Move(inputFile, cacheContent, true);
                             File.Move(outputFile, cacheImage, true);
 
+
+                            FileInfo inputFilePath = new FileInfo(Path.GetDirectoryName(options.InputFile));
+                            FileInfo outFile = new FileInfo(cacheImage);
+
+                            string realitivePath = outFile.FullName;
+                            realitivePath = "." + realitivePath.Substring(inputFilePath.FullName.Length);
+                            realitivePath = realitivePath.Replace("\\", "/");
 
                             //
                             // Create a caption
@@ -156,21 +160,16 @@ namespace Pandoc.Comment.Render
 
                             imagePieces[0] = new object[3] { "", new object[0], new object[0] };
                             imagePieces[1] = new object[1] { new PandocObject("Str", "Caption") };
-                            imagePieces[2] = new object[2] { "./orig_media/cdocs.png", "" };
-
-                           
+                            imagePieces[2] = new object[2] { realitivePath, "" };
+                                                       
                             PandocObject plain = new PandocObject();
                             plain.t = "Plain";
-                            plain.c = image;
-
+                            plain.c = new object[1] { image };
                           
-
-
                             object [] figurePieces = new object[3];
                             figurePieces[0] = new object[3] { "", new object[0], new object[0] } ;
                             figurePieces[1] = new object[2] { null, new object[1] { captionText } };
-                            figurePieces[2] = plain;
-
+                            figurePieces[2] = new object[1] { plain };
 
                             PandocObject figure = new PandocObject();
                             figure.t = "Figure";
