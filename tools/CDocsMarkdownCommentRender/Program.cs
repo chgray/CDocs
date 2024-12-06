@@ -189,6 +189,14 @@ namespace Pandoc.Comment.Render
                             string img = a["c"][2][0][1][0][1][2][0].ToString();
                             Console.WriteLine($"Looking for cache entry for {img}");
 
+                            string heading = a["c"][1][1][0][0].ToString();
+                            if("Para".Equals(heading))
+                            {
+                                Console.WriteLine("Fixed up para/plain");
+                                a["c"][1][1][0][0].ReplaceWith("Plain");
+                            }
+
+
                             //
                             // First swap out with a reference image (if we have one)
                             //
@@ -202,7 +210,7 @@ namespace Pandoc.Comment.Render
                                 {
                                     string newImage = "./" + Path.GetRelativePath(Environment.CurrentDirectory, option.FullName).Replace("\\", "/");
                                     a["c"][2][0][1][0][1][2][0].ReplaceWith(newImage);
-                                    Console.WriteLine($"CACHE HIT: {img}-->{newImage}");
+                                    Console.WriteLine($"CACHE HIT: {img}-->{newImage}   ");
                                 }
                             }
 

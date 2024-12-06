@@ -143,15 +143,10 @@ Write-Host "     *** Output File : $outputDoc_relative"
 
 if ($ReverseRender)
 {
-    Write-Host "1. Reverse Mode"
-
-    $originalAST_relative=$outputDoc_relative+"_ast.json"
-    $originalAST=Join-Path -Path $PROJECT_ROOT -ChildPath $outputDoc_relative"_ast.json"
-    $imageCompletedAST=Join-Path -Path $PROJECT_ROOT -ChildPath $outputDoc_relative"_image.complete.rewrite.json"
-    $transformedAST=Join-Path -Path $PROJECT_ROOT -ChildPath $outputDoc_relative"_ast.rewrite.json"
-
-
-    $CommentTool
+    $originalAST_relative=$outputDoc_relative+".rr_ast.json"
+    $originalAST=Join-Path -Path $PROJECT_ROOT -ChildPath $outputDoc_relative".rr_ast.json"
+    #$imageCompletedAST=Join-Path -Path $PROJECT_ROOT -ChildPath $outputDoc_relative".rr_image.complete.rewrite.json"
+    $transformedAST=Join-Path -Path $PROJECT_ROOT -ChildPath $outputDoc_relative".rr_ast.rewrite.json"
 
     Write-Host "         OriginalAST : $originalAST"
     Write-Host "    ImageCompleteAST : $imageCompletedAST"
@@ -182,15 +177,15 @@ if ($ReverseRender)
             "-v",$dirMap,`
             "-v",$templateMap,`
             "$CONTAINER",`
-            $originalAST_relative, `
+            $transformedAST_relative, `
             "-f", "json",`
             "-o",$relativePath,`
             "-t","markdown-grid_tables-simple_tables-multiline_tables"
 }
 else
 {
-    $orig_json = $outputDoc_relative+".json"
-    $adapted_json = $outputDoc_relative+".adapted.json"
+    $orig_json = $outputDoc_relative+".r.json"
+    $adapted_json = $outputDoc_relative+".r.adapted.json"
 
     Write-Host "$orig_json -> $adapted_json"
 
@@ -212,7 +207,9 @@ else
         "-v",$dirMap,`
         "-v",$templateMap,`
         "$CONTAINER",`
-        $orig_json,`
+        $adapted_json,`
+        "-f", "json",
+        #"-t","markdown",
         "-o",$outputDoc_relative
     #,`
     #"--reference-doc","/templates/numbered-sections-6x9.docx"
