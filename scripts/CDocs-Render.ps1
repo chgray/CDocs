@@ -28,6 +28,7 @@ param (
     [switch]$ReverseRender = $false
 )
 
+$MergeTool = "C:\\Source\\CDocs\\tools\\CDocsMarkdownCommentRender\\bin\\Debug\\net9.0\\CDocsMarkdownCommentRender.exe"
 $CONTAINER="chgray123/pandoc-arm:extra"
 $CONTAINER_GNUPLOT="chgray123/chgray_repro:gnuplot"
 $CONTAINER="chgray123/chgray_repro:pandoc"
@@ -43,7 +44,10 @@ if (!(Test-Path -Path $Convert)) {
     Write-Error "Input file doesnt exist $Convert"
     exit 1
 }
+
 $Convert = Resolve-Path -Path $Convert
+$InputFileParentDirectory = Split-Path -Path $Convert -Parent
+$DatabaseDirectory = Join-Path -Path $InputFileParentDirectory -ChildPath "orig_media"
 
 #
 # Locate the CDocs project root
@@ -123,7 +127,10 @@ if ($CONTAINER_TOOL -eq $null) {
 
 
 Write-Host "Running CDocs-Render.ps1"
+Write-Host "           MergeTool : $MergeTool"
 Write-Host "     Converting file : $Convert"
+Write-Host "    Input Parent Dir : $InputFileParentDirectory"
+Write-Host "        DB Directory : $DatabaseDirectory"
 Write-Host "           Container : $CONTAINER"
 Write-Host "   GNUPLOT Container : $CONTAINER_GNUPLOT"
 Write-Host "Found root directory : $PROJECT_ROOT"
@@ -143,12 +150,11 @@ if ($ReverseRender)
     $imageCompletedAST=Join-Path -Path $PROJECT_ROOT -ChildPath $outputDoc_relative"_image.complete.rewrite.json"
     $transformedAST=Join-Path -Path $PROJECT_ROOT -ChildPath $outputDoc_relative"_ast.rewrite.json"
 
-    $MergeTool = "c:\\Source\\CDocs\\tools\\pandocImageMerge\\bin\\Debug\\net8.0\\pandocImageMerge.exe"
-    $CommentTool = "C:\\Source\\CDocs\\tools\\CDocsMarkdownCommentRender\\bin\\Debug\\net9.0\\CDocsMarkdownCommentRender.exe"
+
+    $CommentTool
 
     Write-Host "         OriginalAST : $originalAST"
     Write-Host "    ImageCompleteAST : $imageCompletedAST"
-
 
     # Convert the Word document to a pandoc AST
     Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm",`
@@ -161,9 +167,10 @@ if ($ReverseRender)
             "-o",$originalAST_relative
 
     # Filter the pandoc AST using our C# image tools
-    Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $originalAST, "-o", $imageCompletedAST,"-r","./orig_media"
-
-    C:\Source\CDocs\tools\CDocsMarkdownCommentRender\bin\Debug\net9.0\CDocsMarkdownCommentRender.exe -i $imageCompletedAST -o $transformedAST -d C:\Source\TelAnalytics\BigRed\PoC_LookoutTower\docs\web\docs\orig_media --reverse
+    Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $originalAST,`
+                                                                        "-o", $transformedAST,`
+                                                                        "-d", $DatabaseDirectory,`
+                                                                        "-r"
 
     $transformedAST_relative = Resolve-Path -Path $transformedAST -RelativeBasePath $PROJECT_ROOT -Relative
     $transformedAST_relative = $transformedAST_relative -replace '\\', '/'
@@ -175,15 +182,17 @@ if ($ReverseRender)
             "-v",$dirMap,`
             "-v",$templateMap,`
             "$CONTAINER",`
-            $transformedAST_relative, `
-            "-f", "json", `
+            $originalAST_relative, `
+            "-f", "json",`
             "-o",$relativePath,`
             "-t","markdown-grid_tables-simple_tables-multiline_tables"
 }
 else
 {
+    $orig_json = $outputDoc_relative+".json"
+    $adapted_json = $outputDoc_relative+".adapted.json"
 
-#    Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"$CONTAINER","$relativePath","-o",$outputDoc_relative,"--reference-doc","/templates/numbered-sections-6x9.docx"
+    Write-Host "$orig_json -> $adapted_json"
 
     Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm", `
             "-v",$dirMap,`
@@ -191,16 +200,19 @@ else
             "$CONTAINER",`
             "$relativePath",`
             "-t", "json", `
-            "-o",$outputDoc_relative".json"
+            "-o",$orig_json
 
+    # Filter the pandoc AST using our C# image tools
+    Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $orig_json,`
+                                                                        "-o", $adapted_json,`
+                                                                        "-d", $DatabaseDirectory
 
-    C:\Source\CDocs\tools\CDocsMarkdownCommentRender\bin\Debug\net9.0\CDocsMarkdownCommentRender.exe -i $outputDoc_relative".json" -o $outputDoc_relative".new.json" -d C:\Source\TelAnalytics\BigRed\PoC_LookoutTower\docs\web\docs\orig_media
 
     Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm", `
         "-v",$dirMap,`
         "-v",$templateMap,`
         "$CONTAINER",`
-        $outputDoc_relative".new.json",`
+        $orig_json,`
         "-o",$outputDoc_relative
     #,`
     #"--reference-doc","/templates/numbered-sections-6x9.docx"

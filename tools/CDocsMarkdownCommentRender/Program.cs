@@ -189,10 +189,27 @@ namespace Pandoc.Comment.Render
                             string img = a["c"][2][0][1][0][1][2][0].ToString();
                             Console.WriteLine($"Looking for cache entry for {img}");
 
+                            //
+                            // First swap out with a reference image (if we have one)
+                            //
+                            FileInfo fi = new FileInfo(img);
+
+                            foreach (string file in System.IO.Directory.GetFiles(options.DBDir))
+                            {
+                                FileInfo option = new FileInfo(file);
+
+                                if (fi.Length == option.Length)
+                                {
+                                    string newImage = "./" + Path.GetRelativePath(Environment.CurrentDirectory, option.FullName).Replace("\\", "/");
+                                    a["c"][2][0][1][0][1][2][0].ReplaceWith(newImage);
+                                    Console.WriteLine($"CACHE HIT: {img}-->{newImage}");
+                                }
+                            }
+
                             string cacheFile = Path.Combine(Path.GetDirectoryName(options.InputFile), img.Replace("/", "\\") + ".cdocs_orig");
                             if(File.Exists(cacheFile))
                             {
-                                Console.WriteLine("Replacing...!good");
+                                Console.WriteLine("FIGURE HIT!");
                                 string cache = File.ReadAllText(cacheFile);
 
                                 var x = JsonObject.Parse(cache);
@@ -209,10 +226,17 @@ namespace Pandoc.Comment.Render
 
         static void Main(string[] args)
         {
+            Console.Write("ARGS:");
+            foreach(string arg in args)
+            {
+                Console.Write(arg + " ");
+            }
+            Console.WriteLine("Starting.");
+
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed<Options>(o =>
                 {
-                    Console.WriteLine($"Cache Rewriting:");
+                    Console.WriteLine($"CDocsMarkdownCommentRender:");
                     Console.WriteLine($"   Input:{o.InputFile}");
                     Console.WriteLine($"  Output:{o.OutputFile}");
                     Console.WriteLine($"      DB:{o.DBDir}");
