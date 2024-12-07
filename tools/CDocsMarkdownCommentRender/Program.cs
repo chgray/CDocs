@@ -232,7 +232,7 @@ namespace Pandoc.Comment.Render
             }
         }
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             Console.Write("ARGS:");
             foreach(string arg in args)
@@ -240,7 +240,7 @@ namespace Pandoc.Comment.Render
                 Console.Write(arg + " ");
             }
             Console.WriteLine("Starting.");
-
+            int ret = -1;
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed<Options>(o =>
                 {
@@ -251,6 +251,11 @@ namespace Pandoc.Comment.Render
                     Console.WriteLine($" Reverse:{o.Reverse}");
 
 
+                    if(!File.Exists(o.InputFile))
+                    {
+                        Console.WriteLine($"ERROR: input file not found {o.InputFile}");
+                        ret = 1;
+                    }
                     string json = File.ReadAllText(o.InputFile);
 
                     // Create a JsonNode DOM from a JSON string.
@@ -268,8 +273,11 @@ namespace Pandoc.Comment.Render
                     };
 
                     File.WriteAllText(o.OutputFile, forecastNode!.ToJsonString(options));
+                    ret = 0;
                     //Console.WriteLine($"...to {o.OutputFile}");
                 });
+
+            return ret;
         }
     }
 }
