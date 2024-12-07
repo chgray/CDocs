@@ -261,23 +261,37 @@ if ($ReverseRender)
 {
     $originalAST_relative=$OutputFile_Relative+".rr_ast.json"
     $originalAST=Join-Path -Path $PROJECT_ROOT -ChildPath $OutputFile_Relative".rr_ast.json"
-    #$imageCompletedAST=Join-Path -Path $PROJECT_ROOT -ChildPath $OutputFile_Relative".rr_image.complete.rewrite.json"
     $transformedAST=Join-Path -Path $PROJECT_ROOT -ChildPath $OutputFile_Relative".rr_ast.rewrite.json"
 
     Write-Host "              OriginalAST : $originalAST"
     Write-Host "         ImageCompleteAST : $imageCompletedAST"
 
+    #
     # Convert the Word document to a pandoc AST
-    Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm",`
-            "-v",$dirMap,`
-            "-v",$templateMap,`
-            "$CONTAINER",`
-            "$OutputFile_Relative", `
-            "--extract-media", ".", `
-            "-t", "json", `
-            "-o",$originalAST_relative
+    #
 
+    if ((Test-Path -Path $originalAST)) {
+        Write-Error "Output file cannot exist $originalAST"
+        exit 1
+    }
+
+    Start-Container -ContainerLauncher $CONTAINER_TOOL `
+        -Container $CONTAINER `
+        -DirectoryMappings @($dirMap, $templateMap) `
+        -ArgumentList `
+        "-i", "$OutputFile_Relative", `
+        "--extract-media", ".", `
+        "-t", "json", `
+        "-o",$originalAST_relative
+
+
+    if (!(Test-Path -Path $originalAST)) {
+        Write-Error "Output file doesnt exist $originalAST"
+        exit 1
+    }
+    #
     # Filter the pandoc AST using our C# image tools
+    #
     Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $originalAST,`
                                                                         "-o", $transformedAST,`
                                                                         "-d", $DatabaseDirectory,`
@@ -289,14 +303,16 @@ if ($ReverseRender)
     Write-Host "           TransformedAST : $transformedAST"
     Write-Host "        TransformedAST_Rel : $transformedAST_relative"
 
-    Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm",`
-            "-v",$dirMap,`
-            "-v",$templateMap,`
-            "$CONTAINER",`
-            $transformedAST_relative, `
+    #
+    # Rewrite the input Markdown file
+    #
+    Start-Container -ContainerLauncher $CONTAINER_TOOL `
+        -Container $CONTAINER `
+        -DirectoryMappings @($dirMap, $templateMap) `
+        -ArgumentList `
+            "-i", $transformedAST_relative, `
             "-f", "json",`
-            "-o",$InputFile_Relative,`
-            "-t","markdown-grid_tables-simple_tables-multiline_tables"
+            "-o",$InputFile_Relative
 }
 else
 {
@@ -343,7 +359,6 @@ else
 
     Start-Container -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
-        -DebugMode `
         -DirectoryMappings @($dirMap, $templateMap) `
         -ArgumentList `
         $adapted_json_relative, `
