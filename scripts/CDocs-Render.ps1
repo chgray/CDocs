@@ -79,6 +79,99 @@ function Convert-Path-To-LinuxRelativePath {
     }
 }
 
+function Temp-File {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$File,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Op,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Linux = $false
+    )
+
+    Write-Host ""
+    Write-Host ""
+    Write-Host "Seeking Temp File ---------------------------------------------"
+    Write-Host "         Input : $File"
+    Write-Host "            Op : $Op"
+    Write-Host "         Linux : $Linux"
+    Write-Host "           PWD : $PWD"
+
+    if (!(Test-Path -Path $File)) {
+        Write-Host "Created file on Start"
+        $createdFileOnStart = New-Item -Path $File -ItemType file
+    }
+
+    $File_FullPath = Resolve-Path -Path $File
+    Write-Host " File_FullPath : $File_FullPath"
+
+    #
+    # Locate our temp folder, by seeking our root config
+    #
+    $CDOC_ROOT = $PWD
+    while (![string]::IsNullOrEmpty($CDOC_ROOT)) {
+        $root = Join-Path -Path $CDOC_ROOT -ChildPath ".CDocs.config"
+        if (Test-Path -Path $root) {
+            break
+        }
+        $CDOC_ROOT = Split-Path -Path $CDOC_ROOT -Parent
+    }
+    if([string]::IsNullOrEmpty($CDOC_ROOT)) {
+        Write-Error "Unable to locate CDocs project root"
+        exit 1
+    }
+
+    Write-Host "     CDOC_ROOT : $CDOC_ROOT"
+
+    # $PROJECT_ROOT = Split-Path -Path $InputFile -Parent
+    $File_Relative = Resolve-Path -Path $File -RelativeBasePath $CDOC_ROOT -Relative
+
+    $TEMP_DIR = Join-Path -Path $CDOC_ROOT -ChildPath "cdocs-temp"
+
+    if (!(Test-Path -Path $TEMP_DIR)) {
+        Write-Host "Creating temp directory"
+        $ni = New-Item -Path $TEMP_DIR -ItemType directory
+    }
+
+    #Write-Host "  PROJECT_ROOT : $PROJECT_ROOT"
+    Write-Host "      TEMP_DIR : $TEMP_DIR"
+
+    #
+    # Create temp file name
+    #
+    $fileName = Split-Path -Path $File -Leaf
+    $tempFile = Join-Path -Path $TEMP_DIR -ChildPath $fileName
+    $tempFile = $tempFile + ".$Op.tmp"
+
+    Write-Host "      TempFile : $tempFile"
+    Write-Host ""
+    Write-Host ""
+    Write-Host ""
+
+    if($Linux) {
+
+        if (!(Test-Path -Path $tempFile)) {
+            $ni = New-Item -Path $tempFile -ItemType file
+        }
+
+        $tempFile = Resolve-Path -Path $tempFile -RelativeBasePath $CDOC_ROOT -Relative
+
+        if ($ni -ne $null) {
+            $oi = Remove-Item -Path $tempFile
+        }
+        $tempFile = $tempFile -replace '\\', '/'
+    }
+
+
+    if ($createdFileOnStart) {
+        $oi = Remove-Item -Path $File
+    }
+
+    $tempFile
+}
+
 function Start-Container {
     param (
         [Parameter(Mandatory = $false)]
@@ -166,7 +259,7 @@ function Start-Container {
 
 
 
-$ErrorActionPreference = 'Stop'
+#$ErrorActionPreference = 'Stop'
 
 $MergeTool = "C:\\Source\\CDocs\\tools\\CDocsMarkdownCommentRender\\bin\\Debug\\net9.0\\CDocsMarkdownCommentRender.exe"
 $CONTAINER="chgray123/pandoc-arm:extra"
@@ -174,6 +267,17 @@ $CONTAINER_GNUPLOT="chgray123/chgray_repro:gnuplot"
 $CONTAINER="chgray123/chgray_repro:pandoc"
 $MEDIA_DIR="./orig_media"
 # $CONTAINER="ubuntu:latest"
+
+
+$testTemp = Temp-File -File $InputFile -Op "Start"
+$testTemp_Lin = Temp-File -File $InputFile -Op "Start" -Linux
+
+Write-Host "    Temp-File  *** : $testTemp"
+Write-Host "Temp-File-Lin  *** : $testTemp_Lin"
+Write-Host "Temp-File-Lin2 *** : $(Temp-File -File $InputFile -Op "Start" -Linux)"
+
+exit 2
+
 
 #
 # Detect if we're using podman or docker
