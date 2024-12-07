@@ -311,22 +311,9 @@ $InputFile_Relative = $InputFile_Relative -replace '\\', '/'
 #
 # Determine the destination of output file
 #
-Write-Host "OutputDir is set to [$OutputDir]"
-if (![string]::IsNullOrEmpty($OutputDir)) {
-    exit 2
-    # if (!(Test-Path -Path $OutputDir)) {
-    #     Write-Host "Creating output directory"
-    #     New-Item -Path $OutputDir -ItemType directory
-    # }
+$OutputFile = $InputFile -replace ".md", ".md.docx"
+$OutputFile_Linux = Convert-Path-To-LinuxRelativePath -Path $OutputFile -Base $PROJECT_ROOT
 
-    # $outputDir = Resolve-Path -Path $OutputDir -RelativeBasePath $PROJECT_ROOT -Relative
-    # $OutputFile_Relative = Split-Path -Path $InputFile -Leaf
-    # $OutputFile_Relative = Join-Path -Path $OutputDir -ChildPath $OutputFile_Relative
-    # $OutputFile_Relative = $OutputFile_Relative -replace ".md", ".md.docx"
-    # $OutputFile_Relative = $OutputFile_Relative -replace '\\', '/'
-} else {
-    $OutputFile_Relative = $InputFile_Relative -replace ".md", ".md.docx"
-}
 #
 # Cleanup maps
 #
@@ -352,50 +339,38 @@ Write-Host "          *** Output File : $OutputFile_Relative"
 
 if ($ReverseRender)
 {
-    $originalAST_relative=$OutputFile_Relative+".rr_ast.json"
-    $originalAST=Join-Path -Path $PROJECT_ROOT -ChildPath $OutputFile_Relative".rr_ast.json"
-    $transformedAST=Join-Path -Path $PROJECT_ROOT -ChildPath $OutputFile_Relative".rr_ast.rewrite.json"
+    $InputFile_Linux = Convert-Path-To-LinuxRelativePath -Path $InputFile -Base $PROJECT_ROOT
 
-    Write-Host "              OriginalAST : $originalAST"
-    Write-Host "         ImageCompleteAST : $imageCompletedAST"
+    $OutputFile_AST = Temp-File -File $OutputFile -Op "OUT_AST"
+    $OutputFile_AST_Linux = Temp-File -File $OutputFile -Op "OUT_AST" -Linux
+
+    $OutputFile_MERGED = Temp-File -File $OutputFile -Op "OUT_MERGED"
+    $OutputFile_MERGED_Linux = Temp-File -File $OutputFile -Op "OUT_MERGED" -Linux
 
     #
     # Convert the Word document to a pandoc AST
     #
-
-    if ((Test-Path -Path $originalAST)) {
-        Write-Error "Output file cannot exist $originalAST"
-        exit 1
-    }
-
     Start-Container -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
         -DirectoryMappings @($dirMap, $templateMap) `
         -ArgumentList `
-        "-i", "$OutputFile_Relative", `
+        "-i", "$OutputFile_Linux", `
         "--extract-media", ".", `
         "-t", "json", `
-        "-o",$originalAST_relative
+        "-o",$OutputFile_AST_Linux
 
 
-    if (!(Test-Path -Path $originalAST)) {
-        Write-Error "Output file doesnt exist $originalAST"
+    if (!(Test-Path -Path $OutputFile_AST)) {
+        Write-Error "Output file doesnt exist $OutputFile_AST"
         exit 1
     }
     #
     # Filter the pandoc AST using our C# image tools
     #
-    Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $originalAST,`
-                                                                        "-o", $transformedAST,`
+    Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $OutputFile_AST,`
+                                                                        "-o", $OutputFile_MERGED,`
                                                                         "-d", $DatabaseDirectory,`
                                                                         "-r"
-
-    $transformedAST_relative = Resolve-Path -Path $transformedAST -RelativeBasePath $PROJECT_ROOT -Relative
-    $transformedAST_relative = $transformedAST_relative -replace '\\', '/'
-
-    Write-Host "           TransformedAST : $transformedAST"
-    Write-Host "        TransformedAST_Rel : $transformedAST_relative"
-
     #
     # Rewrite the input Markdown file
     #
@@ -403,7 +378,7 @@ if ($ReverseRender)
         -Container $CONTAINER `
         -DirectoryMappings @($dirMap, $templateMap) `
         -ArgumentList `
-            "-i", $transformedAST_relative, `
+            "-i", $OutputFile_MERGED_Linux, `
             "-f", "json",`
             "-o",$InputFile_Relative
 }
@@ -441,7 +416,7 @@ else
         -ArgumentList `
         "-i", $InputFile_MERGED_Linux, `
         "-f", "json", `
-        "-o",$OutputFile_Relative, `
+        "-o",$OutputFile_Linux, `
         "--reference-doc","/templates/numbered-sections-6x9.docx"
 }
 
