@@ -102,35 +102,66 @@ function Start-Container {
     Write-Host "Container : $Container"
     Write-Host "DebugMode: $DebugMode"
 
+    $argString = ""
     $args = @()
+
+    #
+    # Build 'real' arguments
+    #
     $args += "run"
     $args += "-it"
     $args += "--rm"
 
+    #
+    # Process folder mappings
+    #
     foreach($mapping in $DirectoryMappings) {
         Write-Host "Mapping : [$mapping]"
         $args += "-v"
         $args += $mapping
     }
 
-    if ($DebugMode) {
-        Write-Information "Debugging"
-        $args += "ubuntu:latest"
-        $args += "bash"
-    } else {
-        Write-Information "Not Debugging"
-        $args += $Container
-        $args += $ArgumentList
-    }
+    #
+    # Add the container, and then args
+    #
+    $args += $Container
+    $args += $ArgumentList
 
-    $argString = ""
     foreach ($arg in $args) {
         $argString += $arg + " "
     }
 
-    Write-Host "Arguments : [$ContainerLauncher $argString]"
 
-    Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $args
+    # -------------------------------------
+    $debugArgs = @()
+    $debugArgsString = ""
+    $debugArgs += "run"
+    $debugArgs += "-it"
+    $debugArgs += "--rm"
+
+    #
+    # Process folder mappings
+    #
+    foreach($mapping in $DirectoryMappings) {
+        $debugArgs += "-v"
+        $debugArgs += $mapping
+    }
+
+    #
+    # Add the container, and then args
+    #
+    $debugArgs += "ubuntu:latest"
+
+    Write-Host "      Arguments : [$ContainerLauncher $argString]"
+
+    if($DebugMode) {
+        Write-Host "Debug Arguments : [$ContainerLauncher $debugArgs]"
+        Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $debugArgs
+        Write-Error "EXITING : Debug Mode is enabled"
+        exit 1
+    } else {
+        Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $args
+    }
 }
 
 
@@ -167,18 +198,18 @@ $DatabaseDirectory = Join-Path -Path $InputFileRootDir -ChildPath "orig_media"
 #
 # Locate the CDocs project root
 #
-# $PROJECT_ROOT = $PWD
-# while (![string]::IsNullOrEmpty($PROJECT_ROOT)) {
-#     $root = Join-Path -Path $PROJECT_ROOT -ChildPath ".CDocs.config"
-#     if (Test-Path -Path $root) {
-#         break
-#     }
-#     $PROJECT_ROOT = Split-Path -Path $PROJECT_ROOT -Parent
-# }
-# if([string]::IsNullOrEmpty($PROJECT_ROOT)) {
-#     Write-Error "Unable to locate CDocs project root"
-#     exit 1
-# }
+$PROJECT_ROOT = $PWD
+while (![string]::IsNullOrEmpty($PROJECT_ROOT)) {
+    $root = Join-Path -Path $PROJECT_ROOT -ChildPath ".CDocs.config"
+    if (Test-Path -Path $root) {
+        break
+    }
+    $PROJECT_ROOT = Split-Path -Path $PROJECT_ROOT -Parent
+}
+if([string]::IsNullOrEmpty($PROJECT_ROOT)) {
+    Write-Error "Unable to locate CDocs project root"
+    exit 1
+}
 $PROJECT_ROOT = Split-Path -Path $InputFile -Parent
 
 $InputFile_Relative = Resolve-Path -Path $InputFile -RelativeBasePath $PROJECT_ROOT -Relative
@@ -206,11 +237,9 @@ if (![string]::IsNullOrEmpty($OutputDir)) {
 #
 # Cleanup maps
 #
-#$dirMap = "$PROJECT_ROOT\:/data"
-$dirMap = "$DatabaseDirectory\:/data"
+# /data must be the project root; so that the Markdown can use ../../place1/place notation, for reuse of files
+$dirMap = "$PROJECT_ROOT\:/data"
 $templateMap = "$PSScriptRoot\:/templates"
-
-
 
 
 Write-Host "Running CDocs-Render.ps1"
@@ -284,17 +313,25 @@ else
     Write-Host " ---------------------------------------------------"
     Write-Host " Using pandoc to convert $InputFile_Relative -> $orig_json_relative"
 
+
+    if (Test-Path -Path $orig_json) {
+        Write-Error "Ouput file cannot exist before start $orig_json"
+        exit 1
+    }
+
     Start-Container -ContainerLauncher $CONTAINER_TOOL `
             -Container $CONTAINER `
-            -DebugMode `
             -DirectoryMappings @($dirMap, $templateMap) `
             -ArgumentList `
             "$InputFile_Relative",`
             "-t", "json", `
             "-o",$orig_json_relative
 
+    if (!(Test-Path -Path $orig_json)) {
+        Write-Error "Output file doesnt exist $orig_json"
+        exit 1
+    }
 
-    exit 1
 
     # Filter the pandoc AST using our C# image tools
     Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $orig_json,`
@@ -304,17 +341,18 @@ else
     Write-Host "-----------------------------------------"
     Write-Host "Rendering $adapted_json_relative -> $OutputFile_Relative"
 
-    Start-Process -NoNewWindow -FilePath $CONTAINER_TOOL -Wait -ArgumentList "run","-it","--rm", `
-        "-v",$dirMap,`
-        "-v",$templateMap,`
-        "$CONTAINER",`
-        $adapted_json_relative,`
-        "-f", "json",
+    Start-Container -ContainerLauncher $CONTAINER_TOOL `
+        -Container $CONTAINER `
+        -DebugMode `
+        -DirectoryMappings @($dirMap, $templateMap) `
+        -ArgumentList `
+        $adapted_json_relative, `
+        "-f", "json", `
         #"-t","markdown",
-        "-o",$OutputFile_Relative
-    #,`
-    #"--reference-doc","/templates/numbered-sections-6x9.docx"
+        "-o",$OutputFile_Relative, `
+        "--reference-doc","/templates/numbered-sections-6x9.docx"
 
-#Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"ubuntu:latest","bash"
+
+    #Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"ubuntu:latest","bash"
 }
 
