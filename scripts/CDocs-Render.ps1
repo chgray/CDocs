@@ -72,10 +72,9 @@ function Convert-Path-To-LinuxRelativePath {
         $Path = "." + $Path
         $Path
     } else {
-        "YES"
-        #Write-Error "$Path exists"
-        #$Ret = Resolve-Path -Path $Path -RelativeBasePath $Base -Relative
-        #$Ret = $Ret -replace '\\', '/'
+        $Ret = Resolve-Path -Path $Path -RelativeBasePath $Base -Relative
+        $Ret = $Ret -replace '\\', '/'
+        $Ret
     }
 }
 
@@ -269,16 +268,6 @@ $MEDIA_DIR="./orig_media"
 # $CONTAINER="ubuntu:latest"
 
 
-$testTemp = Temp-File -File $InputFile -Op "Start"
-$testTemp_Lin = Temp-File -File $InputFile -Op "Start" -Linux
-
-Write-Host "    Temp-File  *** : $testTemp"
-Write-Host "Temp-File-Lin  *** : $testTemp_Lin"
-Write-Host "Temp-File-Lin2 *** : $(Temp-File -File $InputFile -Op "Start" -Linux)"
-
-exit 2
-
-
 #
 # Detect if we're using podman or docker
 #
@@ -314,7 +303,7 @@ if([string]::IsNullOrEmpty($PROJECT_ROOT)) {
     Write-Error "Unable to locate CDocs project root"
     exit 1
 }
-$PROJECT_ROOT = Split-Path -Path $InputFile -Parent
+#$PROJECT_ROOT = Split-Path -Path $InputFile -Parent
 
 $InputFile_Relative = Resolve-Path -Path $InputFile -RelativeBasePath $PROJECT_ROOT -Relative
 $InputFile_Relative = $InputFile_Relative -replace '\\', '/'
@@ -353,7 +342,7 @@ Write-Host " InputFileRootDir : $InputFileRootDir"
 Write-Host "             DB Directory : $DatabaseDirectory"
 Write-Host "                Container : $CONTAINER"
 Write-Host "        GNUPLOT Container : $CONTAINER_GNUPLOT"
-Write-Host "     Found root directory : $PROJECT_ROOT"
+Write-Host "             PROJECT_ROOT : $PROJECT_ROOT"
 Write-Host "               DirMapping : $dirMap"
 Write-Host "             Template Map : $templateMap "
 Write-Host "               Output Dir : $outputDir"
@@ -420,58 +409,39 @@ if ($ReverseRender)
 }
 else
 {
-    $orig_json = $InputFile+".docx.r.json"
-    $adapted_json = $InputFile+".docx.r.adapted.json"
+    $InputFile_Linux = Convert-Path-To-LinuxRelativePath -Path $InputFile -Base $PROJECT_ROOT
 
-    $orig_json_relative = Convert-Path-To-LinuxRelativePath -Path $orig_json -Base $PROJECT_ROOT
-    $adapted_json_relative = Convert-Path-To-LinuxRelativePath -Path $adapted_json -Base $PROJECT_ROOT
+    $InputFile_AST = Temp-File -File $InputFile -Op "AST"
+    $InputFile_AST_Linux = Temp-File -File $InputFile -Op "AST" -Linux
 
-    Write-Host "       orig_json_relative : $orig_json_relative"
-    Write-Host "    adapted_json_relative : $adapted_json_relative"
+    $InputFile_MERGED = Temp-File -File $InputFile -Op "MERGED"
+    $InputFile_MERGED_Linux = Temp-File -File $InputFile -Op "MERGED" -Linux
 
-    Write-Host "\n\n\n"
-    Write-Host " ---------------------------------------------------"
-    Write-Host " Using pandoc to convert $InputFile_Relative -> $orig_json_relative"
-
-
-    if (Test-Path -Path $orig_json) {
-        Write-Error "Ouput file cannot exist before start $orig_json"
-        exit 1
-    }
 
     Start-Container -ContainerLauncher $CONTAINER_TOOL `
             -Container $CONTAINER `
             -DirectoryMappings @($dirMap, $templateMap) `
             -ArgumentList `
-            "$InputFile_Relative",`
+            "$InputFile_Linux",`
             "-t", "json", `
-            "-o",$orig_json_relative
+            "-o",$InputFile_AST_Linux
 
-    if (!(Test-Path -Path $orig_json)) {
-        Write-Error "Output file doesnt exist $orig_json"
+    if (!(Test-Path -Path $InputFile_AST)) {
+        Write-Error "Output file doesnt exist $InputFile_AST"
         exit 1
     }
 
-
     # Filter the pandoc AST using our C# image tools
-    Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $orig_json,`
-                                                                        "-o", $adapted_json,`
+    Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $InputFile_AST,`
+                                                                        "-o", $InputFile_MERGED,`
                                                                         "-d", $DatabaseDirectory
-
-    Write-Host "-----------------------------------------"
-    Write-Host "Rendering $adapted_json_relative -> $OutputFile_Relative"
-
     Start-Container -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
         -DirectoryMappings @($dirMap, $templateMap) `
         -ArgumentList `
-        $adapted_json_relative, `
+        "-i", $InputFile_MERGED_Linux, `
         "-f", "json", `
-        #"-t","markdown",
         "-o",$OutputFile_Relative, `
         "--reference-doc","/templates/numbered-sections-6x9.docx"
-
-
-    #Start-Process -NoNewWindow -FilePath "docker" -Wait -ArgumentList "run","-it","--rm","-v",$dirMap,"-v",$templateMap,"ubuntu:latest","bash"
 }
 
