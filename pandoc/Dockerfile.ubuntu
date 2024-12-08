@@ -177,10 +177,12 @@ WORKDIR /root
 
 COPY puppeteer-config.json /puppeteer.config.js
 COPY Pandoc.cmake /Pandoc.cmakemmdc
+COPY Pandoc.launcher.sh /Pandoc.launcher.sh
 
 WORKDIR /
 
-ENTRYPOINT ["/usr/bin/pandoc"]
+ENTRYPOINT [ "/Pandoc.launcher.sh" ]
+# ENTRYPOINT ["/usr/bin/pandoc"]
 WORKDIR /data
 
 #

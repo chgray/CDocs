@@ -1,4 +1,4 @@
-﻿
+﻿    
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -327,6 +327,8 @@ namespace Pandoc.Comment.Render
 
                                 FileInfo fi = new FileInfo(img);
 
+                                bool found = false;
+
                                 foreach (string file in System.IO.Directory.GetFiles(options.DBDir))
                                 {
                                     FileInfo option = new FileInfo(file);
@@ -337,9 +339,13 @@ namespace Pandoc.Comment.Render
                                         m_MappedFiles[newImage] = option.FullName;
                                         c[2][0].ReplaceWith(newImage);
                                         Console.WriteLine("hit");
+                                        found = true;
                                         break;
                                     }
                                 }
+
+                                if(!found)
+                                    Console.WriteLine($"ERROR : unable to locate {img}");
                             }
                         }
                     }
@@ -365,6 +371,9 @@ namespace Pandoc.Comment.Render
                         Console.WriteLine($"  Output:{o.OutputFile}");
                         Console.WriteLine($"      DB:{o.DBDir}");
                         Console.WriteLine($" Reverse:{o.Reverse}");
+
+                        string inputFilesDirectory = Path.GetDirectoryName(o.InputFile);
+                        Directory.SetCurrentDirectory(inputFilesDirectory);
 
                         if (!Directory.Exists(o.DBDir))
                         {

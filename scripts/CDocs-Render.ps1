@@ -29,8 +29,11 @@ param (
 )
 
 function Discover-Container-Tool {
+
+    Write-Host "Discovering Container Tool  ] ---------------------------------------------"
+
     try {
-        $process = Start-Process -NoNewWindow -FilePath "docker" -ArgumentList "-v", -Wait -ErrorAction SilentlyContinue -PassThru
+        $process = Start-Process -NoNewWindow -FilePath "docker" -Wait -ErrorAction SilentlyContinue -PassThru -ArgumentList "-v"
 
         if ($process.ExitCode -ne 0) {
             throw "docker failed with exit code $($process.ExitCode)"
@@ -42,7 +45,7 @@ function Discover-Container-Tool {
 
     if ($CONTAINER_TOOL -eq $null) {
         try {
-            $process = Start-Process -NoNewWindow -FilePath "podman" -ArgumentList "-v" -Wait -ErrorAction SilentlyContinue -PassThru
+            $process = Start-Process -NoNewWindow -FilePath "podman" -Wait -ErrorAction SilentlyContinue -PassThru -ArgumentList "-v"
 
             if ($process.ExitCode -ne 0) {
                 throw "podman failed with exit code $($process.ExitCode)"
@@ -272,7 +275,7 @@ function Start-Container {
 
 
 
-#$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Stop'
 
 $MergeTool = "C:\\Source\\CDocs\\tools\\CDocsMarkdownCommentRender\\bin\\Debug\\net9.0\\CDocsMarkdownCommentRender.exe"
 $CONTAINER="chgray123/pandoc-arm:extra"
@@ -371,7 +374,7 @@ if ($ReverseRender)
     #
     Start-Container -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
-        -DirectoryMappings @($dirMap, $templateMap) `
+        -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
         -ArgumentList `
         "-i", "$OutputFile_Linux", `
         "--extract-media", ".", `
@@ -400,7 +403,7 @@ if ($ReverseRender)
     #
     Start-Container -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
-        -DirectoryMappings @($dirMap, $templateMap) `
+        -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
         -ArgumentList `
             "-i", $OutputFile_MERGED_Linux, `
             "-f", "json",`
@@ -419,7 +422,7 @@ else
 
     Start-Container -ContainerLauncher $CONTAINER_TOOL `
             -Container $CONTAINER `
-            -DirectoryMappings @($dirMap, $templateMap) `
+            -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
             -ArgumentList `
             "$InputFile_Linux",`
             "-t", "json", `
@@ -443,7 +446,7 @@ else
 
     Start-Container -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
-        -DirectoryMappings @($dirMap, $templateMap) `
+        -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
         -ArgumentList `
         "-i", $InputFile_MERGED_Linux, `
         "-f", "json", `
