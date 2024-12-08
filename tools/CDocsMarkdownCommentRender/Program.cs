@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using CommandLine;
+using static Pandoc.Comment.Render.Program;
 
 namespace Pandoc.Comment.Render
 {
@@ -81,6 +82,44 @@ namespace Pandoc.Comment.Render
             }
         }
 
+        static string CreateRealitivePath(string document, string desiredFile)
+        {
+            document = new FileInfo(document).FullName;
+            desiredFile = new FileInfo(desiredFile).FullName;
+
+            Uri path1 = new Uri(document);
+            Uri path2 = new Uri(desiredFile);
+            Uri diff = path1.MakeRelativeUri(path2);
+            string relPath = diff.OriginalString;
+
+
+            /* string realitiveOuputPath = outFile.FullName;
+             realitiveOuputPath = "." + realitiveOuputPath.Substring(inputFilePath.FullName.Length);
+             realitiveOuputPath = realitiveOuputPath.Replace("\\", "/");*/
+
+            return relPath;
+        }
+
+        private static Stack<string> SplitDirectory(string temp)
+        {
+            Stack<string> docStack = new Stack<string>();
+            for (; ; )
+            {
+                string doc = Path.GetFileName(temp);
+                if (String.IsNullOrEmpty(doc))
+                {
+                    docStack.Push(temp);
+                    break;
+                }
+                docStack.Push(doc);
+                temp = temp.Substring(0, temp.Length - doc.Length);
+                if (temp.EndsWith(Path.DirectorySeparatorChar))
+                    temp = temp.Substring(0, temp.Length - 1);
+            }
+
+            return docStack;
+        }
+
         static void Recurse(Options options, JsonNode n)
         {
             foreach (var a in n.JsonNodeChildren().ToArray())
@@ -136,12 +175,8 @@ namespace Pandoc.Comment.Render
                             File.Move(outputFile, cacheImage, true);
 
 
-                            FileInfo inputFilePath = new FileInfo(Path.GetDirectoryName(options.InputFile));
-                            FileInfo outFile = new FileInfo(cacheImage);
+                            string realitivePath = CreateRealitivePath(options.InputFile, cacheImage);
 
-                            string realitivePath = outFile.FullName;
-                            realitivePath = "." + realitivePath.Substring(inputFilePath.FullName.Length);
-                            realitivePath = realitivePath.Replace("\\", "/");
 
                             //
                             // Create a caption
