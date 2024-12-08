@@ -278,7 +278,6 @@ $MergeTool = "C:\\Source\\CDocs\\tools\\CDocsMarkdownCommentRender\\bin\\Debug\\
 $CONTAINER="chgray123/pandoc-arm:extra"
 $CONTAINER_GNUPLOT="chgray123/chgray_repro:gnuplot"
 $CONTAINER="chgray123/chgray_repro:pandoc"
-$MEDIA_DIR="./orig_media"
 # $CONTAINER="ubuntu:latest"
 
 
@@ -286,12 +285,6 @@ $MEDIA_DIR="./orig_media"
 # Detect if we're using podman or docker
 #
 $CONTAINER_TOOL= Discover-Container-Tool
-
-
-if (!(Test-Path -Path $MEDIA_DIR)) {
-    Write-Host "Creating media directory"
-    New-Item -Path $MEDIA_DIR -ItemType directory
-}
 
 if (!(Test-Path -Path $InputFile)) {
     Write-Error "Input file doesnt exist $InputFile"
@@ -313,6 +306,14 @@ if([string]::IsNullOrEmpty($PROJECT_ROOT)) {
     Write-Error "Unable to locate CDocs project root"
     exit 1
 }
+
+#
+# BUGBUG: due to bugs, we need to set the working directory to the project root
+#    pandoc has some quirks with relative paths and I'm yet unsure how to handle them
+#
+#Write-Host "Setting Working Directory to $PROJECT_ROOT"
+#Set-Location -Path $PROJECT_ROOT
+
 #$PROJECT_ROOT = Split-Path -Path $InputFile -Parent
 
 $InputFile = Resolve-Path -Path $InputFile
