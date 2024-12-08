@@ -90,21 +90,22 @@ function Temp-File {
         [switch]$Linux = $false
     )
 
-    Write-Host ""
-    Write-Host ""
-    Write-Host "Seeking Temp File ---------------------------------------------"
-    Write-Host "         Input : $File"
-    Write-Host "            Op : $Op"
-    Write-Host "         Linux : $Linux"
-    Write-Host "           PWD : $PWD"
+     Write-Host ""
+     Write-Host ""
+     Write-Host "Seeking Temp File ---------------------------------------------"
+     Write-Host "         Input : $File"
+     Write-Host "            Op : $Op"
+     Write-Host "         Linux : $Linux"
+     Write-Host "           PWD : $PWD"
 
     if (!(Test-Path -Path $File)) {
-        Write-Host "Created file on Start"
+        #Write-Host "Created file on Start"
         $createdFileOnStart = New-Item -Path $File -ItemType file
     }
 
     $File_FullPath = Resolve-Path -Path $File
-    Write-Host " File_FullPath : $File_FullPath"
+    Write-Host "        FInput : $File_FullPath"
+    #Write-Host " File_FullPath : $File_FullPath"
 
     #
     # Locate our temp folder, by seeking our root config
@@ -122,20 +123,21 @@ function Temp-File {
         exit 1
     }
 
-    Write-Host "     CDOC_ROOT : $CDOC_ROOT"
+    #$CDOC_ROOT = Split-Path -Path $File -Parent
 
-    # $PROJECT_ROOT = Split-Path -Path $InputFile -Parent
-    $File_Relative = Resolve-Path -Path $File -RelativeBasePath $CDOC_ROOT -Relative
+    $PROJECT_ROOT = Split-Path -Path $InputFile -Parent
+    #$File_Relative = Resolve-Path -Path $File -RelativeBasePath $CDOC_ROOT -Relative
 
     $TEMP_DIR = Join-Path -Path $CDOC_ROOT -ChildPath "cdocs-temp"
+    #$TEMP_DIR = $CDOC_ROOT
 
     if (!(Test-Path -Path $TEMP_DIR)) {
-        Write-Host "Creating temp directory"
+        #Write-Host "Creating temp directory"
         $ni = New-Item -Path $TEMP_DIR -ItemType directory
     }
 
     #Write-Host "  PROJECT_ROOT : $PROJECT_ROOT"
-    Write-Host "      TEMP_DIR : $TEMP_DIR"
+    #Write-Host "      TEMP_DIR : $TEMP_DIR"
 
     #
     # Create temp file name
@@ -144,10 +146,9 @@ function Temp-File {
     $tempFile = Join-Path -Path $TEMP_DIR -ChildPath $fileName
     $tempFile = $tempFile + ".$Op.tmp"
 
-    Write-Host "      TempFile : $tempFile"
-    Write-Host ""
-    Write-Host ""
-    Write-Host ""
+    # Write-Host ""
+    # Write-Host ""
+    # Write-Host ""
 
     if($Linux) {
 
@@ -168,6 +169,7 @@ function Temp-File {
         $oi = Remove-Item -Path $File
     }
 
+    Write-Host "      TempFile : $tempFile"
     $tempFile
 }
 
@@ -189,6 +191,9 @@ function Start-Container {
         [string[]]$ArgumentList
     )
 
+    Write-Host ""
+    Write-Host ""
+    Write-Host ""
     Write-Host "Starting Container] ----------------------------------------------------------------"
     Write-Host "ContainerLauncher : $ContainerLauncher"
     Write-Host "Container : $Container"
@@ -284,10 +289,6 @@ if (!(Test-Path -Path $InputFile)) {
     exit 1
 }
 
-$InputFile = Resolve-Path -Path $InputFile
-$InputFileRootDir = Split-Path -Path $InputFile -Parent
-$DatabaseDirectory = Join-Path -Path $InputFileRootDir -ChildPath "orig_media"
-
 #
 # Locate the CDocs project root
 #
@@ -305,6 +306,9 @@ if([string]::IsNullOrEmpty($PROJECT_ROOT)) {
 }
 #$PROJECT_ROOT = Split-Path -Path $InputFile -Parent
 
+$InputFile = Resolve-Path -Path $InputFile
+$InputFileRootDir = Split-Path -Path $InputFile -Parent
+$DatabaseDirectory = Join-Path -Path $PROJECT_ROOT -ChildPath "orig_media"
 $InputFile_Relative = Resolve-Path -Path $InputFile -RelativeBasePath $PROJECT_ROOT -Relative
 $InputFile_Relative = $InputFile_Relative -replace '\\', '/'
 
@@ -347,6 +351,11 @@ if ($ReverseRender)
     $OutputFile_MERGED = Temp-File -File $OutputFile -Op "OUT_MERGED"
     $OutputFile_MERGED_Linux = Temp-File -File $OutputFile -Op "OUT_MERGED" -Linux
 
+    if(!(Test-Path -Path $OutputFile)) {
+        Write-Error "Input file doesnt exist $OutputFile"
+        exit 1
+    }
+
     #
     # Convert the Word document to a pandoc AST
     #
@@ -364,9 +373,14 @@ if ($ReverseRender)
         Write-Error "Output file doesnt exist $OutputFile_AST"
         exit 1
     }
+
     #
     # Filter the pandoc AST using our C# image tools
     #
+    Write-Host ""
+    Write-Host ""
+    Write-Host ""
+    Write-Host "Running MergeTool]  ---------------------------------------------------------------"
     Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $OutputFile_AST,`
                                                                         "-o", $OutputFile_MERGED,`
                                                                         "-d", $DatabaseDirectory,`
@@ -407,9 +421,16 @@ else
     }
 
     # Filter the pandoc AST using our C# image tools
+    Write-Host ""
+    Write-Host ""
+    Write-Host ""
+    Write-Host "---------------------------------------------------------------"
+    Write-Host "Running MergeTool"
     Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $InputFile_AST,`
                                                                         "-o", $InputFile_MERGED,`
                                                                         "-d", $DatabaseDirectory
+
+
     Start-Container -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
         -DirectoryMappings @($dirMap, $templateMap) `
