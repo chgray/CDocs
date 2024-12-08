@@ -128,23 +128,26 @@ function Temp-File {
     $PROJECT_ROOT = Split-Path -Path $InputFile -Parent
     #$File_Relative = Resolve-Path -Path $File -RelativeBasePath $CDOC_ROOT -Relative
 
-    $TEMP_DIR = Join-Path -Path $CDOC_ROOT -ChildPath "cdocs-temp"
-    #$TEMP_DIR = $CDOC_ROOT
+    #$TEMP_DIR = Join-Path -Path $CDOC_ROOT -ChildPath "cdocs-temp"
+    $TEMP_DIR = $CDOC_ROOT
 
     if (!(Test-Path -Path $TEMP_DIR)) {
         #Write-Host "Creating temp directory"
         $ni = New-Item -Path $TEMP_DIR -ItemType directory
     }
 
-    #Write-Host "  PROJECT_ROOT : $PROJECT_ROOT"
-    #Write-Host "      TEMP_DIR : $TEMP_DIR"
+    Write-Host "  PROJECT_ROOT : $PROJECT_ROOT"
+    Write-Host "      TEMP_DIR : $TEMP_DIR"
 
     #
     # Create temp file name
     #
+    $fileHelper = Get-Item $File
+    $extension = $fileHelper.Extension
+
     $fileName = Split-Path -Path $File -Leaf
-    $tempFile = Join-Path -Path $TEMP_DIR -ChildPath $fileName
-    $tempFile = $tempFile + ".$Op.tmp"
+    $tempFile = Join-Path -Path $PROJECT_ROOT -ChildPath $fileName
+    $tempFile = $tempFile + ".$Op.tmp$extension"
 
     # Write-Host ""
     # Write-Host ""
@@ -152,11 +155,17 @@ function Temp-File {
 
     if($Linux) {
 
+        #$tempFile = Split-Path -Path $tempFile -Leaf
+        #$tempFile = Join-Path -Path $PROJECT_ROOT -ChildPath $tempFile
+
         if (!(Test-Path -Path $tempFile)) {
             $ni = New-Item -Path $tempFile -ItemType file
         }
 
+        Write-Host "      TempFile : $tempFile"
+        Write-Host "      CDOC_ROOT : $CDOC_ROOT"
         $tempFile = Resolve-Path -Path $tempFile -RelativeBasePath $CDOC_ROOT -Relative
+
 
         if ($ni -ne $null) {
             $oi = Remove-Item -Path $tempFile
