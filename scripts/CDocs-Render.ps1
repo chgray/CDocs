@@ -93,13 +93,13 @@ function Temp-File {
         [switch]$Linux = $false
     )
 
-     Write-Host ""
-     Write-Host ""
-     Write-Host "Seeking Temp File ---------------------------------------------"
-     Write-Host "         Input : $File"
-     Write-Host "            Op : $Op"
-     Write-Host "         Linux : $Linux"
-     Write-Host "           PWD : $PWD"
+    #  Write-Host ""
+    #  Write-Host ""
+    #  Write-Host "Seeking Temp File ---------------------------------------------"
+    #  Write-Host "         Input : $File"
+    #  Write-Host "            Op : $Op"
+    #  Write-Host "         Linux : $Linux"
+    #  Write-Host "           PWD : $PWD"
 
     if (!(Test-Path -Path $File)) {
         #Write-Host "Created file on Start"
@@ -107,7 +107,7 @@ function Temp-File {
     }
 
     $File_FullPath = Resolve-Path -Path $File
-    Write-Host "        FInput : $File_FullPath"
+    #Write-Host "        FInput : $File_FullPath"
     #Write-Host " File_FullPath : $File_FullPath"
 
     #
@@ -139,8 +139,8 @@ function Temp-File {
         $ni = New-Item -Path $TEMP_DIR -ItemType directory
     }
 
-    Write-Host "  MY_PROJECT_ROOT : $MY_PROJECT_ROOT"
-    Write-Host "        TEMP_DIR : $TEMP_DIR"
+    # Write-Host "  MY_PROJECT_ROOT : $MY_PROJECT_ROOT"
+    # Write-Host "        TEMP_DIR : $TEMP_DIR"
 
     #
     # Create temp file name
@@ -157,7 +157,7 @@ function Temp-File {
         $tempFile = Join-Path -Path $MY_PROJECT_ROOT -ChildPath $fileName
     }
 
-    $tempFile = $tempFile + ".$Op.tmp$extension"
+    $tempFile = $tempFile + ".$Op.tmp"
 
     # Write-Host ""
     # Write-Host ""
@@ -172,8 +172,8 @@ function Temp-File {
             $ni = New-Item -Path $tempFile -ItemType file
         }
 
-        Write-Host "      TempFile : $tempFile"
-        Write-Host "      CDOC_ROOT : $CDOC_ROOT"
+        # Write-Host "      TempFile : $tempFile"
+        # Write-Host "      CDOC_ROOT : $CDOC_ROOT"
         $tempFile = Resolve-Path -Path $tempFile -RelativeBasePath $CDOC_ROOT -Relative
 
 
@@ -188,7 +188,7 @@ function Temp-File {
         $oi = Remove-Item -Path $File
     }
 
-    Write-Host "      TempFile : $tempFile"
+    #Write-Host "      TempFile : $tempFile"
     $tempFile
 }
 
