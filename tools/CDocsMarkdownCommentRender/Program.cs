@@ -335,7 +335,7 @@ namespace Pandoc.Comment.Render
 
                                     if (fi.Length == option.Length)
                                     {
-                                        string newImage = "/data/" + Path.GetRelativePath(Environment.CurrentDirectory, option.FullName).Replace("\\", "/");
+                                        string newImage = Path.GetRelativePath(Environment.CurrentDirectory, option.FullName).Replace("\\", "/");
                                         m_MappedFiles[newImage] = option.FullName;
                                         c[2][0].ReplaceWith(newImage);
                                         Console.WriteLine("hit");

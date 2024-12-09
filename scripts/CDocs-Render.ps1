@@ -128,7 +128,7 @@ function Temp-File {
 
     #$CDOC_ROOT = Split-Path -Path $File -Parent
 
-    $PROJECT_ROOT = Split-Path -Path $InputFile -Parent
+    $MY_PROJECT_ROOT = Split-Path -Path $InputFile -Parent
     #$File_Relative = Resolve-Path -Path $File -RelativeBasePath $CDOC_ROOT -Relative
 
     #$TEMP_DIR = Join-Path -Path $CDOC_ROOT -ChildPath "cdocs-temp"
@@ -139,8 +139,8 @@ function Temp-File {
         $ni = New-Item -Path $TEMP_DIR -ItemType directory
     }
 
-    Write-Host "  PROJECT_ROOT : $PROJECT_ROOT"
-    Write-Host "      TEMP_DIR : $TEMP_DIR"
+    Write-Host "  MY_PROJECT_ROOT : $MY_PROJECT_ROOT"
+    Write-Host "        TEMP_DIR : $TEMP_DIR"
 
     #
     # Create temp file name
@@ -149,7 +149,14 @@ function Temp-File {
     $extension = $fileHelper.Extension
 
     $fileName = Split-Path -Path $File -Leaf
-    $tempFile = Join-Path -Path $PROJECT_ROOT -ChildPath $fileName
+
+    if($Linux)
+    {
+        $tempFile = "./$fileName"
+    } else {
+        $tempFile = Join-Path -Path $MY_PROJECT_ROOT -ChildPath $fileName
+    }
+
     $tempFile = $tempFile + ".$Op.tmp$extension"
 
     # Write-Host ""
@@ -322,14 +329,19 @@ if([string]::IsNullOrEmpty($PROJECT_ROOT)) {
 $InputFile = Resolve-Path -Path $InputFile
 $InputFileRootDir = Split-Path -Path $InputFile -Parent
 $DatabaseDirectory = Join-Path -Path $PROJECT_ROOT -ChildPath "orig_media"
-$InputFile_Relative = Resolve-Path -Path $InputFile -RelativeBasePath $PROJECT_ROOT -Relative
-$InputFile_Relative = $InputFile_Relative -replace '\\', '/'
+
+#$InputFile_Relative = Resolve-Path -Path $InputFile -RelativeBasePath $PROJECT_ROOT -Relative
+#$InputFile_Relative = $InputFile_Relative -replace '\\', '/'
+$InputFile_Relative = Split-Path -Path $InputFile -Leaf
 
 #
 # Determine the destination of output file
 #
 $OutputFile = $InputFile -replace ".md", ".md.docx"
-$OutputFile_Linux = Convert-Path-To-LinuxRelativePath -Path $OutputFile -Base $PROJECT_ROOT
+
+#$OutputFile_Linux = Convert-Path-To-LinuxRelativePath -Path $OutputFile -Base $PROJECT_ROOT
+$OutputFile_Linux = Split-Path -Path $OutputFile -Leaf
+
 
 #
 # Cleanup maps
@@ -342,7 +354,7 @@ $templateMap = "$PSScriptRoot\:/templates"
 Write-Host "Running CDocs-Render.ps1"
 Write-Host "                MergeTool : $MergeTool"
 Write-Host "          Converting file : $InputFile"
-Write-Host " InputFileRootDir : $InputFileRootDir"
+Write-Host "         InputFileRootDir : $InputFileRootDir"
 Write-Host "             DB Directory : $DatabaseDirectory"
 Write-Host "                Container : $CONTAINER"
 Write-Host "        GNUPLOT Container : $CONTAINER_GNUPLOT"
@@ -411,14 +423,13 @@ if ($ReverseRender)
 }
 else
 {
-    $InputFile_Linux = Convert-Path-To-LinuxRelativePath -Path $InputFile -Base $PROJECT_ROOT
+    $InputFile_Linux = Convert-Path-To-LinuxRelativePath -Path $InputFile -Base $InputFileRootDir
 
     $InputFile_AST = Temp-File -File $InputFile -Op "AST"
     $InputFile_AST_Linux = Temp-File -File $InputFile -Op "AST" -Linux
 
     $InputFile_MERGED = Temp-File -File $InputFile -Op "MERGED"
     $InputFile_MERGED_Linux = Temp-File -File $InputFile -Op "MERGED" -Linux
-
 
     Start-Container -ContainerLauncher $CONTAINER_TOOL `
             -Container $CONTAINER `
