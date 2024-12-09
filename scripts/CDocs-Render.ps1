@@ -194,6 +194,9 @@ function Temp-File {
 
 function Start-Container {
     param (
+        [Parameter(Mandatory = $true)]
+        [string]$WorkingDir,
+
         [Parameter(Mandatory = $false)]
         [switch]$DebugMode = $false,
 
@@ -241,6 +244,7 @@ function Start-Container {
     # Add the container, and then args
     #
     $args += $Container
+    $args += $WorkingDir
     $args += $ArgumentList
 
     foreach ($arg in $args) {
@@ -282,7 +286,7 @@ function Start-Container {
 
 
 
-$ErrorActionPreference = 'Stop'
+#$ErrorActionPreference = 'Stop'
 
 $MergeTool = "C:\\Source\\CDocs\\tools\\CDocsMarkdownCommentRender\\bin\\Debug\\net9.0\\CDocsMarkdownCommentRender.exe"
 $CONTAINER="chgray123/pandoc-arm:extra"
@@ -328,7 +332,9 @@ if([string]::IsNullOrEmpty($PROJECT_ROOT)) {
 
 $InputFile = Resolve-Path -Path $InputFile
 $InputFileRootDir = Split-Path -Path $InputFile -Parent
+$InputFileRootDir_Linux = Convert-Path-To-LinuxRelativePath -Path $InputFileRootDir -Base $PROJECT_ROOT
 $DatabaseDirectory = Join-Path -Path $PROJECT_ROOT -ChildPath "orig_media"
+
 
 #$InputFile_Relative = Resolve-Path -Path $InputFile -RelativeBasePath $PROJECT_ROOT -Relative
 #$InputFile_Relative = $InputFile_Relative -replace '\\', '/'
@@ -355,6 +361,7 @@ Write-Host "Running CDocs-Render.ps1"
 Write-Host "                MergeTool : $MergeTool"
 Write-Host "          Converting file : $InputFile"
 Write-Host "         InputFileRootDir : $InputFileRootDir"
+Write-Host "   InputFileRootDir_Linux : $InputFileRootDir_Linux"
 Write-Host "             DB Directory : $DatabaseDirectory"
 Write-Host "                Container : $CONTAINER"
 Write-Host "        GNUPLOT Container : $CONTAINER_GNUPLOT"
@@ -384,7 +391,8 @@ if ($ReverseRender)
     #
     # Convert the Word document to a pandoc AST
     #
-    Start-Container -ContainerLauncher $CONTAINER_TOOL `
+    Start-Container -WorkingDir $InputFileRootDir_Linux `
+        -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
         -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
         -ArgumentList `
@@ -413,7 +421,8 @@ if ($ReverseRender)
     #
     # Rewrite the input Markdown file
     #
-    Start-Container -ContainerLauncher $CONTAINER_TOOL `
+    Start-Container -WorkingDir $InputFileRootDir_Linux `
+        -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
         -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
         -ArgumentList `
@@ -431,7 +440,8 @@ else
     $InputFile_MERGED = Temp-File -File $InputFile -Op "MERGED"
     $InputFile_MERGED_Linux = Temp-File -File $InputFile -Op "MERGED" -Linux
 
-    Start-Container -ContainerLauncher $CONTAINER_TOOL `
+    Start-Container -WorkingDir $InputFileRootDir_Linux `
+            -ContainerLauncher $CONTAINER_TOOL `
             -Container $CONTAINER `
             -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
             -ArgumentList `
@@ -455,7 +465,8 @@ else
                                                                         "-d", $DatabaseDirectory
 
 
-    Start-Container -ContainerLauncher $CONTAINER_TOOL `
+    Start-Container -WorkingDir $InputFileRootDir_Linux `
+        -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
         -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
         -ArgumentList `
