@@ -91,6 +91,36 @@ function Start-CDocContainer {
     }
 }
 
+function Get-CDocs-Container-Tool {
+
+    Write-Host "Discovering Container Tool  ] ---------------------------------------------"
+
+    try {
+        $process = Start-Process -NoNewWindow -FilePath "docker" -Wait -ErrorAction SilentlyContinue -PassThru -ArgumentList "-v"
+
+        if ($process.ExitCode -ne 0) {
+            throw "docker failed with exit code $($process.ExitCode)"
+        }
+        $ret="docker"
+    } catch {
+    } finally {
+    }
+
+    if ($CONTAINER_TOOL -eq $null) {
+        try {
+            $process = Start-Process -NoNewWindow -FilePath "podman" -Wait -ErrorAction SilentlyContinue -PassThru -ArgumentList "-v"
+
+            if ($process.ExitCode -ne 0) {
+                throw "podman failed with exit code $($process.ExitCode)"
+            }
+            $ret="podman"
+        } catch {
+        } finally {
+        }
+    }
+    $ret
+}
 
 
 Export-ModuleMember -Function Start-CDocContainer
+Export-ModuleMember -Function Get-CDocs-Container-Tool

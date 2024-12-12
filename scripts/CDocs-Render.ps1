@@ -28,37 +28,6 @@ param (
     [switch]$ReverseRender = $false
 )
 
-function Discover-Container-Tool {
-
-    Write-Host "Discovering Container Tool  ] ---------------------------------------------"
-
-    try {
-        $process = Start-Process -NoNewWindow -FilePath "docker" -Wait -ErrorAction SilentlyContinue -PassThru -ArgumentList "-v"
-
-        if ($process.ExitCode -ne 0) {
-            throw "docker failed with exit code $($process.ExitCode)"
-        }
-        $ret="docker"
-    } catch {
-    } finally {
-    }
-
-    if ($CONTAINER_TOOL -eq $null) {
-        try {
-            $process = Start-Process -NoNewWindow -FilePath "podman" -Wait -ErrorAction SilentlyContinue -PassThru -ArgumentList "-v"
-
-            if ($process.ExitCode -ne 0) {
-                throw "podman failed with exit code $($process.ExitCode)"
-            }
-            $ret="podman"
-        } catch {
-        } finally {
-        }
-    }
-    $ret
-}
-
-
 function Convert-Path-To-LinuxRelativePath {
     param (
         [Parameter(Mandatory = $true)]
@@ -203,8 +172,6 @@ $ErrorActionPreference = 'Stop'
 
 
 $MergeTool = "C:\\Source\\CDocs\\tools\\CDocsMarkdownCommentRender\\bin\\Debug\\net8.0\\CDocsMarkdownCommentRender.exe"
-$CONTAINER="chgray123/pandoc-arm:extra"
-$CONTAINER_GNUPLOT="chgray123/chgray_repro:gnuplot"
 $CONTAINER="chgray123/chgray_repro:pandoc"
 # $CONTAINER="ubuntu:latest"
 
@@ -305,7 +272,7 @@ if ($ReverseRender)
     #
     # Convert the Word document to a pandoc AST
     #
-    Start-Container -WorkingDir $InputFileRootDir_Linux `
+    Start-CDocContainer -WorkingDir $InputFileRootDir_Linux `
         -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
         -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
@@ -335,7 +302,7 @@ if ($ReverseRender)
     #
     # Rewrite the input Markdown file
     #
-    Start-Container -WorkingDir $InputFileRootDir_Linux `
+    Start-CDocContainer -WorkingDir $InputFileRootDir_Linux `
         -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
         -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
@@ -354,7 +321,7 @@ else
     $InputFile_MERGED = Temp-File -File $InputFile -Op "MERGED"
     $InputFile_MERGED_Linux = Temp-File -File $InputFile -Op "MERGED" -Linux
 
-    Start-Container -WorkingDir $InputFileRootDir_Linux `
+    Start-CDocContainer -WorkingDir $InputFileRootDir_Linux `
             -ContainerLauncher $CONTAINER_TOOL `
             -Container $CONTAINER `
             -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
@@ -379,7 +346,7 @@ else
                                                                         "-d", $DatabaseDirectory
 
 
-    Start-Container -WorkingDir $InputFileRootDir_Linux `
+    Start-CDocContainer -WorkingDir $InputFileRootDir_Linux `
         -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
         -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
