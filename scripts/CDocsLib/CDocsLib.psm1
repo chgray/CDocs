@@ -1,5 +1,5 @@
 
-function Start-CDocContainer {
+function Start-CDocs.Container {
     param (
         [Parameter(Mandatory = $true)]
         [string]$WorkingDir,
@@ -48,6 +48,13 @@ function Start-CDocContainer {
     }
 
     #
+    # Data directory mapping
+    #
+    $PROJECT_ROOT=Get-CDocs.ProjectRoot
+    $args += "-v"
+    $args += $PROJECT_ROOT + ":/data"
+
+    #
     # Add the container, and then args
     #
     $args += $Container
@@ -91,7 +98,7 @@ function Start-CDocContainer {
     }
 }
 
-function Get-CDocs-Container-Tool {
+function Get-CDocs.Container.Tool {
 
     Write-Host "Discovering Container Tool  ] ---------------------------------------------"
 
@@ -121,6 +128,25 @@ function Get-CDocs-Container-Tool {
     $ret
 }
 
+function Get-CDocs.ProjectRoot {
+    #
+    # Locate the CDocs project root
+    #
+    $PROJECT_ROOT = $PWD
+    while (![string]::IsNullOrEmpty($PROJECT_ROOT)) {
+        $root = Join-Path -Path $PROJECT_ROOT -ChildPath ".CDocs.config"
+        if (Test-Path -Path $root) {
+            break
+        }
+        $PROJECT_ROOT = Split-Path -Path $PROJECT_ROOT -Parent
+    }
+    if([string]::IsNullOrEmpty($PROJECT_ROOT)) {
+        Write-Error "Unable to locate .CDocs.config project root"
+        exit 1
+    }
 
-Export-ModuleMember -Function Start-CDocContainer
-Export-ModuleMember -Function Get-CDocs-Container-Tool
+    $PROJECT_ROOT
+}
+
+
+Export-ModuleMember -Function *

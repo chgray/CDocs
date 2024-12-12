@@ -9,11 +9,19 @@ param (
 
 Import-Module .\CDocsLib\CDocsLib.psm1
 
-$CONTAINER_TOOL= Get-CDocs-Container-Tool
+$CONTAINER_TOOL = Get-CDocs.Container.Tool
 $CONTAINER="chgray123/chgray_repro:cdocs.mermaid"
 $WORKING_DIR="/data"
+$PROJECT_ROOT=  Get-CDocs.ProjectRoot
 
-Start-CDocContainer -WorkingDir $WORKING_DIR `
+Write-Host "     PROJECT_ROOT : $PROJECT_ROOT"
+Write-Host "   CONTAINER_TOOL : $CONTAINER_TOOL"
+Write-Host "      WORKING_DIR : $WORKING_DIR"
+Write-Host "        CONTAINER : $CONTAINER"
+
+
+
+Start-CDocs.Container -WorkingDir $WORKING_DIR `
                     -ContainerLauncher $CONTAINER_TOOL `
                     -Container $CONTAINER `
                     ArgumentList `
