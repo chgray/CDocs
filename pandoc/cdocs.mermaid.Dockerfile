@@ -17,8 +17,6 @@ ARG PROC_ARCH=amd64
 # podman build -f cdocs.mermaid.Dockerfile --build-arg PROC_ARCH=arm64 --platform linux/arm64 -t "chgray123/chgray_repro:cdocs.mermaid" .
 # podman build -f cdocs.mermaid.Dockerfile -t "chgray123/chgray_repro:cdocs.mermaid" .
 
-#ENV TZ=America/Los_Angeles
-
 USER root
 RUN apk update
 RUN apk upgrade
@@ -28,5 +26,6 @@ COPY CDoc.Launcher.sh /CDoc.Launcher.sh
 
 CMD [ ]
 ENTRYPOINT [ "/CDoc.Launcher.sh" ]
-#ENTRYPOINT [ "/bin/bash" ]
-#WORKDIR /data
+
+#CMD [ "--help"]
+#ENTRYPOINT [ "/home/mermaidcli/node_modules/.bin/mmdc -p /puppeteer-config.json" ]
