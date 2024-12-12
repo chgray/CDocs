@@ -93,13 +93,13 @@ function Temp-File {
         [switch]$Linux = $false
     )
 
-    #  Write-Host ""
-    #  Write-Host ""
-    #  Write-Host "Seeking Temp File ---------------------------------------------"
-    #  Write-Host "         Input : $File"
-    #  Write-Host "            Op : $Op"
-    #  Write-Host "         Linux : $Linux"
-    #  Write-Host "           PWD : $PWD"
+     Write-Host ""
+     Write-Host ""
+     Write-Host "Seeking Temp File ---------------------------------------------"
+     Write-Host "         Input : $File"
+     Write-Host "            Op : $Op"
+     Write-Host "         Linux : $Linux"
+     Write-Host "           PWD : $PWD"
 
     if (!(Test-Path -Path $File)) {
         #Write-Host "Created file on Start"
@@ -107,8 +107,8 @@ function Temp-File {
     }
 
     $File_FullPath = Resolve-Path -Path $File
-    #Write-Host "        FInput : $File_FullPath"
-    #Write-Host " File_FullPath : $File_FullPath"
+    Write-Host "        FInput : $File_FullPath"
+    Write-Host " File_FullPath : $File_FullPath"
 
     #
     # Locate our temp folder, by seeking our root config
@@ -139,8 +139,8 @@ function Temp-File {
         $ni = New-Item -Path $TEMP_DIR -ItemType directory
     }
 
-    # Write-Host "  MY_PROJECT_ROOT : $MY_PROJECT_ROOT"
-    # Write-Host "        TEMP_DIR : $TEMP_DIR"
+    Write-Host "  MY_PROJECT_ROOT : $MY_PROJECT_ROOT"
+    Write-Host "        TEMP_DIR : $TEMP_DIR"
 
     #
     # Create temp file name
@@ -159,26 +159,30 @@ function Temp-File {
 
     $tempFile = $tempFile + ".$Op.tmp"
 
-    # Write-Host ""
-    # Write-Host ""
-    # Write-Host ""
+    Write-Host ""
+    Write-Host ""
+    Write-Host ""
 
     if($Linux) {
 
-        #$tempFile = Split-Path -Path $tempFile -Leaf
-        #$tempFile = Join-Path -Path $PROJECT_ROOT -ChildPath $tempFile
+        #$parentDir = Split-Path -Path $tempFile -Leaf
 
-        if (!(Test-Path -Path $tempFile)) {
-            $ni = New-Item -Path $tempFile -ItemType file
+        Write-Host "      CDOC_ROOT : $CDOC_ROOT"
+        Write-Host "MY_PROJECT_ROOT : $MY_PROJECT_ROOT"
+        Write-Host "       TempFile : $tempFile"
+        $tempFile_combined = Join-Path -Path $MY_PROJECT_ROOT -ChildPath $tempFile
+
+        if (!(Test-Path -Path $tempFile_combined)) {
+            $ni = New-Item -Path $tempFile_combined -ItemType file
         }
 
-        # Write-Host "      TempFile : $tempFile"
-        # Write-Host "      CDOC_ROOT : $CDOC_ROOT"
-        $tempFile = Resolve-Path -Path $tempFile -RelativeBasePath $CDOC_ROOT -Relative
+        Write-Host "       TempFile : $tempFile"
+        $tempFile = Resolve-Path -Path $tempFile -RelativeBasePath $MY_PROJECT_ROOT -Relative
+        Write-Host "TempFile_shrunk : $tempFile"
 
 
         if ($ni -ne $null) {
-            $oi = Remove-Item -Path $tempFile
+            $oi = Remove-Item -Path $tempFile_combined
         }
         $tempFile = $tempFile -replace '\\', '/'
     }
@@ -286,9 +290,11 @@ function Start-Container {
 
 
 
-#$ErrorActionPreference = 'Stop'
+#$ErrorActionPreference = 'Break'
+$ErrorActionPreference = 'Stop'
 
-$MergeTool = "C:\\Source\\CDocs\\tools\\CDocsMarkdownCommentRender\\bin\\Debug\\net9.0\\CDocsMarkdownCommentRender.exe"
+
+$MergeTool = "C:\\Source\\CDocs\\tools\\CDocsMarkdownCommentRender\\bin\\Debug\\net8.0\\CDocsMarkdownCommentRender.exe"
 $CONTAINER="chgray123/pandoc-arm:extra"
 $CONTAINER_GNUPLOT="chgray123/chgray_repro:gnuplot"
 $CONTAINER="chgray123/chgray_repro:pandoc"
@@ -317,7 +323,7 @@ while (![string]::IsNullOrEmpty($PROJECT_ROOT)) {
     $PROJECT_ROOT = Split-Path -Path $PROJECT_ROOT -Parent
 }
 if([string]::IsNullOrEmpty($PROJECT_ROOT)) {
-    Write-Error "Unable to locate CDocs project root"
+    Write-Error "Unable to locate .CDocs.config project root"
     exit 1
 }
 
@@ -473,6 +479,6 @@ else
         "-i", $InputFile_MERGED_Linux, `
         "-f", "json", `
         "-o",$OutputFile_Linux, `
-        "--reference-doc","/templates/numbered-sections-6x9.docx"
+        "--reference-doc","/templates/numbered-sections.docx"
 }
 
