@@ -193,20 +193,23 @@ namespace Pandoc.Comment.Render
 
                                     string code = a["c"][1].ToString();
 
-                                    string html = "<pre>" + code + "</pre>";
-                                    string inputFile = "C:\\temp\\cdocs1.html";
-                                    string outputFile = "C:\\temp\\cdocs1.html.png";
-
-                                    File.WriteAllText(inputFile, html);
+                                    string html = code;                               
 
                                     MD5 md5 = MD5.Create();
                                     byte[] inputBytes = Encoding.ASCII.GetBytes(html.ToString());
                                     byte[] hash = md5.ComputeHash(inputBytes);
                                     Guid inputGuid = new Guid(hash);
 
+                                    string inputFile = Path.Combine(options.DBDir, $"mermaid.{Guid.NewGuid()}.tmp");
+                                    string outputFile = inputFile + ".png";
+                                    File.WriteAllText(inputFile, html);
+
+
                                     Process p = new Process();
-                                    p.StartInfo.FileName = "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltoimage.exe";
-                                    p.StartInfo.Arguments = inputFile + " " + outputFile;
+                                    //p.StartInfo.FileName = "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltoimage.exe";
+                                    //p.StartInfo.Arguments = inputFile + " " + outputFile;
+                                    p.StartInfo.FileName = "pwsh";
+                                    p.StartInfo.Arguments = $"c:\\Source\\CDocs\\scripts\\CDocs-{type.ToLower()}.ps1 {inputFile} {outputFile}";
                                     p.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
                                     p.Start();
                                     p.WaitForExit();
@@ -218,6 +221,8 @@ namespace Pandoc.Comment.Render
                                     string cacheName = inputGuid.ToString() + "." + outputGuid.ToString();
                                     string cacheImage = Path.Combine(options.DBDir, cacheName + ".png");
                                     string cacheContent = Path.Combine(options.DBDir, cacheName + ".png.cdocs_orig");
+
+
 
                                     File.WriteAllText(cacheContent, a.ToJsonString());
                                     //File.Move(inputFile, cacheContent, true);
