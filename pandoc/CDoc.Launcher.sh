@@ -29,19 +29,17 @@ if [[ ! -z "${CDOC_RECURSE}" ]]; then
     ./CDoc.Launcher.sh "$@"
 else
     cd /data
-    echo "ARGS $@"
 
+    # ARGS protocol is [directory to run in ] [arg1] [arg2] ... [argN]
+    #   cd in to $1, and shift it away
     cd $1
-    ls
     shift
 
-    echo "New: ARGS $@"
-    tool=$1
-    shift
-
-    echo "Tool: $tool"
-    echo "-----------------"
-    $($tool) $@
+    #
+    # Execute all args
+    #
+    all="$@"
+    ${all}
 
     CDoc_ret=$?
 
