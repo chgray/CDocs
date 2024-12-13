@@ -36,9 +36,9 @@ Start-CDocs.Container -WorkingDir $WORKING_DIR `
                     -DirectoryMappings @("C:\\Source\\CDocs\\pandoc:/cdocs") `
                     -Container $CONTAINER `
                     -ArgumentList `
-                    "/home/mermaidcli/node_modules/.bin/mmdc -p /puppeteer-config.json"
-                    "-i", $JUST_FILENAME,
-                    "-o", "yack.png",
+                    "/home/mermaidcli/node_modules/.bin/mmdc -p /puppeteer-config.json", `
+                    "-i", $JUST_FILENAME, `
+                    "-o", "yack.png", `
                     "--width", "1000"
 
                     #"-i", "/data/$InputFile.mermaid", `

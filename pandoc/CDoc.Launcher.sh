@@ -36,7 +36,7 @@ else
     shift
 
     echo "New: ARGS $@"
-    $tool = $1
+    tool=$1
     shift
 
     echo "Tool: $tool"
