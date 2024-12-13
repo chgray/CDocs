@@ -180,7 +180,8 @@ COPY Pandoc.cmake /Pandoc.cmakemmdc
 COPY CDoc.Launcher.sh /CDoc.Launcher.sh
 WORKDIR /
 
-#ENTRYPOINT [ "/CDoc.Launcher.sh" ]
+ENV CDOC_FIRST_CALL=1
+ENTRYPOINT [ "/CDoc.Launcher.sh" ]
 WORKDIR /data
 
 #

@@ -28,6 +28,7 @@ param (
     [switch]$ReverseRender = $false
 )
 
+Import-Module $PSScriptRoot\CDocsLib\CDocsLib.psm1
 
 function Temp-File {
     param (
@@ -158,7 +159,7 @@ $CONTAINER="chgray123/chgray_repro:pandoc"
 #
 # Detect if we're using podman or docker
 #
-$CONTAINER_TOOL= Discover-Container-Tool
+$CONTAINER_TOOL= Get-CDocs.Container.Tool
 
 if (!(Test-Path -Path $InputFile)) {
     Write-Error "Input file doesnt exist $InputFile"
@@ -181,7 +182,7 @@ $PROJECT_ROOT = Get-CDocs.ProjectRoot
 
 $InputFile = Resolve-Path -Path $InputFile
 $InputFileRootDir = Split-Path -Path $InputFile -Parent
-$InputFileRootDir_Linux = Convert-Path-To-LinuxRelativePath -Path $InputFileRootDir -Base $PROJECT_ROOT
+$InputFileRootDir_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $InputFileRootDir -Base $PROJECT_ROOT
 $DatabaseDirectory = Join-Path -Path $PROJECT_ROOT -ChildPath "orig_media"
 
 
@@ -194,15 +195,13 @@ $InputFile_Relative = Split-Path -Path $InputFile -Leaf
 #
 $OutputFile = $InputFile -replace ".md", ".md.docx"
 
-#$OutputFile_Linux = Convert-Path-To-LinuxRelativePath -Path $OutputFile -Base $PROJECT_ROOT
+#$OutputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $OutputFile -Base $PROJECT_ROOT
 $OutputFile_Linux = Split-Path -Path $OutputFile -Leaf
 
 
 #
 # Cleanup maps
 #
-# /data must be the project root; so that the Markdown can use ../../place1/place notation, for reuse of files
-$dirMap = "$PROJECT_ROOT\:/data"
 $templateMap = "$PSScriptRoot\:/templates"
 
 
@@ -215,7 +214,6 @@ Write-Host "             DB Directory : $DatabaseDirectory"
 Write-Host "                Container : $CONTAINER"
 Write-Host "        GNUPLOT Container : $CONTAINER_GNUPLOT"
 Write-Host "             PROJECT_ROOT : $PROJECT_ROOT"
-Write-Host "               DirMapping : $dirMap"
 Write-Host "             Template Map : $templateMap "
 Write-Host "               Output Dir : $outputDir"
 Write-Host "          ***  Input File : $InputFile_Relative"
@@ -224,7 +222,7 @@ Write-Host "          *** Output File : $OutputFile_Relative"
 
 if ($ReverseRender)
 {
-    $InputFile_Linux = Convert-Path-To-LinuxRelativePath -Path $InputFile -Base $PROJECT_ROOT
+    $InputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $InputFile -Base $PROJECT_ROOT
 
     $OutputFile_AST = Temp-File -File $OutputFile -Op "OUT_AST"
     $OutputFile_AST_Linux = Temp-File -File $OutputFile -Op "OUT_AST" -Linux
@@ -240,10 +238,10 @@ if ($ReverseRender)
     #
     # Convert the Word document to a pandoc AST
     #
-    Start-CDocContainer -WorkingDir $InputFileRootDir_Linux `
+    Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
         -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
-        -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
+        -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
         -ArgumentList `
         "-i", "$OutputFile_Linux", `
         "--extract-media", ".", `
@@ -270,10 +268,10 @@ if ($ReverseRender)
     #
     # Rewrite the input Markdown file
     #
-    Start-CDocContainer -WorkingDir $InputFileRootDir_Linux `
+    Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
         -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
-        -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
+        -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
         -ArgumentList `
             "-i", $OutputFile_MERGED_Linux, `
             "-f", "json",`
@@ -281,7 +279,7 @@ if ($ReverseRender)
 }
 else
 {
-    $InputFile_Linux = Convert-Path-To-LinuxRelativePath -Path $InputFile -Base $InputFileRootDir
+    $InputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $InputFile -Base $InputFileRootDir
 
     $InputFile_AST = Temp-File -File $InputFile -Op "AST"
     $InputFile_AST_Linux = Temp-File -File $InputFile -Op "AST" -Linux
@@ -289,10 +287,10 @@ else
     $InputFile_MERGED = Temp-File -File $InputFile -Op "MERGED"
     $InputFile_MERGED_Linux = Temp-File -File $InputFile -Op "MERGED" -Linux
 
-    Start-CDocContainer -WorkingDir $InputFileRootDir_Linux `
+    Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
             -ContainerLauncher $CONTAINER_TOOL `
             -Container $CONTAINER `
-            -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
+            -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
             -ArgumentList `
             "$InputFile_Linux",`
             "-t", "json", `
@@ -308,16 +306,16 @@ else
     Write-Host ""
     Write-Host ""
     Write-Host "---------------------------------------------------------------"
-    Write-Host "Running MergeTool"
+    Write-Host "Running MergeTool [$MergeTool] "
     Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $InputFile_AST,`
                                                                         "-o", $InputFile_MERGED,`
                                                                         "-d", $DatabaseDirectory
 
 
-    Start-CDocContainer -WorkingDir $InputFileRootDir_Linux `
+    Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
         -ContainerLauncher $CONTAINER_TOOL `
         -Container $CONTAINER `
-        -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
+        -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
         -ArgumentList `
         "-i", $InputFile_MERGED_Linux, `
         "-f", "json", `
