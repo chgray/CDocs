@@ -147,8 +147,8 @@ function Temp-File {
 
 
 
-#$ErrorActionPreference = 'Break'
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Break'
+#$ErrorActionPreference = 'Stop'
 
 
 $MergeTool = "C:\\Source\\CDocs\\tools\\CDocsMarkdownCommentRender\\bin\\Debug\\net8.0\\CDocsMarkdownCommentRender.exe"
@@ -297,7 +297,7 @@ else
             "-o",$InputFile_AST_Linux
 
     if (!(Test-Path -Path $InputFile_AST)) {
-        Write-Error "Output file doesnt exist $InputFile_AST"
+        Write-Error "ERROR: Container didnt produce the expected output file {$InputFile_AST}"
         exit 1
     }
 

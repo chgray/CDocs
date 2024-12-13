@@ -52,7 +52,7 @@ function Start-CDocs.Container {
     #
     $PROJECT_ROOT=Get-CDocs.ProjectRoot
     $args += "-v"
-    $args += $PROJECT_ROOT + ":/data"
+    $args += ($PROJECT_ROOT + ":/data")
 
     #
     # Add the container, and then args
@@ -101,7 +101,8 @@ function Start-CDocs.Container {
 function Get-CDocs.Container.Tool {
 
     Write-Host "Discovering Container Tool  ] ---------------------------------------------"
-
+    $temp = $ErrorActionPreference
+    $ErrorActionPreference = "SilentlyContinue"
     try {
         $process = Start-Process -NoNewWindow -FilePath "docker" -Wait -ErrorAction SilentlyContinue -PassThru -ArgumentList "-v"
 
@@ -115,7 +116,7 @@ function Get-CDocs.Container.Tool {
 
     if ($CONTAINER_TOOL -eq $null) {
         try {
-            $process = Start-Process -NoNewWindow -FilePath "podman" -Wait -ErrorAction SilentlyContinue -PassThru -ArgumentList "-v"
+            $process = (Start-Process -NoNewWindow -FilePath "podman" -Wait -ErrorAction SilentlyContinue -PassThru -ArgumentList "-v")
 
             if ($process.ExitCode -ne 0) {
                 throw "podman failed with exit code $($process.ExitCode)"
@@ -125,6 +126,7 @@ function Get-CDocs.Container.Tool {
         } finally {
         }
     }
+    $ErrorActionPreference = $temp
     $ret
 }
 
