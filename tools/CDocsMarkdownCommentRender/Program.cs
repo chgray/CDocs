@@ -227,6 +227,7 @@ namespace Pandoc.Comment.Render
                                     File.WriteAllText(cacheContent, a.ToJsonString());
                                     //File.Move(inputFile, cacheContent, true);
                                     File.Move(outputFile, cacheImage, true);
+                                    File.Delete(inputFile);
 
 
                                     //string realitivePath = CreateRealitivePath(options.InputFile, cacheImage);
