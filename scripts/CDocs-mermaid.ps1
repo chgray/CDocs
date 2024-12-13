@@ -21,6 +21,7 @@ $CONTAINER="chgray123/chgray_repro:cdocs.mermaid"
 $PROJECT_ROOT=  Get-CDocs.ProjectRoot
 $InputFileRootDir = Split-Path -Path $InputFile -Parent
 $WORKING_DIR = Convert-LocalPath.To.CDocContainerPath -Path $InputFileRootDir -Base $PROJECT_ROOT
+$JUST_FILENAME = Split-Path -Path $InputFile -Leaf
 
 Write-Host "       INPUT_FILE : $InputFile"
 Write-Host "  INPUT_FILE_ROOT : $InputFileRootDir"
@@ -28,14 +29,17 @@ Write-Host "     PROJECT_ROOT : $PROJECT_ROOT"
 Write-Host "   CONTAINER_TOOL : $CONTAINER_TOOL"
 Write-Host "      WORKING_DIR : $WORKING_DIR"
 Write-Host "        CONTAINER : $CONTAINER"
-
+Write-Host "       OUTPUT_DIR : $OutputDir"
 
 Start-CDocs.Container -WorkingDir $WORKING_DIR `
                     -ContainerLauncher $CONTAINER_TOOL `
                     -DirectoryMappings @("C:\\Source\\CDocs\\pandoc:/cdocs") `
                     -Container $CONTAINER `
                     -ArgumentList `
-                    bash
+                    "/home/mermaidcli/node_modules/.bin/mmdc -p /puppeteer-config.json"
+                    "-i", $JUST_FILENAME,
+                    "-o", "yack.png",
+                    "--width", "1000"
 
                     #"-i", "/data/$InputFile.mermaid", `
                     #

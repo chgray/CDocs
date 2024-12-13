@@ -29,9 +29,20 @@ if [[ ! -z "${CDOC_RECURSE}" ]]; then
     ./CDoc.Launcher.sh "$@"
 else
     cd /data
-
-
     echo "ARGS $@"
+
+    cd $1
+    ls
+    shift
+
+    echo "New: ARGS $@"
+    $tool = $1
+    shift
+
+    echo "Tool: $tool"
+    echo "-----------------"
+    $($tool) $@
+
     CDoc_ret=$?
 
     if [ $CDoc_ret -ne 0 ]; then
