@@ -1,12 +1,12 @@
 param (
     [Parameter(Mandatory = $true)]
-    [string]$InputFile = "GlobalSetup",
+    [string]$InputFile = $null,
 
-    [Parameter(Mandatory = $false)]
-    [string]$OutputDir = $null
+    [Parameter(Mandatory = $true)]
+    [string]$OutputFile = $null
 )
 
-Import-Module .\CDocsLib\CDocsLib.psm1
+Import-Module $PSScriptRoot\CDocsLib\CDocsLib.psm1
 
 $InputFile = Resolve-Path -Path $InputFile
 
@@ -21,15 +21,17 @@ $CONTAINER="chgray123/chgray_repro:cdocs.mermaid"
 $PROJECT_ROOT=  Get-CDocs.ProjectRoot
 $InputFileRootDir = Split-Path -Path $InputFile -Parent
 $WORKING_DIR = Convert-LocalPath.To.CDocContainerPath -Path $InputFileRootDir -Base $PROJECT_ROOT
+$DatabaseDirectory = Join-Path -Path $PROJECT_ROOT -ChildPath "orig_media"
+
 $JUST_FILENAME = Split-Path -Path $InputFile -Leaf
 
 Write-Host "       INPUT_FILE : $InputFile"
+Write-Host "      OUTPUT_FILE : $OutputFile"
 Write-Host "  INPUT_FILE_ROOT : $InputFileRootDir"
 Write-Host "     PROJECT_ROOT : $PROJECT_ROOT"
 Write-Host "   CONTAINER_TOOL : $CONTAINER_TOOL"
 Write-Host "      WORKING_DIR : $WORKING_DIR"
 Write-Host "        CONTAINER : $CONTAINER"
-Write-Host "       OUTPUT_DIR : $OutputDir"
 
 Start-CDocs.Container -WorkingDir $WORKING_DIR `
                     -ContainerLauncher $CONTAINER_TOOL `
@@ -38,7 +40,7 @@ Start-CDocs.Container -WorkingDir $WORKING_DIR `
                     -ArgumentList `
                     "/home/mermaidcli/node_modules/.bin/mmdc -p /puppeteer-config.json", `
                     "-i", $JUST_FILENAME, `
-                    "-o", "yack.png", `
+                    "-o", "$JUST_FILENAME.png", `
                     "--width", "1000"
 
                     #"-i", "/data/$InputFile.mermaid", `
