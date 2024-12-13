@@ -1,6 +1,6 @@
 # Mermaid Markdown Test
 
-```mermaid
+``` mermaid
 flowchart TD
     A --> B
     B --> C
