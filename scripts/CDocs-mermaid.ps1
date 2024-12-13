@@ -24,14 +24,18 @@ $WORKING_DIR = Convert-LocalPath.To.CDocContainerPath -Path $InputFileRootDir -B
 $DatabaseDirectory = Join-Path -Path $PROJECT_ROOT -ChildPath "orig_media"
 
 $JUST_FILENAME = Split-Path -Path $InputFile -Leaf
+$LINUX_OUTPUTFILE = Convert-LocalPath.To.CDocContainerPath -Path $OutputFile -Base $PROJECT_ROOT
 
-Write-Host "       INPUT_FILE : $InputFile"
-Write-Host "      OUTPUT_FILE : $OutputFile"
-Write-Host "  INPUT_FILE_ROOT : $InputFileRootDir"
-Write-Host "     PROJECT_ROOT : $PROJECT_ROOT"
-Write-Host "   CONTAINER_TOOL : $CONTAINER_TOOL"
-Write-Host "      WORKING_DIR : $WORKING_DIR"
-Write-Host "        CONTAINER : $CONTAINER"
+Write-Host "        INPUT_FILE : $InputFile"
+Write-Host "       OUTPUT_FILE : $OutputFile"
+Write-Host "DATABASE_DIRECTORY : $DatabaseDirectory"
+Write-Host "  LINUX_OUTPUTFILE : $LINUX_OUTPUTFILE"
+Write-Host "     JUST_FILENAME : $JUST_FILENAME"
+Write-Host "   INPUT_FILE_ROOT : $InputFileRootDir"
+Write-Host "      PROJECT_ROOT : $PROJECT_ROOT"
+Write-Host "    CONTAINER_TOOL : $CONTAINER_TOOL"
+Write-Host "       WORKING_DIR : $WORKING_DIR"
+Write-Host "         CONTAINER : $CONTAINER"
 
 Start-CDocs.Container -WorkingDir $WORKING_DIR `
                     -ContainerLauncher $CONTAINER_TOOL `
@@ -40,7 +44,7 @@ Start-CDocs.Container -WorkingDir $WORKING_DIR `
                     -ArgumentList `
                     "/home/mermaidcli/node_modules/.bin/mmdc -p /puppeteer-config.json", `
                     "-i", $JUST_FILENAME, `
-                    "-o", "$JUST_FILENAME.png", `
+                    "-o", $LINUX_OUTPUTFILE, `
                     "--width", "1000"
 
                     #"-i", "/data/$InputFile.mermaid", `
