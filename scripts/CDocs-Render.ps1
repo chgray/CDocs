@@ -28,27 +28,6 @@ param (
     [switch]$ReverseRender = $false
 )
 
-function Convert-Path-To-LinuxRelativePath {
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Path,
-
-        [Parameter(Mandatory = $true)]
-        [string]$Base
-    )
-    Write-Host "Making $Path relative to $Base"
-
-    if (!(Test-Path -Path $Path)) {
-        $Path = $Path.Substring($Base.Length)
-        $Path = $Path -replace '\\', '/'
-        $Path = "." + $Path
-        $Path
-    } else {
-        $Ret = Resolve-Path -Path $Path -RelativeBasePath $Base -Relative
-        $Ret = $Ret -replace '\\', '/'
-        $Ret
-    }
-}
 
 function Temp-File {
     param (
@@ -189,18 +168,7 @@ if (!(Test-Path -Path $InputFile)) {
 #
 # Locate the CDocs project root
 #
-$PROJECT_ROOT = $PWD
-while (![string]::IsNullOrEmpty($PROJECT_ROOT)) {
-    $root = Join-Path -Path $PROJECT_ROOT -ChildPath ".CDocs.config"
-    if (Test-Path -Path $root) {
-        break
-    }
-    $PROJECT_ROOT = Split-Path -Path $PROJECT_ROOT -Parent
-}
-if([string]::IsNullOrEmpty($PROJECT_ROOT)) {
-    Write-Error "Unable to locate .CDocs.config project root"
-    exit 1
-}
+$PROJECT_ROOT = Get-CDocs.ProjectRoot
 
 #
 # BUGBUG: due to bugs, we need to set the working directory to the project root

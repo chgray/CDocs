@@ -24,6 +24,8 @@ RUN apk add bash
 
 COPY CDoc.Launcher.sh /CDoc.Launcher.sh
 
+
+ENV CDOC_FIRST_CALL=1
 CMD [ ]
 ENTRYPOINT [ "/CDoc.Launcher.sh" ]
 

@@ -149,4 +149,49 @@ function Get-CDocs.ProjectRoot {
 }
 
 
+function Convert-Path.To.LinuxRelativePath.BUGGY{
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Base
+    )
+    Write-Host "Making $Path relative to $Base"
+
+    if (!(Test-Path -Path $Path)) {
+        $Path = $Path.Substring($Base.Length)
+        $Path = $Path -replace '\\', '/'
+        $Path = "." + $Path
+        $Path
+    } else {
+        $Ret = Resolve-Path -Path $Path -RelativeBasePath $Base -Relative
+        $Ret = $Ret -replace '\\', '/'
+        $Ret
+    }
+}
+
+function Convert-LocalPath.To.CDocContainerPath{
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Base
+    )
+    Write-Host "Making $Path relative to $Base"
+
+    if (!(Test-Path -Path $Path)) {
+        $Path = $Path.Substring($Base.Length)
+        $Path = $Path -replace '\\', '/'
+        $Path = "/data/" + $Path
+        $Path
+    } else {
+        $Ret = Resolve-Path -Path $Path -RelativeBasePath $Base -Relative
+        $Ret = $Ret -replace '\\', '/'
+        $Ret = "/data/" + $Ret
+        $Ret
+    }
+}
+
 Export-ModuleMember -Function *
