@@ -29,39 +29,39 @@ function Start-CDocs.Container {
     Write-Host "DebugMode: $DebugMode"
 
     $argString = ""
-    $args = @()
+    $toolArgs = New-Object System.Collections.Generic.List[string]
 
     #
     # Build 'real' arguments
     #
-    $args += "run"
-    $args += "-it"
-    $args += "--rm"
+    $toolArgs.Add("run")
+    $toolArgs.Add("-it")
+    $toolArgs.Add("--rm")
 
     #
     # Process folder mappings
     #
     foreach($mapping in $DirectoryMappings) {
         Write-Host "Mapping : [$mapping]"
-        $args += "-v"
-        $args += $mapping
+        $toolArgs.Add("-v")
+        $toolArgs.Add($mapping)
     }
 
     #
     # Data directory mapping
     #
     $PROJECT_ROOT=Get-CDocs.ProjectRoot
-    $args += "-v"
-    $args += ($PROJECT_ROOT + ":/data")
+    $toolArgs.Add("-v")
+    $toolArgs.Add($PROJECT_ROOT + ":/data")
 
     #
     # Add the container, and then args
     #
-    $args += $Container
-    $args += $WorkingDir
-    $args += $ArgumentList
+    $toolArgs.Add($Container)
+    $toolArgs.Add($WorkingDir)
+    $toolArgs.Add($ArgumentList)
 
-    foreach ($arg in $args) {
+    foreach ($arg in $toolArgs) {
         $argString += $arg + " "
     }
 
@@ -87,6 +87,7 @@ function Start-CDocs.Container {
     $debugArgs += "ubuntu:latest"
 
     Write-Host "      Arguments : [$ContainerLauncher $argString]"
+    Write-Host "   PROJECT_ROOT : [$PROJECT_ROOT]"
 
     if($DebugMode) {
         Write-Host "Debug Arguments : [$ContainerLauncher $debugArgs]"
@@ -94,7 +95,9 @@ function Start-CDocs.Container {
         Write-Error "EXITING : Debug Mode is enabled"
         exit 1
     } else {
-        Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $args
+        Write-Host "A[$toolArgs]"
+        Write-Host "B["+($toolArgs.ToArray())+"]"
+        Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $toolArgs.ToArray()
     }
 }
 
@@ -147,7 +150,7 @@ function Get-CDocs.ProjectRoot {
         exit 1
     }
 
-    $PROJECT_ROOT
+    $PROJECT_ROOT.Path
 }
 
 

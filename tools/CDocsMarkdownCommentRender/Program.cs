@@ -1,4 +1,4 @@
-﻿    
+﻿
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -187,13 +187,20 @@ namespace Pandoc.Comment.Render
                                 if (blah.Equals("CodeBlock") && !options.Reverse)
                                 {
                                     string type = a["c"][0][1][0].ToString();
+                                    string script = $"c:\\Source\\CDocs\\scripts\\CDocs-{type.ToLower()}.ps1";
+
+                                    if(!File.Exists(script))
+                                    {
+                                        Console.WriteLine($"ERROR: cdocs doesnt understand type {type} - there is no script {script}");
+                                        Environment.Exit(5);
+                                    }
 
                                     //if (0 != String.Compare(type, "cdocs"))
                                     //    continue;
 
                                     string code = a["c"][1].ToString();
 
-                                    string html = code;                               
+                                    string html = code;
 
                                     MD5 md5 = MD5.Create();
                                     byte[] inputBytes = Encoding.ASCII.GetBytes(html.ToString());
@@ -209,7 +216,7 @@ namespace Pandoc.Comment.Render
                                     //p.StartInfo.FileName = "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltoimage.exe";
                                     //p.StartInfo.Arguments = inputFile + " " + outputFile;
                                     p.StartInfo.FileName = "pwsh";
-                                    p.StartInfo.Arguments = $"c:\\Source\\CDocs\\scripts\\CDocs-{type.ToLower()}.ps1 {inputFile} {outputFile}";
+                                    p.StartInfo.Arguments = $"{script} {inputFile} {outputFile}";
                                     p.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
                                     p.Start();
                                     p.WaitForExit();
@@ -221,7 +228,6 @@ namespace Pandoc.Comment.Render
                                     string cacheName = inputGuid.ToString() + "." + outputGuid.ToString();
                                     string cacheImage = Path.Combine(options.DBDir, cacheName + ".png");
                                     string cacheContent = Path.Combine(options.DBDir, cacheName + ".png.cdocs_orig");
-
 
 
                                     File.WriteAllText(cacheContent, a.ToJsonString());

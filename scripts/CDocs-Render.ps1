@@ -136,11 +136,9 @@ function Temp-File {
         $tempFile = $tempFile -replace '\\', '/'
     }
 
-
     if ($createdFileOnStart) {
         $oi = Remove-Item -Path $File
     }
-
     #Write-Host "      TempFile : $tempFile"
     $tempFile
 }
@@ -265,6 +263,15 @@ if ($ReverseRender)
                                                                         "-o", $OutputFile_MERGED,`
                                                                         "-d", $DatabaseDirectory,`
                                                                         "-r"
+
+    #
+    # Make sure we have an output file
+    #
+    if(!(Test-Path -Path $OutputFile_MERGED)) {
+        Write-Error "Output file from merge-tool doesnt exist $OutputFile_MERGED"
+        exit 1
+    }
+
     #
     # Rewrite the input Markdown file
     #
@@ -311,6 +318,10 @@ else
                                                                         "-o", $InputFile_MERGED,`
                                                                         "-d", $DatabaseDirectory
 
+    if (!(Test-Path -Path $InputFile_MERGED)) {
+        Write-Error "Output file doesnt exist $InputFile_MERGED"
+        exit 1
+    }
 
     Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
         -ContainerLauncher $CONTAINER_TOOL `
@@ -320,6 +331,6 @@ else
         "-i", $InputFile_MERGED_Linux, `
         "-f", "json", `
         "-o",$OutputFile_Linux, `
-        "--reference-doc","/templates/numbered-sections.docx"
+        "--reference-doc","/templates/numbered-sections-6x9.docx"
 }
 
