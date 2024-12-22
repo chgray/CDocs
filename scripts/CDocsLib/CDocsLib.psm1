@@ -137,7 +137,7 @@ function Get-CDocs.ProjectRoot {
     #
     # Locate the CDocs project root
     #
-    $PROJECT_ROOT = $PWD
+    $PROJECT_ROOT = $PWD.Path
     while (![string]::IsNullOrEmpty($PROJECT_ROOT)) {
         $root = Join-Path -Path $PROJECT_ROOT -ChildPath ".CDocs.config"
         if (Test-Path -Path $root) {
@@ -149,8 +149,7 @@ function Get-CDocs.ProjectRoot {
         Write-Error "Unable to locate .CDocs.config project root"
         exit 1
     }
-
-    $PROJECT_ROOT.Path
+    $PROJECT_ROOT
 }
 
 

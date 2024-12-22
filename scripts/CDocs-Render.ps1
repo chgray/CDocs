@@ -169,12 +169,7 @@ if (!(Test-Path -Path $InputFile)) {
 #
 $PROJECT_ROOT = Get-CDocs.ProjectRoot
 
-#
-# BUGBUG: due to bugs, we need to set the working directory to the project root
-#    pandoc has some quirks with relative paths and I'm yet unsure how to handle them
-#
-#Write-Host "Setting Working Directory to $PROJECT_ROOT"
-#Set-Location -Path $PROJECT_ROOT
+
 
 #$PROJECT_ROOT = Split-Path -Path $InputFile -Parent
 
@@ -183,6 +178,13 @@ $InputFileRootDir = Split-Path -Path $InputFile -Parent
 $InputFileRootDir_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $InputFileRootDir -Base $PROJECT_ROOT
 $DatabaseDirectory = Join-Path -Path $PROJECT_ROOT -ChildPath "orig_media"
 
+
+#
+# BUGBUG: due to bugs, we need to set the working directory to the project root
+#    pandoc has some quirks with relative paths and I'm yet unsure how to handle them
+#
+#Write-Host "Setting Working Directory to $PROJECT_ROOT"
+Set-Location -Path $InputFileRootDir
 
 #$InputFile_Relative = Resolve-Path -Path $InputFile -RelativeBasePath $PROJECT_ROOT -Relative
 #$InputFile_Relative = $InputFile_Relative -replace '\\', '/'
