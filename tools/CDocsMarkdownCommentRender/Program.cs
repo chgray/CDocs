@@ -290,11 +290,25 @@ namespace Pandoc.Comment.Render
 
                                     try
                                     {
-                                        string heading = a["c"][1][1][0][0].ToString();
+                                        var X = a["c"];
+                                        var y = X[1];
+                                        var z = y[1];
+                                        var g = z[0];
+                                        JsonObject jo = (JsonObject)g;
+
+                                        var p = jo.ToArray();
+                                        string heading = p[0].Value.ToString();
+
+                                        //string heading = a["c"][1][1][0][0].ToString();
                                         if ("Para".Equals(heading))
                                         {
                                             Console.WriteLine("Fixed up para/plain");
-                                            a["c"][1][1][0][0].ReplaceWith("Plain");
+
+                                            PandocObject newPO = new PandocObject();
+                                            newPO.t = "Plain";
+                                            newPO.c = p[1].Value ;
+
+                                            a["c"][1][1][0].ReplaceWith(newPO);
                                         }
                                     }
                                     catch (Exception)
