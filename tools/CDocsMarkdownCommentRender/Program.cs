@@ -42,18 +42,24 @@ namespace Pandoc.Comment.Render
     {
         public class Options
         {
-            [Option('i', "input", Required = true, HelpText = "Input File")]
+            [Option('i', "input", Required = false, HelpText = "Input File")]
             public string InputFile { get; set; }
 
-            [Option('d', "databaseDir", Required = true, HelpText = "Database Directory")]
+            [Option('d', "databaseDir", Required = true, HelpText = "Database Directory, envVar=CDOCS_DB")]
             public string DBDir { get; set; }
 
-            [Option('o', "output", Required = true, HelpText = "Reference Directory")]
+            [Option('o', "output", Required = false, HelpText = "Reference Directory")]
             public string OutputFile { get; set; }
 
-            [Option('r', "reverse", Required = false, Default = false, HelpText = "Reverse Direcion")]
+            [Option('r', "reverse", Required = false, Default = false, HelpText = "Reverse Direcion, envVar=CDOCS_REVERSE")]
             public bool Reverse { get; set; }
 
+            [Option('t', "tab", Required = false, Default=null, HelpText = "Tab header by <n>, envVar=CDOCS_TAB")]
+            public int TabIncrement { get; set; }
+
+
+            [Option('f', "filerMode", Required = false, Default = false, HelpText = "Pandoc Filter Mode, envVar=CDOCS_FILTER")]
+            public bool FilterMode { get; set; }
         }
 
 
@@ -155,7 +161,6 @@ namespace Pandoc.Comment.Render
 
                             if(0 == blah.CompareTo("Image"))
                             {
-                                Console.WriteLine("Found Image");
                                 string me = a["c"][2][0].ToString();
                                 return me;
                             }
@@ -191,7 +196,7 @@ namespace Pandoc.Comment.Render
 
                                     if(!File.Exists(script))
                                     {
-                                        Console.WriteLine($"ERROR: cdocs doesnt understand type {type} - there is no script {script}");
+                                        Console.Error.WriteLine($"ERROR: cdocs doesnt understand type {type} - there is no script {script}");
                                         Environment.Exit(5);
                                     }
 
@@ -284,10 +289,6 @@ namespace Pandoc.Comment.Render
                                 else if (blah.Equals("Figure") && options.Reverse)
                                 {
                                     string img = FindImage(a);
-
-                                    //string img = a["c"][2][0][1][0][1][2][0].ToString();
-                                    Console.WriteLine($"Looking for cache entry for {img}");
-
                                     try
                                     {
                                         var X = a["c"];
@@ -302,8 +303,6 @@ namespace Pandoc.Comment.Render
                                         //string heading = a["c"][1][1][0][0].ToString();
                                         if ("Para".Equals(heading))
                                         {
-                                            Console.WriteLine("Fixed up para/plain");
-
                                             PandocObject newPO = new PandocObject();
                                             newPO.t = "Plain";
                                             newPO.c = p[1].Value ;
@@ -313,27 +312,9 @@ namespace Pandoc.Comment.Render
                                     }
                                     catch (Exception)
                                     {
-                                        Console.WriteLine("UNABLE To patchup para");
+                                        Console.Error.WriteLine("UNABLE To patchup para");
+                                        Environment.Exit(4);
                                     }
-
-
-                                    //
-                                    // First swap out with a reference image (if we have one)
-                                    //
-                                    //FileInfo fi = new FileInfo(img);
-
-                                    //foreach (string file in System.IO.Directory.GetFiles(options.DBDir))
-                                    //{
-                                    //    FileInfo option = new FileInfo(file);
-
-                                    //    if (fi.Length == option.Length)
-                                    //    {
-                                    //        string newImage = "./" + Path.GetRelativePath(Environment.CurrentDirectory, option.FullName).Replace("\\", "/");
-                                    //        a["c"][2][0][1][0][1][2][0].ReplaceWith(newImage);
-                                    //        Console.WriteLine($"CACHE HIT: {img}-->{newImage}   ");
-                                    //        img = newImage;
-                                    //    }
-                                    //}
 
                                     string localFile;
                                     if (!m_MappedFiles.TryGetValue(img, out localFile))
@@ -341,14 +322,10 @@ namespace Pandoc.Comment.Render
 
 
                                     localFile += ".cdocs_orig";
-                                    //string root = Path.GetDirectoryName(options.DBDir);
-                                    //string cacheFile = Path.Combine(root, img + ".cdocs_orig").Replace("/", "\\");
 
                                     if (File.Exists(localFile))
                                     {
-                                        Console.WriteLine("FIGURE HIT!");
                                         string cache = File.ReadAllText(localFile);
-
                                         var x = JsonObject.Parse(cache);
                                         a.ReplaceWith(x);
                                     }
@@ -359,7 +336,8 @@ namespace Pandoc.Comment.Render
                     }
                     catch(Exception e)
                     {
-                        Console.WriteLine("ERROR: " + e);
+                        Console.Error.WriteLine("ERROR: " + e);
+                        Environment.Exit(7);
                     }
 
                     Recurse(options, a);
@@ -367,6 +345,35 @@ namespace Pandoc.Comment.Render
             }
 
             public Dictionary<string, string> m_MappedFiles = new Dictionary<string, string>();
+
+            void RecurseTab(Options options, JsonNode n, int inc)
+            {
+                foreach (var a in n.JsonNodeChildren().ToArray())
+                {
+                    if (null == a)
+                        continue;
+
+                    if (a is JsonObject)
+                    {
+                        var t = a["t"];
+
+                        if (null != t)
+                        {
+                            var blah = t.GetValue<string>();
+
+
+                            if (blah.Equals("Header"))
+                            {
+                                var c = a["c"];
+
+                                int depth = Convert.ToInt32(c[0].ToString());
+                                c[0].ReplaceWith(depth+inc);
+                            }
+                        }
+                    }
+                    Recurse(options, a);
+                }
+            }
 
             void Recurse_RemapImages(Options options, JsonNode n)
             {
@@ -402,62 +409,114 @@ namespace Pandoc.Comment.Render
                                         string newImage = Path.GetRelativePath(Environment.CurrentDirectory, option.FullName).Replace("\\", "/");
                                         m_MappedFiles[newImage] = option.FullName;
                                         c[2][0].ReplaceWith(newImage);
-                                        Console.WriteLine("hit");
                                         found = true;
                                         break;
                                     }
                                 }
 
-                                if(!found)
-                                    Console.WriteLine($"ERROR : unable to locate {img}");
+                                if (!found)
+                                {
+                                    Console.Error.WriteLine($"ERROR : unable to locate {img}");
+                                    Environment.Exit(80);
+                                }
                             }
                         }
                     }
-
                     Recurse(options, a);
                 }
-
             }
             public int Main(string[] args)
             {
-                Console.Write("ARGS:");
-                foreach (string arg in args)
+                bool filterMode = false;
+                
+                if(!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("CDOCS_FILTER")))
                 {
-                    Console.Write(arg + " ");
+                    filterMode = true;
+                    List<string> simulatedArgs = new List<string>();
+
+                    simulatedArgs.Add("--filerMode");
+
+                    string reverse = Environment.GetEnvironmentVariable("CDOCS_REVERSE");
+                    if (!String.IsNullOrEmpty(reverse))
+                    {
+                        simulatedArgs.Add("-r");
+                    }
+
+                    string db = Environment.GetEnvironmentVariable("CDOCS_DB");
+                    if (!String.IsNullOrEmpty(db))
+                    {
+                        simulatedArgs.Add("-d");
+                        simulatedArgs.Add(db);
+                    }
+
+                    string tab = Environment.GetEnvironmentVariable("CDOCS_TAB");
+                    if (!String.IsNullOrEmpty(db))
+                    {
+                        simulatedArgs.Add("-t");
+                        simulatedArgs.Add(tab);
+                    }
+
+                    args = simulatedArgs.ToArray();
                 }
-                Console.WriteLine("Starting.");
+
+              
                 int ret = -1;
                 Parser.Default.ParseArguments<Options>(args)
                     .WithParsed<Options>(o =>
                     {
-                        Console.WriteLine($"CDocsMarkdownCommentRender:");
-                        Console.WriteLine($"   Input:{o.InputFile}");
-                        Console.WriteLine($"  Output:{o.OutputFile}");
-                        Console.WriteLine($"      DB:{o.DBDir}");
-                        Console.WriteLine($" Reverse:{o.Reverse}");
-
-                        string inputFilesDirectory = Path.GetDirectoryName(o.InputFile);
-                        Directory.SetCurrentDirectory(inputFilesDirectory);
-
+                        /*Console.Error.WriteLine($"CDocsMarkdownCommentRender:");
+                        Console.Error.WriteLine($"   Input:{o.InputFile}");
+                        Console.Error.WriteLine($"  Output:{o.OutputFile}");
+                        Console.Error.WriteLine($"      DB:{o.DBDir}");
+                        Console.Error.WriteLine($" Reverse:{o.Reverse}");*/
+                                             
                         if (!Directory.Exists(o.DBDir))
                         {
                             Directory.CreateDirectory(o.DBDir);
                         }
 
-                        if (!File.Exists(o.InputFile))
+                        string json;
+
+                        if (!filterMode)
                         {
-                            Console.WriteLine($"ERROR: input file not found {o.InputFile}");
-                            ret = 1;
+                            
+                            if (!File.Exists(o.InputFile))
+                            {
+                                Console.Error.WriteLine($"ERROR: input file not found {o.InputFile}");
+                                ret = 1;
+                            }
+                            json = File.ReadAllText(o.InputFile);
+
+                            string inputFilesDirectory = Path.GetDirectoryName(o.InputFile);
+                            Directory.SetCurrentDirectory(inputFilesDirectory);
                         }
-                        string json = File.ReadAllText(o.InputFile);
+                        else
+                        {
+                            string s = Console.ReadLine();
+                            StringBuilder sb = new StringBuilder();
+                            sb.AppendLine(s);
+                            while (!String.IsNullOrEmpty(s))
+                            {
+                                s = Console.ReadLine();
+                                sb.AppendLine(s);
+                            }
+                            json = sb.ToString();
+                        }
 
                         // Create a JsonNode DOM from a JSON string.
                         JsonNode forecastNode = JsonNode.Parse(json)!;
 
                         var x = forecastNode!["blocks"];
 
-                        Recurse_RemapImages(o, x);
-                        Recurse(o, x);
+                        if (0 != o.TabIncrement)
+                        {
+                            RecurseTab(o, x, o.TabIncrement);
+                        }
+                        else
+                        {
+                            Recurse_RemapImages(o, x);
+                            Recurse(o, x);
+                        }
 
                         // Write JSON from a JsonNode
                         var options = new JsonSerializerOptions
@@ -466,9 +525,16 @@ namespace Pandoc.Comment.Render
                             TypeInfoResolver = new DefaultJsonTypeInfoResolver()
                         };
 
-                        File.WriteAllText(o.OutputFile, forecastNode!.ToJsonString(options));
+
+                        if (!filterMode)
+                        {
+                            File.WriteAllText(o.OutputFile, forecastNode!.ToJsonString(options));
+                        }
+                        else
+                        {
+                            Console.WriteLine(forecastNode!.ToJsonString(options));
+                        }
                         ret = 0;
-                        //Console.WriteLine($"...to {o.OutputFile}");
                     });
 
                 return ret;
@@ -479,7 +545,6 @@ namespace Pandoc.Comment.Render
         {
             CDocsPandocHelper helper = new CDocsPandocHelper();
             return helper.Main(args);
-
         }
     }
 }
