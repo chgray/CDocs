@@ -48,7 +48,7 @@ namespace Pandoc.Comment.Render
             [Option('d', "databaseDir", Required = true, HelpText = "Database Directory, envVar=CDOCS_DB")]
             public string DBDir { get; set; }
 
-            [Option('o', "output", Required = false, HelpText = "Reference Directory")]
+            [Option('o', "output", Required = false, HelpText = "Output File")]
             public string OutputFile { get; set; }
 
             [Option('r', "reverse", Required = false, Default = false, HelpText = "Reverse Direcion, envVar=CDOCS_REVERSE")]
@@ -56,7 +56,6 @@ namespace Pandoc.Comment.Render
 
             [Option('t', "tab", Required = false, Default=null, HelpText = "Tab header by <n>, envVar=CDOCS_TAB")]
             public int TabIncrement { get; set; }
-
 
             [Option('f', "filerMode", Required = false, Default = false, HelpText = "Pandoc Filter Mode, envVar=CDOCS_FILTER")]
             public bool FilterMode { get; set; }
