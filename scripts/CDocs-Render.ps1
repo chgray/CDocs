@@ -42,22 +42,21 @@ function Temp-File {
         [switch]$Linux = $false
     )
 
-     Write-Host ""
-     Write-Host ""
-     Write-Host "Seeking Temp File ---------------------------------------------"
-     Write-Host "         Input : $File"
-     Write-Host "            Op : $Op"
-     Write-Host "         Linux : $Linux"
-     Write-Host "           PWD : $PWD"
+    #  Write-Host ""
+    #  Write-Host ""
+    #  Write-Host "Seeking Temp File ---------------------------------------------"
+    #  Write-Host "         Input : $File"
+    #  Write-Host "            Op : $Op"
+    #  Write-Host "         Linux : $Linux"
+    #  Write-Host "           PWD : $PWD"
 
     if (!(Test-Path -Path $File)) {
-        #Write-Host "Created file on Start"
         $createdFileOnStart = New-Item -Path $File -ItemType file
     }
 
     $File_FullPath = Resolve-Path -Path $File
-    Write-Host "        FInput : $File_FullPath"
-    Write-Host " File_FullPath : $File_FullPath"
+    # Write-Host "        FInput : $File_FullPath"
+    # Write-Host " File_FullPath : $File_FullPath"
 
     #
     # Locate our temp folder, by seeking our root config
@@ -88,8 +87,8 @@ function Temp-File {
         $ni = New-Item -Path $TEMP_DIR -ItemType directory
     }
 
-    Write-Host "  MY_PROJECT_ROOT : $MY_PROJECT_ROOT"
-    Write-Host "        TEMP_DIR : $TEMP_DIR"
+    # Write-Host "  MY_PROJECT_ROOT : $MY_PROJECT_ROOT"
+    # Write-Host "        TEMP_DIR : $TEMP_DIR"
 
     #
     # Create temp file name
@@ -108,26 +107,26 @@ function Temp-File {
 
     $tempFile = $tempFile + ".$Op.tmp"
 
-    Write-Host ""
-    Write-Host ""
-    Write-Host ""
+    # Write-Host ""
+    # Write-Host ""
+    # Write-Host ""
 
     if($Linux) {
 
         #$parentDir = Split-Path -Path $tempFile -Leaf
 
-        Write-Host "      CDOC_ROOT : $CDOC_ROOT"
-        Write-Host "MY_PROJECT_ROOT : $MY_PROJECT_ROOT"
-        Write-Host "       TempFile : $tempFile"
+        # Write-Host "      CDOC_ROOT : $CDOC_ROOT"
+        # Write-Host "MY_PROJECT_ROOT : $MY_PROJECT_ROOT"
+        # Write-Host "       TempFile : $tempFile"
         $tempFile_combined = Join-Path -Path $MY_PROJECT_ROOT -ChildPath $tempFile
 
         if (!(Test-Path -Path $tempFile_combined)) {
             $ni = New-Item -Path $tempFile_combined -ItemType file
         }
 
-        Write-Host "       TempFile : $tempFile"
+        #Write-Host "       TempFile : $tempFile"
         $tempFile = Resolve-Path -Path $tempFile -RelativeBasePath $MY_PROJECT_ROOT -Relative
-        Write-Host "TempFile_shrunk : $tempFile"
+        #Write-Host "TempFile_shrunk : $tempFile"
 
 
         if ($ni -ne $null) {

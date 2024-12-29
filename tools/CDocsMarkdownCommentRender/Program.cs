@@ -199,8 +199,6 @@ namespace Pandoc.Comment.Render
                                         Environment.Exit(5);
                                     }
 
-                                    //if (0 != String.Compare(type, "cdocs"))
-                                    //    continue;
 
                                     string code = a["c"][1].ToString();
 
@@ -211,14 +209,12 @@ namespace Pandoc.Comment.Render
                                     byte[] hash = md5.ComputeHash(inputBytes);
                                     Guid inputGuid = new Guid(hash);
 
-                                    string inputFile = Path.Combine(options.DBDir, $"mermaid.{Guid.NewGuid()}.tmp");
+                                    string inputFile = Path.Combine(options.DBDir, $"{type.ToLower()}.{Guid.NewGuid()}.tmp");
                                     string outputFile = inputFile + ".png";
                                     File.WriteAllText(inputFile, html);
 
 
                                     Process p = new Process();
-                                    //p.StartInfo.FileName = "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltoimage.exe";
-                                    //p.StartInfo.Arguments = inputFile + " " + outputFile;
                                     p.StartInfo.FileName = "pwsh";
                                     p.StartInfo.Arguments = $"{script} {inputFile} {outputFile}";
                                     p.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
@@ -235,12 +231,11 @@ namespace Pandoc.Comment.Render
 
 
                                     File.WriteAllText(cacheContent, a.ToJsonString());
-                                    //File.Move(inputFile, cacheContent, true);
                                     File.Move(outputFile, cacheImage, true);
-                                    File.Delete(inputFile);
 
+                                    Console.Error.WriteLine($"**NOT DELETING: {inputFile}");
+                                    //File.Delete(inputFile);
 
-                                    //string realitivePath = CreateRealitivePath(options.InputFile, cacheImage);
                                     string realitivePath = CreeateHackyDirectPath(cacheImage, options.DBDir);
 
 
@@ -299,7 +294,6 @@ namespace Pandoc.Comment.Render
                                         var p = jo.ToArray();
                                         string heading = p[0].Value.ToString();
 
-                                        //string heading = a["c"][1][1][0][0].ToString();
                                         if ("Para".Equals(heading))
                                         {
                                             PandocObject newPO = new PandocObject();
@@ -458,16 +452,33 @@ namespace Pandoc.Comment.Render
                     args = simulatedArgs.ToArray();
                 }
 
+
+                if(!filterMode)
+                {
+                    Console.Error.WriteLine("");
+                    Console.Error.WriteLine("");
+                    Console.Error.WriteLine("");
+                    Console.Error.WriteLine("CDocsMarkDownCommentRender - args] ---------------------------------");
+
+                    foreach(var arg in args)
+                    {
+                        Console.Error.Write(arg + " ");
+                    }
+                    Console.Error.WriteLine();
+                }
               
                 int ret = -1;
                 Parser.Default.ParseArguments<Options>(args)
                     .WithParsed<Options>(o =>
                     {
-                        /*Console.Error.WriteLine($"CDocsMarkdownCommentRender:");
-                        Console.Error.WriteLine($"   Input:{o.InputFile}");
-                        Console.Error.WriteLine($"  Output:{o.OutputFile}");
-                        Console.Error.WriteLine($"      DB:{o.DBDir}");
-                        Console.Error.WriteLine($" Reverse:{o.Reverse}");*/
+
+                        if(!o.FilterMode) { 
+                            Console.Error.WriteLine($"CDocsMarkdownCommentRender:");
+                            Console.Error.WriteLine($"   Input:{o.InputFile}");
+                            Console.Error.WriteLine($"  Output:{o.OutputFile}");
+                            Console.Error.WriteLine($"      DB:{o.DBDir}");
+                            Console.Error.WriteLine($" Reverse:{o.Reverse}");
+                        }
                                              
                         if (!Directory.Exists(o.DBDir))
                         {
