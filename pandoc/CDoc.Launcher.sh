@@ -1,8 +1,8 @@
 #!/bin/bash
 
-echo "CDoc Launcher! [ $@]"
-echo "----------------------------------------------"
-echo Looking for /cdocs/CDoc.Launcher.sh as an override
+#echo "CDoc Launcher! [ $@]"
+#echo "----------------------------------------------"
+#echo Looking for /cdocs/CDoc.Launcher.sh as an override
 
 
 #
@@ -20,10 +20,14 @@ else
 fi
 
 if [[ ! -z "${CDOC_RECURSE}" ]]; then
-    echo "Found /cdocs/CDoc.Launcher.sh"
+echo
+echo
+echo "                   Container ] -------------------------------------------------------------------------------"
+echo "                   Intercepted (debug) /cdocs/CDoc.Launcher.s"
+
     cd /cdocs
     chmod +x ./CDoc.Launcher.sh
-    dos2unix ./CDoc.Launcher.sh
+    dos2unix -q ./CDoc.Launcher.sh
 
     unset CDOC_FIRST_CALL
     ./CDoc.Launcher.sh "$@"

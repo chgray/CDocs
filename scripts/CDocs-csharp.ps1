@@ -50,7 +50,7 @@ Import-Module $PSScriptRoot\CDocsLib\CDocsLib.psm1
 $ErrorActionPreference = 'Break'
 
 $InputFile = Resolve-Path -Path $InputFile
-$IntermediateFile = $InputFile + ".csharp"
+$IntermediateFile = $InputFile + ".csharp.md"
 $HtmlFile = $OutputFile -replace ".png", ".html"
 
 Write-Host ""
@@ -123,8 +123,7 @@ $InputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $IntermediateFi
 $InputFile_AST = Get-Temp.File -File $IntermediateFile -Op "HTML"
 $InputFile_AST_Linux = Get-Temp.File -File $IntermediateFile -Op "HTML" -Linux
 
-#$InputFile_MERGED = Get-Temp.File -File $InputFile -Op "MERGED"
-#$InputFile_MERGED_Linux = Get-Temp.File -File $InputFile -Op "MERGED" -Linux
+
 
 #
 # Cleanup maps
@@ -140,19 +139,17 @@ Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
         "-t", "html", `
         "-o",$InputFile_AST_Linux
 
+
 if (!(Test-Path -Path $InputFile_AST)) {
     Write-Error "ERROR: Container didnt produce the expected output file {$InputFile_AST}"
     exit 1
 }
 
-# -=-=-=-=
-type $InputFile_AST
+&"c:\Program Files\wkhtmltopdf\bin\wkhtmltoimage.exe" -q $InputFile_AST $OutputFile
 
-Write-Host "HTMLFile: $InputFile_AST"
-Write-Host "OutputFile: $OutputFile"
+if (!(Test-Path -Path $OutputFile)) {
+    Write-Error "ERROR: wkhtmltoimage didnt produce the expected output file {$InputFile_AST}"
+    exit 1
+}
 
-&"c:\Program Files\wkhtmltopdf\bin\wkhtmltoimage.exe" $InputFile_AST $OutputFile
-
-
-
-
+Write-Host "             <SUCCESS>"
