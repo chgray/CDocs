@@ -6,34 +6,94 @@ param (
     [string]$OutputFile = $null
 )
 
+
+function Extract-ThreeStrings {
+    param (
+        [string]$inputString
+    )
+    $inputString = $inputString -replace '\n', ''
+    $pattern = '.*CSharp_Include\(([^,]+)",\s*([^,]+),\s*([^)]+)\).*'
+
+    if ($inputString -match $pattern) {
+        $string1 = $matches
+        $string2 = $matches
+        $string3 = $matches
+
+        return @{
+            String1 = $string1
+            String2 = $string2
+            String3 = $string3
+        }
+    } else {
+        Write-Error "Input string does not match the expected pattern."
+        throw "Unable to process include of $inputString"
+    }
+}
+
+function Get-TextBetween {
+    param (
+        [string]$inputString,
+        [string]$startString,
+        [string]$endString
+    )
+
+    # Use regex to find the text between start and end strings
+    if ($inputString -match "$startString(.*?)$endString") {
+        return $matches
+    } else {
+        return "No match found"
+    }
+}
+
 Import-Module $PSScriptRoot\CDocsLib\CDocsLib.psm1
 
 $ErrorActionPreference = 'Break'
 
 $InputFile = Resolve-Path -Path $InputFile
+$IntermediateFile = $InputFile + ".csharp"
+$HtmlFile = $OutputFile -replace ".png", ".html"
 
+Write-Host ""
+Write-Host ""
+Write-host "CDocs-CSharp.ps1 ] ----------------------------------------------------------------------------------------"
+Write-Host "             InputFile : $InputFile"
+Write-Host "            OutputFile : $OutputFile"
+Write-Host "     Intermediate File : $IntermediateFile"
+Write-Host "             Html File : $HtmlFile"
+
+#
+#  Check for missing files;  clean temp files
+#
 if (!(Test-Path -Path $InputFile)) {
     Write-Error "Input file doesnt exist $InputFile"
     exit 1
 }
 
-Write-Host "Adding Stuff to place"
-$InputFile = $InputFile + ".csharp"
-Add-Content -Path $InputFile -Value "# CDocs: CSharp"
-Add-Content -Path $InputFile -Value "printf"
+if ((Test-Path -Path $IntermediateFile)) {
+    Remove-Item -Path $IntermediateFile
+}
+if ((Test-Path -Path $HtmlFile)) {
+    Remove-Item -Path $HtmlFile
+}
 
+$inputData = Get-Content -Path $InputFile
+$regexTokens = Extract-ThreeStrings -inputString $inputData
 
-Write-Host ""
-Write-Host ""
-Write-Host ""
-Write-Host ""
-Write-Host "```csharp discovered and being processed ] -------------------------------------------------------------------"
-Write-Host "        INPUT_FILE : $InputFile"
-Write-Host "       OUTPUT_FILE : $OutputFile"
-Write-Host ""
-Write-Host ""
+$fileName =(($regexTokens["String1"][1] -replace '\n', '') -replace '"', '').Trim()
+$startToken = (($regexTokens["String1"][2] -replace '\n', '') -replace '"', '').Trim()
+$endToken = (($regexTokens["String1"][3] -replace '\n', '') -replace '"', '').Trim()
 
-$HtmlFile = $OutputFile -replace ".png", ".html"
+Add-Content -Path $IntermediateFile -Value "# CDocs: CSharp"
+Add-Content -Path $IntermediateFile -Value $fileName
+Add-Content -Path $IntermediateFile -Value $startToken
+Add-Content -Path $IntermediateFile -Value $endToken
+
+$fileData = Get-Content -Path $fileName
+
+$fileData = (Get-TextBetween -inputString $fileData -startString $startToken -endString $endToken)[1]
+
+Add-Content -Path $IntermediateFile -Value $fileData
+
 
 
 # -=-=-=-=
@@ -45,8 +105,8 @@ $CONTAINER="chgray123/chgray_repro:pandoc"
 #
 $CONTAINER_TOOL= Get-CDocs.Container.Tool
 
-if (!(Test-Path -Path $InputFile)) {
-    Write-Error "Input file doesnt exist $InputFile"
+if (!(Test-Path -Path $IntermediateFile)) {
+    Write-Error "Input file doesnt exist $IntermediateFile"
     exit 1
 }
 
@@ -56,12 +116,12 @@ if (!(Test-Path -Path $InputFile)) {
 # Locate the CDocs project root
 #
 $PROJECT_ROOT = Get-CDocs.ProjectRoot
-$InputFileRootDir = Split-Path -Path $InputFile -Parent
+$InputFileRootDir = Split-Path -Path $IntermediateFile -Parent
 $InputFileRootDir_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $InputFileRootDir -Base $PROJECT_ROOT
 
-$InputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $InputFile -Base $InputFileRootDir
-$InputFile_AST = Get-Temp.File -File $InputFile -Op "HTML"
-$InputFile_AST_Linux = Get-Temp.File -File $InputFile -Op "HTML" -Linux
+$InputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $IntermediateFile -Base $InputFileRootDir
+$InputFile_AST = Get-Temp.File -File $IntermediateFile -Op "HTML"
+$InputFile_AST_Linux = Get-Temp.File -File $IntermediateFile -Op "HTML" -Linux
 
 #$InputFile_MERGED = Get-Temp.File -File $InputFile -Op "MERGED"
 #$InputFile_MERGED_Linux = Get-Temp.File -File $InputFile -Op "MERGED" -Linux
@@ -92,4 +152,7 @@ Write-Host "HTMLFile: $InputFile_AST"
 Write-Host "OutputFile: $OutputFile"
 
 &"c:\Program Files\wkhtmltopdf\bin\wkhtmltoimage.exe" $InputFile_AST $OutputFile
+
+
+
 
