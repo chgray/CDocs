@@ -147,7 +147,7 @@ if ($ReverseRender)
     Write-Host ""
     Write-Host ""
     Write-Host ""
-    Write-Host "Running MergeTool]  ---------------------------------------------------------------"
+    Write-Host "Running MergeTool] ----------------------------------------------------------------------------------------"
     Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $OutputFile_AST,`
                                                                         "-o", $OutputFile_MERGED,`
                                                                         "-d", $DatabaseDirectory,`

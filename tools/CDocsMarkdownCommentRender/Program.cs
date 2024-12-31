@@ -199,7 +199,6 @@ namespace Pandoc.Comment.Render
                                         Environment.Exit(5);
                                     }
 
-
                                     string code = a["c"][1].ToString();
 
                                     string html = code;
@@ -472,8 +471,11 @@ namespace Pandoc.Comment.Render
                     .WithParsed<Options>(o =>
                     {
 
-                        if(!o.FilterMode) { 
-                            Console.Error.WriteLine($"CDocsMarkdownCommentRender:");
+                        if(!o.FilterMode) {
+                            Console.Error.WriteLine("");
+                            Console.Error.WriteLine("");
+                            Console.Error.WriteLine("");
+                            Console.Error.WriteLine($"CDocsMarkdownCommentRender] ---------------------------------");
                             Console.Error.WriteLine($"   Input:{o.InputFile}");
                             Console.Error.WriteLine($"  Output:{o.OutputFile}");
                             Console.Error.WriteLine($"      DB:{o.DBDir}");

@@ -37,12 +37,17 @@ function Get-TextBetween {
         [string]$endString
     )
 
-    # Use regex to find the text between start and end strings
-    if ($inputString -match "$startString(.*?)$endString") {
-        return $matches
-    } else {
-        return "No match found"
+    $startIndex = $inputString.IndexOf($startString)
+    $endIndex = $inputString.IndexOf($endString)
+    
+    if(-1 -eq $startIndex -or -1 -eq $endIndex) {
+        throw "Unable to find start or end string"
     }
+
+    $startIndex += $startString.Length
+    $ret = $inputString.Substring($startIndex, $endIndex - $startIndex)
+
+    return $ret
 }
 
 Import-Module $PSScriptRoot\CDocsLib\CDocsLib.psm1
@@ -76,25 +81,18 @@ if ((Test-Path -Path $HtmlFile)) {
     Remove-Item -Path $HtmlFile
 }
 
-$inputData = Get-Content -Path $InputFile
+$inputData = Get-Content -Raw -Path $InputFile
 $regexTokens = Extract-ThreeStrings -inputString $inputData
 
 $fileName =(($regexTokens["String1"][1] -replace '\n', '') -replace '"', '').Trim()
 $startToken = (($regexTokens["String1"][2] -replace '\n', '') -replace '"', '').Trim()
 $endToken = (($regexTokens["String1"][3] -replace '\n', '') -replace '"', '').Trim()
 
+$rawFileData = Get-Content -Raw -Path $fileName
+$fileData = (Get-TextBetween -inputString $rawFileData -startString $startToken -endString $endToken)
+
 Add-Content -Path $IntermediateFile -Value "# CDocs: CSharp"
-Add-Content -Path $IntermediateFile -Value $fileName
-Add-Content -Path $IntermediateFile -Value $startToken
-Add-Content -Path $IntermediateFile -Value $endToken
-
-$fileData = Get-Content -Path $fileName
-
-$fileData = (Get-TextBetween -inputString $fileData -startString $startToken -endString $endToken)[1]
-
 Add-Content -Path $IntermediateFile -Value $fileData
-
-
 
 # -=-=-=-=
 
