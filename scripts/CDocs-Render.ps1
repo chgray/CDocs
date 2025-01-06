@@ -31,6 +31,10 @@ param (
 Import-Module $PSScriptRoot\CDocsLib\CDocsLib.psm1
 
 
+if ($env:MY_VARIABLE) {
+    Write-Error "Environment variable CDOCS_FILTER cannot be set.  Please unset it."
+    exit 90
+} 
 
 $ErrorActionPreference = 'Break'
 #$ErrorActionPreference = 'Stop'
