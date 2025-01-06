@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
@@ -534,7 +535,8 @@ namespace Pandoc.Comment.Render
                         var options = new JsonSerializerOptions
                         {
                             WriteIndented = true,
-                            TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+                            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+                            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
                         };
 
 
