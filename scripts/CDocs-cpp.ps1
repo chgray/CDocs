@@ -82,17 +82,9 @@ if ((Test-Path -Path $HtmlFile)) {
 }
 
 $inputData = Get-Content -Raw -Path $InputFile
-$regexTokens = Extract-ThreeStrings -inputString $inputData
 
-$fileName =(($regexTokens["String1"][1] -replace '\n', '') -replace '"', '').Trim()
-$startToken = (($regexTokens["String1"][2] -replace '\n', '') -replace '"', '').Trim()
-$endToken = (($regexTokens["String1"][3] -replace '\n', '') -replace '"', '').Trim()
-
-$rawFileData = Get-Content -Raw -Path $fileName
-$fileData = (Get-TextBetween -inputString $rawFileData -startString $startToken -endString $endToken)
-
-Add-Content -Path $IntermediateFile -Value "# CDocs: CSharp"
-Add-Content -Path $IntermediateFile -Value $fileData
+Add-Content -Path $IntermediateFile -Value "# CDocs: CPP"
+Add-Content -Path $IntermediateFile -Value $inputData
 
 # -=-=-=-=
 

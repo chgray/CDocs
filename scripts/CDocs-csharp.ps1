@@ -25,7 +25,7 @@ function Extract-ThreeStrings {
             String3 = $string3
         }
     } else {
-        Write-Error "Input string does not match the expected pattern."
+        Write-Error "Input string ($inputString) does not match the expected pattern ($pattern)."
         throw "Unable to process include of $inputString"
     }
 }
@@ -39,7 +39,7 @@ function Get-TextBetween {
 
     $startIndex = $inputString.IndexOf($startString)
     $endIndex = $inputString.IndexOf($endString)
-    
+
     if(-1 -eq $startIndex -or -1 -eq $endIndex) {
         throw "Unable to find start or end string"
     }
@@ -55,12 +55,12 @@ Import-Module $PSScriptRoot\CDocsLib\CDocsLib.psm1
 $ErrorActionPreference = 'Break'
 
 $InputFile = Resolve-Path -Path $InputFile
-$IntermediateFile = $InputFile + ".csharp.md"
+$IntermediateFile = $InputFile + ".cpp.md"
 $HtmlFile = $OutputFile -replace ".png", ".html"
 
 Write-Host ""
 Write-Host ""
-Write-host "CDocs-CSharp.ps1 ] ----------------------------------------------------------------------------------------"
+Write-host "CDocs-cpp.ps1 ] ----------------------------------------------------------------------------------------"
 Write-Host "             InputFile : $InputFile"
 Write-Host "            OutputFile : $OutputFile"
 Write-Host "     Intermediate File : $IntermediateFile"
@@ -82,17 +82,9 @@ if ((Test-Path -Path $HtmlFile)) {
 }
 
 $inputData = Get-Content -Raw -Path $InputFile
-$regexTokens = Extract-ThreeStrings -inputString $inputData
-
-$fileName =(($regexTokens["String1"][1] -replace '\n', '') -replace '"', '').Trim()
-$startToken = (($regexTokens["String1"][2] -replace '\n', '') -replace '"', '').Trim()
-$endToken = (($regexTokens["String1"][3] -replace '\n', '') -replace '"', '').Trim()
-
-$rawFileData = Get-Content -Raw -Path $fileName
-$fileData = (Get-TextBetween -inputString $rawFileData -startString $startToken -endString $endToken)
 
 Add-Content -Path $IntermediateFile -Value "# CDocs: CSharp"
-Add-Content -Path $IntermediateFile -Value $fileData
+Add-Content -Path $IntermediateFile -Value $inputData
 
 # -=-=-=-=
 
