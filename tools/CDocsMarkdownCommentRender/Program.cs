@@ -191,6 +191,9 @@ namespace Pandoc.Comment.Render
 
                                 if (blah.Equals("CodeBlock") && !options.Reverse)
                                 {
+                                    if (0 == a["c"][0][1].AsArray().Count)
+                                        continue;
+
                                     string type = a["c"][0][1][0].ToString();
                                     string script = $"c:\\Source\\CDocs\\scripts\\CDocs-{type.ToLower()}.ps1";
 
@@ -330,6 +333,8 @@ namespace Pandoc.Comment.Render
                     catch(Exception e)
                     {
                         Console.Error.WriteLine("ERROR: " + e);
+                        Console.Error.WriteLine(n.ToJsonString());
+
                         Environment.Exit(7);
                     }
 

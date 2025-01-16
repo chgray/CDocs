@@ -25,16 +25,18 @@ param (
     [string]$OutputDir = $null,
 
     [Parameter(Mandatory = $false)]
-    [switch]$ReverseRender = $false
+    [switch]$ReverseRender = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$NormalMargins = $false
 )
 
 Import-Module $PSScriptRoot\CDocsLib\CDocsLib.psm1
 
-
 if ($env:MY_VARIABLE) {
     Write-Error "Environment variable CDOCS_FILTER cannot be set.  Please unset it."
     exit 90
-} 
+}
 
 $ErrorActionPreference = 'Break'
 #$ErrorActionPreference = 'Stop'
@@ -216,14 +218,27 @@ else
         exit 1
     }
 
-    Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
-        -ContainerLauncher $CONTAINER_TOOL `
-        -Container $CONTAINER `
-        -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
-        -ArgumentList `
-        "-i", $InputFile_MERGED_Linux, `
-        "-f", "json", `
-        "-o",$OutputFile_Linux, `
-        "--reference-doc","/templates/numbered-sections-6x9.docx"
+
+    if ($NormalMargins) {
+        Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
+            -ContainerLauncher $CONTAINER_TOOL `
+            -Container $CONTAINER `
+            -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
+            -ArgumentList `
+            "-i", $InputFile_MERGED_Linux, `
+            "-f", "json", `
+            "-o",$OutputFile_Linux, `
+            "--reference-doc","/templates/numbered-sections.docx"
+    } else {
+        Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
+            -ContainerLauncher $CONTAINER_TOOL `
+            -Container $CONTAINER `
+            -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
+            -ArgumentList `
+            "-i", $InputFile_MERGED_Linux, `
+            "-f", "json", `
+            "-o",$OutputFile_Linux, `
+            "--reference-doc","/templates/numbered-sections-6x9.docx"
+    }
 }
 
