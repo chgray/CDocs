@@ -1,0 +1,23 @@
+FROM chgray123/chgray_repro:pandoc
+LABEL maintainer chgray@gmail.com
+
+# ------------------------------------------------------------------------------
+#
+# Helpful commands: this section is the 'junk drawer' of handy command
+#    one could argue they shouldnt be here
+#
+#
+#
+#podman build -f Dockerfile.gnuplot.ubuntu --platform linux/arm64 -t "chgray123/chgray_repro:gnuplot" .
+
+# podman login docker.io
+# podman push chgray123/chgray_repro:gnuplot
+
+
+
+RUN apt update
+RUN apt install -y -q gnuplot
+
+
+ENTRYPOINT ["/usr/bin/bash"]
+WORKDIR /data
