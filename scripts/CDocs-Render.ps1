@@ -28,7 +28,10 @@ param (
     [switch]$ReverseRender = $false,
 
     [Parameter(Mandatory = $false)]
-    [switch]$NormalMargins = $false
+    [switch]$NormalMargins = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$EPUB = $false
 )
 
 Import-Module $PSScriptRoot\CDocsLib\CDocsLib.psm1
@@ -86,7 +89,12 @@ $InputFile_Relative = Split-Path -Path $InputFile -Leaf
 #
 # Determine the destination of output file
 #
-$OutputFile = $InputFile -replace ".md", ".md.docx"
+if ($EPUB) {
+    $OutputFile = $InputFile -replace ".md", ".pdf"
+} else {
+    $OutputFile = $InputFile -replace ".md", ".docx"
+}
+
 
 #$OutputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $OutputFile -Base $PROJECT_ROOT
 $OutputFile_Linux = Split-Path -Path $OutputFile -Leaf
