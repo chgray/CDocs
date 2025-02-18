@@ -51,8 +51,8 @@ jobs:
 
     # Save build artifacts
     # Docs : https://github.com/actions/upload-artifact
-    - name: Save build artifacts for download
-      uses: actions/upload-artifact@v2
-      with:
-        name: Store Rendered Documents, for download by the user
-        path: Rendered/
+    #- name: Save build artifacts for download
+    #  uses: actions/upload-artifact@v2
+    #  with:
+    #    name: Store Rendered Documents, for download by the user
+    #    path: Rendered/
