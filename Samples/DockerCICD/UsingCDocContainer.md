@@ -1,6 +1,6 @@
 # Hello world
 1. item1
-2. item2
+1. item2
 
 # Mermaid
 ```mermaid
