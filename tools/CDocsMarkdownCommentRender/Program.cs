@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -170,6 +171,20 @@ namespace Pandoc.Comment.Render
                 return null;
             }
 
+            private string FindScriptsDirectory()
+            {
+                string modulePath = Assembly.GetExecutingAssembly().Location;
+                for(; ; )
+                {
+                    string scriptDir = Path.Combine(modulePath, "scripts");
+                    if (Directory.Exists(scriptDir))
+                        return scriptDir;
+                    modulePath = Path.GetDirectoryName(modulePath);
+                    if (String.IsNullOrEmpty(modulePath))
+                        return null;
+                }
+            }
+
 
             void Recurse(Options options, JsonNode n)
             {
@@ -194,10 +209,14 @@ namespace Pandoc.Comment.Render
                                     if (0 == a["c"][0][1].AsArray().Count)
                                         continue;
 
-                                    string type = a["c"][0][1][0].ToString();
-                                    string script = $"c:\\Source\\CDocs\\scripts\\CDocs-{type.ToLower()}.ps1";
+                                    string mod = FindScriptsDirectory();
 
-                                    if(!File.Exists(script))
+                                    string type = a["c"][0][1][0].ToString();
+                                    //string script = $"c:\\Source\\CDocs\\scripts\\CDocs-{type.ToLower()}.ps1";
+
+                                    string script = Path.Combine(mod, $"CDocs-{type.ToLower()}.py");
+
+                                    if (!File.Exists(script))
                                     {
                                         Console.Error.WriteLine($"ERROR: cdocs doesnt understand type {type} - there is no script {script}");
                                         Environment.Exit(5);
@@ -218,11 +237,13 @@ namespace Pandoc.Comment.Render
 
 
                                     Process p = new Process();
-                                    p.StartInfo.FileName = "python3";
+                                    p.StartInfo.FileName = "python";
                                     p.StartInfo.Arguments = $"{script} {inputFile} {outputFile}";
                                     p.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
                                     p.Start();
                                     p.WaitForExit();
+
+                                    Console.Error.WriteLine("pwsh " + p.StartInfo.Arguments);
 
                                     byte[] bits = File.ReadAllBytes(outputFile);
                                     hash = md5.ComputeHash(bits);
@@ -448,7 +469,7 @@ namespace Pandoc.Comment.Render
                     }
 
                     string tab = Environment.GetEnvironmentVariable("CDOCS_TAB");
-                    if (!String.IsNullOrEmpty(db))
+                    if (!String.IsNullOrEmpty(tab))
                     {
                         simulatedArgs.Add("-t");
                         simulatedArgs.Add(tab);
@@ -457,6 +478,8 @@ namespace Pandoc.Comment.Render
                     args = simulatedArgs.ToArray();
                 }
 
+                foreach (string arg in args)
+                    Console.Error.WriteLine("ARRRGG: " + arg);
 
                 if(!filterMode)
                 {

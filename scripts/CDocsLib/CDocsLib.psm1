@@ -20,13 +20,13 @@ function Start-CDocs.Container {
         [string[]]$ArgumentList
     )
 
-    # Write-Host ""
-    # Write-Host ""
-    # Write-Host ""
-    # Write-Host "Starting Container] ----------------------------------------------------------------"
-    # Write-Host "ContainerLauncher : $ContainerLauncher"
-    # Write-Host "Container : $Container"
-    # Write-Host "DebugMode: $DebugMode"
+     Write-Host ""
+     Write-Host ""
+     Write-Host ""
+     Write-Host "Starting Container] ----------------------------------------------------------------"
+     Write-Host "ContainerLauncher : $ContainerLauncher"
+     Write-Host "Container : $Container"
+     Write-Host "DebugMode: $DebugMode"
 
     $argString = ""
     $toolArgs = New-Object System.Collections.Generic.List[string]
@@ -86,8 +86,9 @@ function Start-CDocs.Container {
     #
     $debugArgs += "ubuntu:latest"
 
-    # Write-Host "      Arguments : [$ContainerLauncher $argString]"
-    # Write-Host "   PROJECT_ROOT : [$PROJECT_ROOT]"
+    Write-Host "      Arguments : [$ContainerLauncher $argString]"
+    Write-Host "   PROJECT_ROOT : [$PROJECT_ROOT]"
+    $DebugMode = 1
 
     if($DebugMode) {
         Write-Host "Debug Arguments : [$ContainerLauncher $debugArgs]"
@@ -95,8 +96,8 @@ function Start-CDocs.Container {
         Write-Error "EXITING : Debug Mode is enabled"
         exit 1
     } else {
-    #    Write-Host "A[$toolArgs]"
-    #    Write-Host "B["+($toolArgs.ToArray())+"]"
+        Write-Host "A[$toolArgs]"
+        Write-Host "B["+($toolArgs.ToArray())+"]"
         Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $toolArgs.ToArray()
     }
 }
@@ -182,7 +183,6 @@ function Convert-LocalPath.To.CDocContainerPath{
         [Parameter(Mandatory = $true)]
         [string]$Base
     )
-    #Write-Host "Making $Path relative to $Base"
 
     if (!(Test-Path -Path $Path)) {
         $Path = $Path.Substring($Base.Length)

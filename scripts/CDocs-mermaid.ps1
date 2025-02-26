@@ -6,6 +6,7 @@ param (
     [string]$OutputFile = $null
 )
 
+Write-host "YO:$PSScriptRoot\CDocsLib\CDocsLib.psm1"
 Import-Module $PSScriptRoot\CDocsLib\CDocsLib.psm1
 
 $InputFile = Resolve-Path -Path $InputFile
@@ -17,13 +18,18 @@ if (!(Test-Path -Path $InputFile)) {
 
 
 $CONTAINER_TOOL = Get-CDocs.Container.Tool
-$CONTAINER="chgray123/chgray_repro:cdocs.mermaid"
+$CONTAINER="docker.io/chgray123/chgray_repro:cdocs.mermaid"
 $PROJECT_ROOT=  Get-CDocs.ProjectRoot
+Write-Host "1"
+
 $InputFileRootDir = Split-Path -Path $InputFile -Parent
 $WORKING_DIR = Convert-LocalPath.To.CDocContainerPath -Path $InputFileRootDir -Base $PROJECT_ROOT
-$DatabaseDirectory = Join-Path -Path $PROJECT_ROOT -ChildPath "orig_media"
+Write-Host "2"
 
+$DatabaseDirectory = Join-Path -Path $PROJECT_ROOT -ChildPath "orig_media"
 $JUST_FILENAME = Split-Path -Path $InputFile -Leaf
+Write-Host "3"
+
 $LINUX_OUTPUTFILE = Convert-LocalPath.To.CDocContainerPath -Path $OutputFile -Base $PROJECT_ROOT
 
 Write-Host "        INPUT_FILE : $InputFile"
@@ -39,7 +45,7 @@ Write-Host "         CONTAINER : $CONTAINER"
 
 Start-CDocs.Container -WorkingDir $WORKING_DIR `
                     -ContainerLauncher $CONTAINER_TOOL `
-                    -DirectoryMappings @("C:\\Source\\CDocs\\pandoc:/cdocs") `
+                    -DirectoryMappings @("/CDocs/pandoc:/cdocs") `
                     -Container $CONTAINER `
                     -ArgumentList `
                     "/home/mermaidcli/node_modules/.bin/mmdc -p /puppeteer-config.json", `
