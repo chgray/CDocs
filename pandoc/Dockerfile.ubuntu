@@ -101,7 +101,7 @@ COPY CDoc.Launcher.sh /CDoc.Launcher.sh
 WORKDIR /
 
 ENV CDOC_FIRST_CALL=1
-ENTRYPOINT [ "/CDoc.Launcher.sh" ]
+#ENTRYPOINT [ "/CDoc.Launcher.sh" ]
 WORKDIR /data
 
 #

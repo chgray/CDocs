@@ -46,14 +46,3 @@ Start-CDocs.Container -WorkingDir $WORKING_DIR `
                     "-i", $JUST_FILENAME, `
                     "-o", $LINUX_OUTPUTFILE, `
                     "--width", "1000"
-
-                    #"-i", "/data/$InputFile.mermaid", `
-                    #
-                    #-i ./graph.mermaid -o ./foo.png --width 100
-
-                    # -DirectoryMappings @($dirMap, $templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
-                    # -ArgumentList `
-                    # "-i", "$OutputFile_Linux", `
-                    # "--extract-media", ".", `
-                    # "-t", "json", `
-                    # "-o",$OutputFile_AST_Linux

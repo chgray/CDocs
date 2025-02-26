@@ -1,5 +1,5 @@
 
-FROM minlag/mermaid-cli
+FROM docker.io/minlag/mermaid-cli
 #FROM node:18.20-alpine3.19
 
 
@@ -24,10 +24,13 @@ RUN apk add bash
 
 COPY CDoc.Launcher.sh /CDoc.Launcher.sh
 
-
 ENV CDOC_FIRST_CALL=1
-CMD [ ]
-ENTRYPOINT [ "/CDoc.Launcher.sh" ]
+
+#ENTRYPOINT [ "/bin/bash" ]
+ENTRYPOINT []
+
+#CMD [ ]
+#ENTRYPOINT [ "/CDoc.Launcher.sh" ]
 
 #CMD [ "--help"]
 #ENTRYPOINT [ "/home/mermaidcli/node_modules/.bin/mmdc -p /puppeteer-config.json" ]

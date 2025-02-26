@@ -218,7 +218,7 @@ namespace Pandoc.Comment.Render
 
 
                                     Process p = new Process();
-                                    p.StartInfo.FileName = "pwsh";
+                                    p.StartInfo.FileName = "python3";
                                     p.StartInfo.Arguments = $"{script} {inputFile} {outputFile}";
                                     p.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
                                     p.Start();
@@ -426,7 +426,7 @@ namespace Pandoc.Comment.Render
             public int Main(string[] args)
             {
                 bool filterMode = false;
-                
+
                 if(!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("CDOCS_FILTER")))
                 {
                     filterMode = true;
@@ -471,7 +471,7 @@ namespace Pandoc.Comment.Render
                     }
                     Console.Error.WriteLine();
                 }
-              
+
                 int ret = -1;
                 Parser.Default.ParseArguments<Options>(args)
                     .WithParsed<Options>(o =>
@@ -487,7 +487,7 @@ namespace Pandoc.Comment.Render
                             Console.Error.WriteLine($"      DB:{o.DBDir}");
                             Console.Error.WriteLine($" Reverse:{o.Reverse}");
                         }
-                                             
+
                         if (!Directory.Exists(o.DBDir))
                         {
                             Directory.CreateDirectory(o.DBDir);
@@ -497,7 +497,7 @@ namespace Pandoc.Comment.Render
 
                         if (!filterMode)
                         {
-                            
+
                             if (!File.Exists(o.InputFile))
                             {
                                 Console.Error.WriteLine($"ERROR: input file not found {o.InputFile}");
