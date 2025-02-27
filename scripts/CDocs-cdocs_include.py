@@ -3,7 +3,24 @@ import os
 import uuid
 import subprocess
 
+
 import CDocs_Module_Utils as CDocs
+import CDocs_utils as CDocsInternal
+
+
+def CSharp_Include(file, startToken, endToken, tabLeft=True ):
+    "Include..."
+
+    print("**** - CSharp_Include({},{},{},{})".format(file, startToken, endToken, tabLeft))
+
+    baseDir = os.getcwd()
+    print("BASEDIR {}".format(baseDir))
+    code = ""
+    code +=  CDocsInternal.Include(baseDir, file, startToken, endToken, tabLeft)
+
+    print("CODE: {}".format(code))
+    return code
+
 
 def main():
     if len(sys.argv) != 3:
@@ -11,11 +28,29 @@ def main():
         sys.exit(1)
 
     orig_input_filename = sys.argv[1]
-    input_filename = orig_input_filename+".html"
-    os.rename(orig_input_filename, input_filename)
+
+    with open(orig_input_filename, "r") as f:
+        lines = f.read()
+
+    lines = lines.replace("{{", "")
+    lines = lines.replace("}}", "")
+    lines = lines.replace("\n", "")
+    lines = lines.strip()
+    print(lines)
+
+    execCmd = "stuff=" + lines
+    print(execCmd)
+
+    exec(execCmd, globals())
+    print("STUFF : {}".format(stuff))
+
+    input_filename = orig_input_filename + ".content.html"
+    with open(input_filename, "w") as f:
+        f.write(stuff)
+
     output_filename = sys.argv[2]
 
-    print(" XINPUT: {}".format(input_filename))
+    print(" INPUT: {}".format(input_filename))
     print("OUTPUT: {}".format(output_filename))
 
     if not os.path.exists(input_filename):
@@ -35,18 +70,8 @@ def main():
     CONTAINER="chgray123/chgray_repro:pandoc"
     input_filename = CDocs.MapToDataDirectory(input_filename)
 
-    #temp_output = "/tmp/{}.png".format(str(uuid.uuid4()))
-
     cmd = "cutycapt --url=file:///data/{} --out={} --max-wait=5000".format(mapped_input, mapped_output)
     CDocs.RunInContainer(CONTAINER, cmd, mapped_output)
-
-    #print ("MOVING {} -> {}".format(temp_output, mapped_output))
-
-    #with os.scandir("/tmp") as entries:
-    #    for entry in entries:
-    #        print(entry)
-
-    #os.rename(temp_output, mapped_output)
 
     if not os.path.exists(output_filename):
         print("ERROR: {} doesnt exist".format(output_filename))
