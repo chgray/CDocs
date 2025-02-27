@@ -49,7 +49,10 @@ def RunInContainer(container, command, expected_output):
         sys.exit(40)
 
     totalCommand = "{} run -it --rm -v {}:/data {} {}".format(DiscoverContainerTool(), PROJECT_ROOT, container, command)
-    print("RUNNING CONTAINER: {}".format(totalCommand))
+    print("RUNNING CONTAINER:")
+    print("-------------------------------------------------------------------------")
+    print("{}".format(totalCommand))
+    print("")
     subprocess.run([totalCommand], shell=True)
 
     if not not os.path.exists(expected_output):

@@ -289,14 +289,14 @@ namespace Pandoc.Comment.Render
 
 
                                     Console.Error.WriteLine($"Redirected python output : {script}");
-                                    Console.Error.WriteLine("--------------------------------------------");
+                                    Console.Error.WriteLine("-=-=----------------------------------------");
                                     Console.Error.WriteLine(output);
-                                     Console.Error.WriteLine("--------------------------------------------");
+                                    Console.Error.WriteLine("--------------------------------------------");
                                     Console.Error.WriteLine("python " + p.StartInfo.Arguments);
 
                                     if(!File.Exists(outputFile))
                                     {
-                                        Console.Error.WriteLine($"OUTPUT FILE NOT CREATED: {outputFile}");
+                                        Console.Error.WriteLine($"X_OUTPUT FILE NOT CREATED: {outputFile}");
                                         Environment.Exit(20);
                                     } else
                                     {
