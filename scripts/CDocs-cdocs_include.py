@@ -48,6 +48,9 @@ def main():
     with open(input_filename, "w") as f:
         f.write(stuff)
 
+    convert = "pandoc -i {} -f markdown -o {} -t html".format(input_filename, input_filename)
+    os.system(convert)
+
     output_filename = sys.argv[2]
 
     print(" INPUT: {}".format(input_filename))
