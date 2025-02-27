@@ -94,7 +94,7 @@ namespace Pandoc.Comment.Render
         {
             static string FindContentDirectory()
             {
-                return Path.Combine((FindDBDirectory()), "orig_docs");
+                return Path.Combine((FindDBDirectory()), "orig_media");
             }
 
             static string FindDBDirectory()
@@ -104,7 +104,7 @@ namespace Pandoc.Comment.Render
                 for(;;)
                 {
                     string root = Path.Combine(configDir, ".CDocs.config");
-                    Console.Error.WriteLine($"Looking for config file in {root}");
+                    //Console.Error.WriteLine($"Looking for config file in {root}");
 
                     if(File.Exists(root))
                         return configDir;
@@ -288,7 +288,10 @@ namespace Pandoc.Comment.Render
                                     p.WaitForExit();
 
 
-                                    Console.Error.WriteLine("Redirected python output : " + output);
+                                    Console.Error.WriteLine($"Redirected python output : {script}");
+                                    Console.Error.WriteLine("--------------------------------------------");
+                                    Console.Error.WriteLine(output);
+                                     Console.Error.WriteLine("--------------------------------------------");
                                     Console.Error.WriteLine("python " + p.StartInfo.Arguments);
 
                                     if(!File.Exists(outputFile))

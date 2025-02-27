@@ -96,6 +96,9 @@ RUN dpkg -i ./pandoc-3.3-1-$PROC_ARCH.deb
 WORKDIR /root
 
 RUN apt-get install -y -q texlive-latex-base texlive-fonts-recommended texlive-latex-recommended
+RUN apt-get install -y -q cutycapt
+ENV QT_QPA_PLATFORM=offscreen
+
 
 COPY CDoc.Launcher.sh /CDoc.Launcher.sh
 WORKDIR /
