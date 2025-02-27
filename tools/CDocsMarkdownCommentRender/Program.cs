@@ -412,9 +412,8 @@ namespace Pandoc.Comment.Render
                     }
                     catch(Exception e)
                     {
-                        Console.Error.WriteLine("ERROR: " + e);
-                        Console.Error.WriteLine(n.ToJsonString());
-
+                        File.WriteAllText("debug.json", n!.ToJsonString());
+                        Console.Error.WriteLine("ERROR (chk debug.json): " + e);
                         Environment.Exit(7);
                     }
 
