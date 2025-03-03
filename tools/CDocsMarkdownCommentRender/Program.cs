@@ -412,7 +412,7 @@ namespace Pandoc.Comment.Render
                     }
                     catch(Exception e)
                     {
-                        File.WriteAllText("debug.json", n!.ToJsonString());
+                        //File.WriteAllText("debug.json", n!.ToJsonString());
                         Console.Error.WriteLine("ERROR (chk debug.json): " + e);
                         Environment.Exit(7);
                     }
@@ -638,7 +638,7 @@ namespace Pandoc.Comment.Render
                         else
                         {
                             Console.WriteLine(forecastNode!.ToJsonString(options));
-                            File.WriteAllText("debug.json", forecastNode!.ToJsonString(options));
+                            //File.WriteAllText("debug.json", forecastNode!.ToJsonString(options));
                         }
                         ret = 0;
                     });
