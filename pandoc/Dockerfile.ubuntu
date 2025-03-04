@@ -16,7 +16,7 @@ ARG PROC_ARCH=amd64
 # podman build -f Dockerfile.ubuntu -t "chgray123/chgray_repro:pandoc" .
 
 # podman login docker.io
-# podman push chgray123/chgray_repro:pandoc
+# podman push --platform linux/arm64 chgray123/chgray_repro:pandoc
 
 
 #PlantUML
