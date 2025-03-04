@@ -17,6 +17,13 @@ ARG PROC_ARCH=amd64
 # podman build -f cdocs.mermaid.Dockerfile --build-arg PROC_ARCH=arm64 --platform linux/arm64 -t "chgray123/chgray_repro:cdocs.mermaid" .
 # podman build -f cdocs.mermaid.Dockerfile --build-arg PROC_ARCH=amd64 --platform linux/amd64 -t "chgray123/chgray_repro:cdocs.mermaid" .
 
+
+# podman login docker.io
+# podman push --platform linux/amd64 chgray123/chgray_repro:cdocs.mermaid
+# podman push --platform linux/arm64 chgray123/chgray_repro:cdocs.mermaid
+
+
+
 USER root
 RUN apk update
 RUN apk upgrade
