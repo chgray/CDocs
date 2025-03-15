@@ -58,7 +58,7 @@ function Start-CDocs.Container {
     # Add the container, and then args
     #
     $toolArgs.Add($Container)
-    $toolArgs.Add($WorkingDir)
+    #$toolArgs.Add($WorkingDir)
     $toolArgs.Add($ArgumentList)
 
     foreach ($arg in $toolArgs) {
@@ -88,7 +88,7 @@ function Start-CDocs.Container {
 
     Write-Host "      Arguments : [$ContainerLauncher $argString]"
     Write-Host "   PROJECT_ROOT : [$PROJECT_ROOT]"
-    $DebugMode = 1
+    $DebugMode = True
 
     if($DebugMode) {
         Write-Host "Debug Arguments : [$ContainerLauncher $debugArgs]"
@@ -117,18 +117,7 @@ function Get-CDocs.Container.Tool
     } finally {
     }
 
-    if ($CONTAINER_TOOL -eq $null) {
-        try {
-            $process = (Start-Process -NoNewWindow -FilePath "podman" -Wait -ErrorAction SilentlyContinue -PassThru -ArgumentList "-v")
 
-            if ($process.ExitCode -ne 0) {
-                throw "podman failed with exit code $($process.ExitCode)"
-            }
-            $ret="podman"
-        } catch {
-        } finally {
-        }
-    }
     $ErrorActionPreference = $temp
     $ret
 }

@@ -44,7 +44,6 @@ if ($env:MY_VARIABLE) {
 $ErrorActionPreference = 'Break'
 #$ErrorActionPreference = 'Stop'
 
-
 $MergeTool = "C:\\Source\\CDocs\\tools\\CDocsMarkdownCommentRender\\bin\\Debug\\net8.0\\CDocsMarkdownCommentRender.exe"
 $CONTAINER="chgray123/chgray_repro:pandoc"
 # $CONTAINER="ubuntu:latest"
@@ -144,6 +143,8 @@ if ($ReverseRender)
         -Container $CONTAINER `
         -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
         -ArgumentList `
+        "/CDoc.Launcher.sh",
+        "./docs",
         "-i", "$OutputFile_Linux", `
         "--extract-media", ".", `
         "-t", "json", `
@@ -164,7 +165,6 @@ if ($ReverseRender)
     Write-Host "Running MergeTool] ----------------------------------------------------------------------------------------"
     Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $OutputFile_AST,`
                                                                         "-o", $OutputFile_MERGED,`
-                                                                        "-d", $DatabaseDirectory,`
                                                                         "-r"
 
     #
@@ -183,6 +183,8 @@ if ($ReverseRender)
         -Container $CONTAINER `
         -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
         -ArgumentList `
+            "/CDoc.Launcher.sh",
+            "./docs",
             "-i", $OutputFile_MERGED_Linux, `
             "-f", "json",`
             "-o",$InputFile_Relative
@@ -197,14 +199,21 @@ else
     $InputFile_MERGED = Get-Temp.File -File $InputFile -Op "MERGED"
     $InputFile_MERGED_Linux = Get-Temp.File -File $InputFile -Op "MERGED" -Linux
 
+    Write-Host "           *** Input File : $InputFile_Linux"
+    Write-Host "          *** Output File : $InputFile_AST_Linux"
+
+
     Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
             -ContainerLauncher $CONTAINER_TOOL `
             -Container $CONTAINER `
             -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
             -ArgumentList `
+            "/CDoc.Launcher.sh",
+            "./docs",
             "$InputFile_Linux",`
             "-t", "json", `
             "-o",$InputFile_AST_Linux
+
 
     if (!(Test-Path -Path $InputFile_AST)) {
         Write-Error "ERROR: Container didnt produce the expected output file {$InputFile_AST}"
@@ -216,10 +225,11 @@ else
     Write-Host ""
     Write-Host ""
     Write-Host "---------------------------------------------------------------"
-    Write-Host "Running MergeTool [$MergeTool] "
-    Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $InputFile_AST,`
-                                                                        "-o", $InputFile_MERGED,`
-                                                                        "-d", $DatabaseDirectory
+    Write-Host "Running MergeToolX [$MergeTool] "
+    Start-Process -NoNewWindow -FilePath $MergeTool -Wait `
+                -ArgumentList  `
+                "-i", $InputFile_AST,`
+                "-o", $InputFile_MERGED
 
     if (!(Test-Path -Path $InputFile_MERGED)) {
         Write-Error "Output file doesnt exist $InputFile_MERGED"
@@ -233,6 +243,8 @@ else
             -Container $CONTAINER `
             -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
             -ArgumentList `
+            "/CDoc.Launcher.sh",
+            "./docs",
             "-i", $InputFile_MERGED_Linux, `
             "-f", "json", `
             "-o",$OutputFile_Linux, `
@@ -243,6 +255,8 @@ else
             -Container $CONTAINER `
             -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
             -ArgumentList `
+            "/CDoc.Launcher.sh",
+            "./docs",
             "-i", $InputFile_MERGED_Linux, `
             "-f", "json", `
             "-o",$OutputFile_Linux, `

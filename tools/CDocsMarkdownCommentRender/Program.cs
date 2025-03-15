@@ -633,6 +633,7 @@ namespace Pandoc.Comment.Render
 
                         if (!filterMode)
                         {
+                            Console.Error.WriteLine($"Output: {o.OutputFile}");
                             File.WriteAllText(o.OutputFile, forecastNode!.ToJsonString(options));
                         }
                         else
@@ -643,6 +644,7 @@ namespace Pandoc.Comment.Render
                         ret = 0;
                     });
 
+                Console.Error.WriteLine($"Exiting:{ret}");
                 return ret;
             }
         }
