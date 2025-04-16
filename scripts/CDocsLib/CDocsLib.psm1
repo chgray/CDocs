@@ -5,7 +5,7 @@ function Start-CDocs.Container {
         [string]$WorkingDir,
 
         [Parameter(Mandatory = $false)]
-        [switch]$DebugMode = $false,
+        [switch]$DebugMode = $true,
 
         [Parameter(Mandatory = $true)]
         [string]$ContainerLauncher,

@@ -19,9 +19,11 @@ ARG PROC_ARCH=amd64
 
 
 # podman login docker.io
-# podman push --platform linux/amd64 chgray123/chgray_repro:cdocs.mermaid
+# podman push --platform linux/amd64,linux/arm64 chgray123/chgray_repro:cdocs.mermaid
 # podman push --platform linux/arm64 chgray123/chgray_repro:cdocs.mermaid
 
+
+# docker build --platform linux/amd64,linux/arm64 -f cdocs.mermaid.Dockerfile -t chgray123/chgray_repro:cdocs.mermaid --push
 
 
 USER root

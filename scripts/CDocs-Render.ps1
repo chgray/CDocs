@@ -143,8 +143,8 @@ if ($ReverseRender)
         -Container $CONTAINER `
         -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
         -ArgumentList `
-        "/CDoc.Launcher.sh",
-        "./docs",
+        "/cdocs/CDoc.Launcher.sh",
+        $InputFileRootDir_Linux,
         "-i", "$OutputFile_Linux", `
         "--extract-media", ".", `
         "-t", "json", `
@@ -183,8 +183,8 @@ if ($ReverseRender)
         -Container $CONTAINER `
         -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
         -ArgumentList `
-            "/CDoc.Launcher.sh",
-            "./docs",
+            "/cdocs/CDoc.Launcher.sh",
+            $InputFileRootDir_Linux,
             "-i", $OutputFile_MERGED_Linux, `
             "-f", "json",`
             "-o",$InputFile_Relative
@@ -208,8 +208,8 @@ else
             -Container $CONTAINER `
             -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
             -ArgumentList `
-            "/CDoc.Launcher.sh",
-            "./docs",
+            "/cdocs/CDoc.Launcher.sh",
+            $InputFileRootDir_Linux,
             "$InputFile_Linux",`
             "-t", "json", `
             "-o",$InputFile_AST_Linux
@@ -243,8 +243,8 @@ else
             -Container $CONTAINER `
             -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
             -ArgumentList `
-            "/CDoc.Launcher.sh",
-            "./docs",
+            "/cdocs/CDoc.Launcher.sh",
+            $InputFileRootDir_Linux,
             "-i", $InputFile_MERGED_Linux, `
             "-f", "json", `
             "-o",$OutputFile_Linux, `
@@ -255,8 +255,8 @@ else
             -Container $CONTAINER `
             -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
             -ArgumentList `
-            "/CDoc.Launcher.sh",
-            "./docs",
+            "/cdocs/CDoc.Launcher.sh",
+            $InputFileRootDir_Linux,
             "-i", $InputFile_MERGED_Linux, `
             "-f", "json", `
             "-o",$OutputFile_Linux, `

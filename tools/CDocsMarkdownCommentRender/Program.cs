@@ -272,11 +272,12 @@ namespace Pandoc.Comment.Render
                                     byte[] hash = md5.ComputeHash(inputBytes);
                                     Guid inputGuid = new Guid(hash);
 
-
-                                    string inputFile = Path.Combine(FindContentDirectory(), $"{type.ToLower()}.{Guid.NewGuid()}.tmp");
-                                    string outputFile = Path.Combine(FindContentDirectory(), Path.GetFileName(inputFile) + ".png");
+                                    string inputFile = String.Empty;
+                                    string outputFile = String.Empty;
+                                    try {
+                                    inputFile = Path.Combine(FindContentDirectory(), $"{type.ToLower()}.{Guid.NewGuid()}.tmp");
+                                    outputFile = Path.Combine(FindContentDirectory(), Path.GetFileName(inputFile) + ".png");
                                     File.WriteAllText(inputFile, html);
-
 
                                     Process p = new Process();
                                     p.StartInfo.FileName = "python";
@@ -293,6 +294,17 @@ namespace Pandoc.Comment.Render
                                     Console.Error.WriteLine(output);
                                     Console.Error.WriteLine("--------------------------------------------");
                                     Console.Error.WriteLine("python " + p.StartInfo.Arguments);
+                                    }
+                                    finally
+                                    {
+                                        if(!String.IsNullOrEmpty(inputFile) && File.Exists(inputFile))
+                                        {
+                                            Console.Error.WriteLine($"**DELETING: {inputFile}");
+                                            File.Delete(inputFile);
+                                        }
+                                    }
+
+
 
                                     if(!File.Exists(outputFile))
                                     {
