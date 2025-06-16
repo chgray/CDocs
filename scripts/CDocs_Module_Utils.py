@@ -3,7 +3,7 @@ import sys
 import subprocess
 
 def DiscoverContainerTool():
-    return "podman"
+    return "docker"
 
 
 def GetCDocsProjectRoot():
@@ -48,17 +48,53 @@ def RunInContainer(container, command, expected_output):
         print("ERROR: {} must not exist; and it does".format(expected_output))
         sys.exit(40)
 
-    totalCommand = "{} run -it --rm -v {}:/data {} {}".format(DiscoverContainerTool(), PROJECT_ROOT, container, command)
-    print("RUNNING CONTAINER:")
-    print("-------------------------------------------------------------------------")
-    print("{}".format(totalCommand))
-    print("")
-    subprocess.run([totalCommand], shell=True)
+    totalCommand = "{} run --rm -v {}:/data {} {}".format(DiscoverContainerTool(), PROJECT_ROOT, container, command)
+    # totalCommand = []
+    # totalCommand.append(DiscoverContainerTool())
+    # totalCommand.append("run")
+    # #totalCommand.append("-it")
+    # totalCommand.append("--rm")
+    # #totalCommand.append("-v")
+    # #totalCommand.append(PROJECT_ROOT + ":/data")
+    # totalCommand.append(container)
+    # totalCommand.append("bash")
+    # totalCommand.append("-c")
+    # #totalCommand.append("ps")
+    # totalCommand.append(command)
+    print(totalCommand)
 
-    if not not os.path.exists(expected_output):
+    print("RUNNING CONTAINER-x:")
+    print("-------------------------------------------------------------------------")
+
+    print("")
+
+    subprocess.run(totalCommand, shell=True)
+
+    #import code
+    #code.interact(local=locals())
+    print("------")
+
+    #raise FileNotFoundError("grrrr.")
+
+    if not os.path.exists(expected_output):
         print("ERROR: {} must exist; and it doesnt".format(expected_output))
-        command = "bash"
-        totalCommand = "{} run -it --rm -v {}:/data {} {}".format(DiscoverContainerTool(), PROJECT_ROOT, container, command)
-        print("RUNNING CONTAINER(DEBUG): {}".format(totalCommand))
-        subprocess.run([totalCommand], shell=True)
+        raise ValueError("Output file doesnt exit")
+        os._exit(456)
+        #import code
+        #code.interact(local=locals())
+
+        #command = "bash"
+        #totalCommand = "{} run -it --rm -v {}:/data {} {}".format(DiscoverContainerTool(), PROJECT_ROOT, container, command)
+        #print("RUNNING CONTAINER(DEBUG): [{}]".format(totalCommand))
+        ##result = subprocess.run(totalCommand, shell=True, capture_output=True, text=True)
+        #print(result.stdout)  # Output: Hello
+        #print(result.returncode)  # Output: 0)
+
+        print("BACK")
         sys.exit(41)
+    else:
+        print("GOOD")
+        print(f"GOOD: expected output exists {expected_output} (size: {os.path.getsize(expected_output)} bytes, full path: {os.path.abspath(expected_output)})")
+        print("DONE")
+
+    print("BYE")

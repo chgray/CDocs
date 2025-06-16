@@ -87,11 +87,11 @@ def main():
         input_filename = CDocs.MapToDataDirectory(input_filename)
 
         cmd = "cutycapt --url=file:///data/{} --out={} --max-wait=5000".format(mapped_input, mapped_output)
-        CDocs.RunInContainer(CONTAINER, cmd, mapped_output)
+        CDocs.RunInContainer(CONTAINER, cmd, output_filename)
 
         if not os.path.exists(output_filename):
             print("ERROR: {} doesnt exist".format(output_filename))
-            sys.exit(2)
+            sys.exit(20)
 
     finally:
         if os.path.exists(input_filename):

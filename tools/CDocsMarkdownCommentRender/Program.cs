@@ -284,6 +284,7 @@ namespace Pandoc.Comment.Render
                                     p.StartInfo.Arguments = $"{script} {inputFile} {outputFile}";
                                     p.StartInfo.RedirectStandardOutput = true;
                                     p.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+
                                     p.Start();
                                     string output = p.StandardOutput.ReadToEnd();
                                     p.WaitForExit();

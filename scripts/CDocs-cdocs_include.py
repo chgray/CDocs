@@ -30,6 +30,10 @@ def main():
 
     orig_input_filename = sys.argv[1]
 
+    if not os.path.exists(orig_input_filename):
+        print(f'Input file doesnt exist {orig_input_filename}')
+        sys.exit(2)
+
     with open(orig_input_filename, "r") as f:
         lines = f.read()
 
@@ -40,7 +44,7 @@ def main():
     print(lines)
 
     execCmd = "stuff=" + lines
-    print(execCmd)
+    print(f"EXEC: {execCmd}")
 
     exec(execCmd, globals())
     print("STUFF : {}".format(stuff))
@@ -76,17 +80,17 @@ def main():
         input_filename = CDocs.MapToDataDirectory(input_filename)
 
         cmd = "cutycapt --url=file:///data/{} --out={} --max-wait=5000".format(mapped_input, mapped_output)
-        CDocs.RunInContainer(CONTAINER, cmd, mapped_output)
+        CDocs.RunInContainer(CONTAINER, cmd, output_filename)
 
         if not os.path.exists(output_filename):
-            print("ERROR: {} doesnt exist".format(output_filename))
+            print("ERROR: {} (cDocs-cdocs_include) doesnt exist".format(output_filename))
             sys.exit(2)
 
     finally:
 
         if os.path.exists(input_filename):
             os.remove(input_filename)
-      
+
 
 
 if __name__ == "__main__":
