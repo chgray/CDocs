@@ -104,7 +104,7 @@ namespace Pandoc.Comment.Render
                 for(;;)
                 {
                     string root = Path.Combine(configDir, ".CDocs.config");
-                    //Console.Error.WriteLine($"Looking for config file in {root}");
+                    //Console.Error.WriteLine($"CDOCS_FILTER: Looking for config file in {root}");
 
                     if(File.Exists(root))
                         return configDir;
@@ -112,7 +112,7 @@ namespace Pandoc.Comment.Render
                     configDir = Path.GetDirectoryName(configDir);
                     if(String.IsNullOrEmpty(configDir))
                     {
-                        Console.Error.WriteLine("Unable to locate .CDocs.config");
+                        Console.Error.WriteLine("CDOCS_FILTER: Unable to locate .CDocs.config");
                         Environment.Exit(-122);
                     }
                 }
@@ -128,19 +128,19 @@ namespace Pandoc.Comment.Render
                 // Find our root
                 string configDir = FindDBDirectory();
 
-                Console.Error.WriteLine($"   CWD : {Directory.GetCurrentDirectory()}");
-                Console.Error.WriteLine($"CONFIG : {configDir}");
-                Console.Error.WriteLine($"   FILE: {file}");
+                Console.Error.WriteLine($"CDOCS_FILTER:    CWD : {Directory.GetCurrentDirectory()}");
+                Console.Error.WriteLine($"CDOCS_FILTER: CONFIG : {configDir}");
+                Console.Error.WriteLine($"CDOCS_FILTER:    FILE: {file}");
 
                 string bits = Path.GetRelativePath(Directory.GetCurrentDirectory(), Path.GetDirectoryName(file));
-                Console.Error.WriteLine($"    REL: {bits}");
+                Console.Error.WriteLine($"CDOCS_FILTER:     REL: {bits}");
                 bits += $"{Path.DirectorySeparatorChar}{Path.GetFileName(file)}";
                 return bits;/*
                 file = file.Replace(configDir, "");
-                Console.Error.WriteLine($" MAPPED: {file}");
+                Console.Error.WriteLine($"CDOCS_FILTER:  MAPPED: {file}");
 
                 file = file.Replace("\\", "/");
-                Console.Error.WriteLine($" FINAL: {file}");
+                Console.Error.WriteLine($"CDOCS_FILTER:  FINAL: {file}");
 
                 return file;*/
             }
@@ -259,7 +259,7 @@ namespace Pandoc.Comment.Render
 
                                     if (!File.Exists(script))
                                     {
-                                        Console.Error.WriteLine($"ERROR: cdocs doesnt understand type {type} - there is no script {script}");
+                                        Console.Error.WriteLine($"CDOCS_FILTER: ERROR: cdocs doesnt understand type {type} - there is no script {script}");
                                         Environment.Exit(5);
                                     }
 
@@ -290,37 +290,36 @@ namespace Pandoc.Comment.Render
                                     p.WaitForExit();
 
 
-                                    Console.Error.WriteLine($"Redirected python output : {script}");
-                                    Console.Error.WriteLine("-=-=----------------------------------------");
+                                    Console.Error.WriteLine($"CDOCS_FILTER: Redirected python output : {script}");
+                                    Console.Error.WriteLine("CDOCS_FILTER: -=-=----------------------------------------");
                                     Console.Error.WriteLine(output);
-                                    Console.Error.WriteLine("--------------------------------------------");
-                                    Console.Error.WriteLine("python " + p.StartInfo.Arguments);
+                                    Console.Error.WriteLine("CDOCS_FILTER: --------------------------------------------");
+                                    Console.Error.WriteLine("CDOCS_FILTER: python " + p.StartInfo.Arguments);
                                     }
                                     finally
                                     {
                                         if(!String.IsNullOrEmpty(inputFile) && File.Exists(inputFile))
                                         {
-                                            Console.Error.WriteLine($"**DELETING: {inputFile}");
-                                            File.Delete(inputFile);
+                                            //Console.Error.WriteLine($"CDOCS_FILTER: **DELETING: {inputFile}");
+                                            //File.Delete(inputFile);
                                         }
                                     }
 
-
-
-                                    if(!File.Exists(outputFile))
+                                    if (!File.Exists(outputFile))
                                     {
-                                        Console.Error.WriteLine($"X_OUTPUT FILE NOT CREATED: {outputFile}");
+                                        Console.Error.WriteLine($"CDOCS_FILTER: OUTPUT FILE NOT CREATED: {outputFile}");
                                         Environment.Exit(20);
-                                    } else
+                                    }
+                                    else
                                     {
-                                        Console.Error.WriteLine($"GOOD: OUTPUT FILE CREATED: {outputFile}");
+                                        Console.Error.WriteLine($"CDOCS_FILTER: GOOD: OUTPUT FILE CREATED: {outputFile}");
                                     }
 
                                     byte[] bits = File.ReadAllBytes(outputFile);
                                     hash = md5.ComputeHash(bits);
                                     Guid outputGuid = new Guid(hash);
 
-                                    string cacheName = inputGuid.ToString() + "." + outputGuid.ToString();
+                                    string cacheName = type.ToString() + "." +inputGuid.ToString() + "." + outputGuid.ToString();
                                     string cacheImage = Path.Combine(FindContentDirectory(), cacheName + ".png");
                                     string cacheContent = Path.Combine(FindContentDirectory(), cacheName + ".png.cdocs_orig");
 
@@ -328,14 +327,14 @@ namespace Pandoc.Comment.Render
                                     File.WriteAllText(cacheContent, a.ToJsonString());
                                     File.Move(outputFile, cacheImage, true);
 
-                                    Console.Error.WriteLine($"**NOT DELETING: {inputFile}");
+                                    Console.Error.WriteLine($"CDOCS_FILTER: **NOT DELETING: {inputFile}");
                                     //File.Delete(inputFile);
 
-                                     Console.Error.WriteLine($"CACHE_IMAGE: {cacheImage}");
+                                     Console.Error.WriteLine($"CDOCS_FILTER: CACHE_IMAGE: {cacheImage}");
 
                                     string realitivePath = CreeateHackyDirectPath(cacheImage, FindContentDirectory());
 
-                                    Console.Error.WriteLine($"IMAGE: {realitivePath},  {FindContentDirectory()}");
+                                    Console.Error.WriteLine($"CDOCS_FILTER: IMAGE: {realitivePath},  {FindContentDirectory()}");
                                     //
                                     // Create a caption
                                     //
@@ -401,7 +400,7 @@ namespace Pandoc.Comment.Render
                                     }
                                     catch (Exception)
                                     {
-                                        Console.Error.WriteLine("UNABLE To patchup para");
+                                        Console.Error.WriteLine("CDOCS_FILTER: UNABLE To patchup para");
                                         Environment.Exit(4);
                                     }
 
@@ -426,7 +425,7 @@ namespace Pandoc.Comment.Render
                     catch(Exception e)
                     {
                         //File.WriteAllText("debug.json", n!.ToJsonString());
-                        Console.Error.WriteLine("ERROR (chk debug.json): " + e);
+                        Console.Error.WriteLine("CDOCS_FILTER: ERROR (chk debug.json): " + e);
                         Environment.Exit(7);
                     }
 
@@ -506,7 +505,7 @@ namespace Pandoc.Comment.Render
 
                                 if (!found)
                                 {
-                                    Console.Error.WriteLine($"ERROR : unable to locate {img}");
+                                    Console.Error.WriteLine($"CDOCS_FILTER: ERROR : unable to locate {img}");
                                     Environment.Exit(80);
                                 }
                             }
@@ -550,14 +549,14 @@ namespace Pandoc.Comment.Render
                 }
 
                 foreach (string arg in args)
-                    Console.Error.WriteLine("CDocsMarkdownCommentRender ARG: " + arg);
+                    Console.Error.WriteLine("CDOCS_FILTER: CDocsMarkdownCommentRender ARG: " + arg);
 
                 if(!filterMode)
                 {
-                    Console.Error.WriteLine("");
-                    Console.Error.WriteLine("");
-                    Console.Error.WriteLine("");
-                    Console.Error.WriteLine("CDocsMarkDownCommentRender - args] ---------------------------------");
+                    Console.Error.WriteLine("CDOCS_FILTER: ");
+                    Console.Error.WriteLine("CDOCS_FILTER: ");
+                    Console.Error.WriteLine("CDOCS_FILTER: ");
+                    Console.Error.WriteLine("CDOCS_FILTER: CDocsMarkDownCommentRender - args] ---------------------------------");
 
                     foreach(var arg in args)
                     {
@@ -572,14 +571,14 @@ namespace Pandoc.Comment.Render
                     {
                         if(!o.FilterMode)
                         {
-                            Console.Error.WriteLine("");
-                            Console.Error.WriteLine("");
-                            Console.Error.WriteLine("");
-                            Console.Error.WriteLine($"CDocsMarkdownCommentRender] ---------------------------------");
-                            Console.Error.WriteLine($"   Input:{o.InputFile}");
-                            Console.Error.WriteLine($"  Output:{o.OutputFile}");
-                            Console.Error.WriteLine($"      DB:{FindContentDirectory()}");
-                            Console.Error.WriteLine($" Reverse:{o.Reverse}");
+                            Console.Error.WriteLine("CDOCS_FILTER: ");
+                            Console.Error.WriteLine("CDOCS_FILTER: ");
+                            Console.Error.WriteLine("CDOCS_FILTER: ");
+                            Console.Error.WriteLine($"CDOCS_FILTER: CDocsMarkdownCommentRender] ---------------------------------");
+                            Console.Error.WriteLine($"CDOCS_FILTER:    Input:{o.InputFile}");
+                            Console.Error.WriteLine($"CDOCS_FILTER:   Output:{o.OutputFile}");
+                            Console.Error.WriteLine($"CDOCS_FILTER:       DB:{FindContentDirectory()}");
+                            Console.Error.WriteLine($"CDOCS_FILTER:  Reverse:{o.Reverse}");
                         }
 
                         if (!Directory.Exists(FindContentDirectory()))
@@ -593,13 +592,13 @@ namespace Pandoc.Comment.Render
                         {
                             if (!File.Exists(o.InputFile))
                             {
-                                Console.Error.WriteLine($"ERROR: input file not found {o.InputFile}");
+                                Console.Error.WriteLine($"CDOCS_FILTER: ERROR: input file not found {o.InputFile}");
                                 ret = 1;
                             }
 
                             if(String.IsNullOrEmpty(o.OutputFile))
                             {
-                                Console.Error.WriteLine($"ERROR: output file required");
+                                Console.Error.WriteLine($"CDOCS_FILTER: ERROR: output file required");
                                 Environment.Exit(43);
                             }
                             json = File.ReadAllText(o.InputFile);
@@ -646,7 +645,7 @@ namespace Pandoc.Comment.Render
 
                         if (!filterMode)
                         {
-                            Console.Error.WriteLine($"Output: {o.OutputFile}");
+                            Console.Error.WriteLine($"CDOCS_FILTER: Output: {o.OutputFile}");
                             File.WriteAllText(o.OutputFile, forecastNode!.ToJsonString(options));
                         }
                         else
@@ -657,7 +656,7 @@ namespace Pandoc.Comment.Render
                         ret = 0;
                     });
 
-                Console.Error.WriteLine($"Exiting:{ret}");
+                Console.Error.WriteLine($"CDOCS_FILTER: Exiting:{ret}");
                 return ret;
             }
         }
@@ -669,7 +668,7 @@ namespace Pandoc.Comment.Render
                 return helper.Main(args);
             } catch(Exception e)
             {
-                Console.Error.WriteLine("ERROR: " + e);
+                Console.Error.WriteLine("CDOCS_FILTER: ERROR: " + e);
                 Environment.Exit(-92);
                 return -92;
             }

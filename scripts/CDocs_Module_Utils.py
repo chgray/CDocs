@@ -63,7 +63,7 @@ def RunInContainer(container, command, expected_output):
     # totalCommand.append(command)
     print(totalCommand)
 
-    print("RUNNING CONTAINER-x:")
+    print("RUNNING CONTAINER:")
     print("-------------------------------------------------------------------------")
 
     print("")
