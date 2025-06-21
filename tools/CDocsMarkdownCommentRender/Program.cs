@@ -338,13 +338,13 @@ namespace Pandoc.Comment.Render
                                     //
                                     // Create a caption
                                     //
-                                    PandocObject captionBody = new PandocObject();
-                                    captionBody.t = "Str";
-                                    captionBody.c = "My Caption";
+                                    //PandocObject captionBody = new PandocObject();
+                                    //captionBody.t = "Str";
+                                    //captionBody.c = "My Caption";
 
-                                    PandocObject captionText = new PandocObject();
-                                    captionText.t = "Plain";
-                                    captionText.c = new object[] { captionBody };
+                                    //PandocObject captionText = new PandocObject();
+                                    //captionText.t = "Plain";
+                                    //captionText.c = new object[] { captionBody };
 
 
                                     //
@@ -356,23 +356,23 @@ namespace Pandoc.Comment.Render
                                     image.c = imagePieces;
 
                                     imagePieces[0] = new object[3] { "", new object[0], new object[0] };
-                                    imagePieces[1] = new object[1] { new PandocObject("Str", "Caption") };
+                                    imagePieces[1] = new object[0]; //{ "", new object[0], new object[0] };//new PandocObject("Str", "Caption") };
                                     imagePieces[2] = new object[2] { realitivePath, "" };
 
                                     PandocObject plain = new PandocObject();
-                                    plain.t = "Plain";
+                                    plain.t = "Para";
                                     plain.c = new object[1] { image };
 
-                                    object[] figurePieces = new object[3];
-                                    figurePieces[0] = new object[3] { "", new object[0], new object[0] };
-                                    figurePieces[1] = new object[2] { null, new object[1] { captionText } };
-                                    figurePieces[2] = new object[1] { plain };
+                                    //object[] figurePieces = new object[3];
+                                    //figurePieces[0] = new object[3] { "", new object[0], new object[0] };
+                                    //figurePieces[1] = new object[2] { null, new object[1] { captionText } };
+                                    //figurePieces[2] = new object[1] { plain };
 
-                                    PandocObject figure = new PandocObject();
-                                    figure.t = "Figure";
-                                    figure.c = figurePieces;
+                                    //PandocObject figure = new PandocObject();
+                                    //figure.t = "Figure";
+                                    //figure.c = figurePieces;
 
-                                    a.ReplaceWith(figure);
+                                    a.ReplaceWith(plain);
                                 }
 
                                 else if (blah.Equals("Figure") && options.Reverse)
