@@ -592,13 +592,13 @@ namespace Pandoc.Comment.Render
                         {
                             if (!File.Exists(o.InputFile))
                             {
-                                Console.Error.WriteLine($"CDOCS_FILTER: ERROR: input file not found {o.InputFile}");
+                                Console.Error.WriteLine($"CDOCS_FILTER: ERROR: input file [{o.InputFile}] not found");
                                 ret = 1;
                             }
 
                             if(String.IsNullOrEmpty(o.OutputFile))
                             {
-                                Console.Error.WriteLine($"CDOCS_FILTER: ERROR: output file required");
+                                Console.Error.WriteLine($"CDOCS_FILTER: ERROR: output file not specified but is required");
                                 Environment.Exit(43);
                             }
                             json = File.ReadAllText(o.InputFile);
