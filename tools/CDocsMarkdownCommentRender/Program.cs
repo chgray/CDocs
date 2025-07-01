@@ -1,8 +1,5 @@
-﻿
-using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -10,7 +7,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using CommandLine;
-using static Pandoc.Comment.Render.Program;
 
 namespace Pandoc.Comment.Render
 {
@@ -52,9 +48,6 @@ namespace Pandoc.Comment.Render
         {
             [Option('i', "input", Required = false, HelpText = "Input File")]
             public string? InputFile { get; set; }
-
-            //[Option('d', "databaseDir", Required = true, HelpText = "Database Directory, envVar=CDOCS_DB")]
-            //public string DBDir { get; set; }
 
             [Option('o', "output", Required = false, HelpText = "Output File")]
             public string? OutputFile { get; set; }
@@ -125,10 +118,6 @@ namespace Pandoc.Comment.Render
             }
             static string CreeateHackyDirectPath(string file, string db)
             {
-                //FILE =   C:\.....\orig_docs\foo.png
-                //CONFIG = C:\.....\
-                //CWD    = c:\.....\blah
-
                 file = new FileInfo(file).FullName;
 
                 // Find our root
@@ -145,58 +134,9 @@ namespace Pandoc.Comment.Render
                 string bits = Path.GetRelativePath(Directory.GetCurrentDirectory(), dirName);
                 Console.Error.WriteLine($"CDOCS_FILTER:     REL: {bits}");
                 bits += $"{Path.DirectorySeparatorChar}{Path.GetFileName(file)}";
-                return bits;/*
-                file = file.Replace(configDir, "");
-                Console.Error.WriteLine($"CDOCS_FILTER:  MAPPED: {file}");
-
-                file = file.Replace("\\", "/");
-                Console.Error.WriteLine($"CDOCS_FILTER:  FINAL: {file}");
-
-                return file;*/
+                return bits;
             }
-
-            static string CreateRealitivePath(string document, string desiredFile)
-            {
-                document = new FileInfo(document).FullName;
-                desiredFile = new FileInfo(desiredFile).FullName;
-
-                Uri path1 = new Uri(document);
-                Uri path2 = new Uri(desiredFile);
-                Uri diff = path1.MakeRelativeUri(path2);
-                string relPath = diff.OriginalString;
-
-                if (!relPath.StartsWith("."))
-                {
-                    relPath = "./" + relPath;
-                }
-
-                /* string realitiveOuputPath = outFile.FullName;
-                 realitiveOuputPath = "." + realitiveOuputPath.Substring(inputFilePath.FullName.Length);
-                 realitiveOuputPath = realitiveOuputPath.Replace("\\", "/");*/
-
-                return relPath;
-            }
-
-            private static Stack<string> SplitDirectory(string temp)
-            {
-                Stack<string> docStack = new Stack<string>();
-                for (; ; )
-                {
-                    string doc = Path.GetFileName(temp);
-                    if (String.IsNullOrEmpty(doc))
-                    {
-                        docStack.Push(temp);
-                        break;
-                    }
-                    docStack.Push(doc);
-                    temp = temp.Substring(0, temp.Length - doc.Length);
-                    if (temp.EndsWith(Path.DirectorySeparatorChar))
-                        temp = temp.Substring(0, temp.Length - 1);
-                }
-
-                return docStack;
-            }
-
+          
             string? FindImage(JsonNode? n)
             {
                 if (n == null) return null;
@@ -223,7 +163,6 @@ namespace Pandoc.Comment.Render
                 }
                 return null;
             }
-
             private string? FindScriptsDirectory()
             {
                 string? modulePath = Assembly.GetExecutingAssembly().Location;
@@ -240,9 +179,7 @@ namespace Pandoc.Comment.Render
                         return null;
                 }
             }
-
-
-            void Recurse(Options options, JsonNode? n)
+            private void Recurse(Options options, JsonNode? n)
             {
                 if (n == null) return;
                 
@@ -281,8 +218,6 @@ namespace Pandoc.Comment.Render
                                         continue;
                                     }
                                     string type = typeNode;
-                                    //string script = $"c:\\Source\\CDocs\\scripts\\CDocs-{type.ToLower()}.ps1";
-
                                     string script = Path.Combine(mod, $"CDocs-{type.ToLower()}.py");
 
                                     if (!File.Exists(script))
@@ -308,34 +243,35 @@ namespace Pandoc.Comment.Render
 
                                     string inputFile = String.Empty;
                                     string outputFile = String.Empty;
-                                    try {
-                                    inputFile = Path.Combine(FindContentDirectory(), $"{type.ToLower()}.{Guid.NewGuid()}.tmp");
-                                    outputFile = Path.Combine(FindContentDirectory(), Path.GetFileName(inputFile) + ".png");
-                                    File.WriteAllText(inputFile, html);
+                                    try
+                                    {
+                                        inputFile = Path.Combine(FindContentDirectory(), $"{type.ToLower()}.{Guid.NewGuid()}.tmp");
+                                        outputFile = Path.Combine(FindContentDirectory(), Path.GetFileName(inputFile) + ".png");
+                                        File.WriteAllText(inputFile, html);
 
-                                    Process p = new Process();
-                                    p.StartInfo.FileName = "python";
-                                    p.StartInfo.Arguments = $"{script} {inputFile} {outputFile}";
-                                    p.StartInfo.RedirectStandardOutput = true;
-                                    p.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+                                        Process p = new Process();
+                                        p.StartInfo.FileName = "python";
+                                        p.StartInfo.Arguments = $"{script} {inputFile} {outputFile}";
+                                        p.StartInfo.RedirectStandardOutput = true;
+                                        p.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
 
-                                    p.Start();
-                                    string output = p.StandardOutput.ReadToEnd();
-                                    p.WaitForExit();
+                                        p.Start();
+                                        string output = p.StandardOutput.ReadToEnd();
+                                        p.WaitForExit();
 
 
-                                    Console.Error.WriteLine($"CDOCS_FILTER: Redirected python output : {script}");
-                                    Console.Error.WriteLine("CDOCS_FILTER: -=-=----------------------------------------");
-                                    Console.Error.WriteLine(output);
-                                    Console.Error.WriteLine("CDOCS_FILTER: --------------------------------------------");
-                                    Console.Error.WriteLine("CDOCS_FILTER: python " + p.StartInfo.Arguments);
+                                        Console.Error.WriteLine($"CDOCS_FILTER: Redirected python output : {script}");
+                                        Console.Error.WriteLine("CDOCS_FILTER: -=-=----------------------------------------");
+                                        Console.Error.WriteLine(output);
+                                        Console.Error.WriteLine("CDOCS_FILTER: --------------------------------------------");
+                                        Console.Error.WriteLine("CDOCS_FILTER: python " + p.StartInfo.Arguments);
                                     }
                                     finally
                                     {
-                                        if(!String.IsNullOrEmpty(inputFile) && File.Exists(inputFile))
+                                        if (!String.IsNullOrEmpty(inputFile) && File.Exists(inputFile))
                                         {
-                                            //Console.Error.WriteLine($"CDOCS_FILTER: **DELETING: {inputFile}");
-                                            //File.Delete(inputFile);
+                                            Console.Error.WriteLine($"CDOCS_FILTER: DELETING: {inputFile}");
+                                            File.Delete(inputFile);
                                         }
                                     }
 
@@ -361,25 +297,15 @@ namespace Pandoc.Comment.Render
                                     File.WriteAllText(cacheContent, a.ToJsonString());
                                     File.Move(outputFile, cacheImage, true);
 
-                                    Console.Error.WriteLine($"CDOCS_FILTER: **NOT DELETING: {inputFile}");
-                                    //File.Delete(inputFile);
+                                    Console.Error.WriteLine($"CDOCS_FILTER: DELETING: {inputFile}");
+                                    File.Delete(inputFile);
 
                                      Console.Error.WriteLine($"CDOCS_FILTER: CACHE_IMAGE: {cacheImage}");
 
                                     string realitivePath = CreeateHackyDirectPath(cacheImage, FindContentDirectory());
 
                                     Console.Error.WriteLine($"CDOCS_FILTER: IMAGE: {realitivePath},  {FindContentDirectory()}");
-                                    //
-                                    // Create a caption
-                                    //
-                                    //PandocObject captionBody = new PandocObject();
-                                    //captionBody.t = "Str";
-                                    //captionBody.c = "My Caption";
-
-                                    //PandocObject captionText = new PandocObject();
-                                    //captionText.t = "Plain";
-                                    //captionText.c = new object[] { captionBody };
-
+                                   
 
                                     //
                                     // Create the image
@@ -396,15 +322,6 @@ namespace Pandoc.Comment.Render
                                     PandocObject plain = new PandocObject();
                                     plain.t = "Para";
                                     plain.c = new object[1] { image };
-
-                                    //object[] figurePieces = new object[3];
-                                    //figurePieces[0] = new object[3] { "", new object[0], new object[0] };
-                                    //figurePieces[1] = new object[2] { null, new object[1] { captionText } };
-                                    //figurePieces[2] = new object[1] { plain };
-
-                                    //PandocObject figure = new PandocObject();
-                                    //figure.t = "Figure";
-                                    //figure.c = figurePieces;
 
                                     a.ReplaceWith(plain);
                                 }
@@ -461,7 +378,6 @@ namespace Pandoc.Comment.Render
                     }
                     catch(Exception e)
                     {
-                        //File.WriteAllText("debug.json", n!.ToJsonString());
                         Console.Error.WriteLine("CDOCS_FILTER: ERROR (chk debug.json): " + e);
                         Environment.Exit(7);
                     }
@@ -472,7 +388,7 @@ namespace Pandoc.Comment.Render
 
             public Dictionary<string, string> m_MappedFiles = new Dictionary<string, string>();
 
-            void RecurseTab(Options options, JsonNode? n, int inc)
+            private void RecurseTab(Options options, JsonNode? n, int inc)
             {
                 if (n == null) return;
                 
@@ -503,7 +419,7 @@ namespace Pandoc.Comment.Render
                 }
             }
 
-            void Recurse_RemapImages(Options options, JsonNode? n)
+            private void Recurse_RemapImages(Options options, JsonNode? n)
             {
                 if (n == null) return;
                 
@@ -572,13 +488,6 @@ namespace Pandoc.Comment.Render
                     {
                         simulatedArgs.Add("-r");
                     }
-
-                    /*string db = Environment.GetEnvironmentVariable("CDOCS_DB");
-                    if (!String.IsNullOrEmpty(db))
-                    {
-                        simulatedArgs.Add("-d");
-                        simulatedArgs.Add(db);
-                    }*/
 
                     string? tab = Environment.GetEnvironmentVariable("CDOCS_TAB");
                     if (!String.IsNullOrEmpty(tab))
@@ -703,7 +612,6 @@ namespace Pandoc.Comment.Render
                         else
                         {
                             Console.WriteLine(forecastNode!.ToJsonString(options));
-                            //File.WriteAllText("debug.json", forecastNode!.ToJsonString(options));
                         }
                         ret = 0;
                     });
@@ -715,10 +623,12 @@ namespace Pandoc.Comment.Render
 
         static int Main(string[] args)
         {
-            try {
+            try
+            {
                 CDocsPandocHelper helper = new CDocsPandocHelper();
                 return helper.Main(args);
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Console.Error.WriteLine("CDOCS_FILTER: ERROR: " + e);
                 Environment.Exit(-92);
