@@ -16,24 +16,30 @@ namespace Pandoc.Comment.Render
 {
     public static class JsonEnumerator
     {
-        public static IEnumerable<JsonNode> JsonNodeChildren(this JsonNode node)
+        public static IEnumerable<JsonNode> JsonNodeChildren(this JsonNode? node)
         {
             if (node is JsonObject jObject)
             {
                 foreach (var me in jObject)
                 {
-                    yield return me.Value;
-                    foreach (var child in me.Value.JsonNodeChildren())
-                        yield return child;
+                    if (me.Value != null)
+                    {
+                        yield return me.Value;
+                        foreach (var child in me.Value.JsonNodeChildren())
+                            yield return child;
+                    }
                 }
             }
             else if (node is JsonArray jArray)
             {
                 foreach (var item in jArray)
                 {
-                    yield return item;
-                    foreach (var child in item.JsonNodeChildren())
-                        yield return child;
+                    if (item != null)
+                    {
+                        yield return item;
+                        foreach (var child in item.JsonNodeChildren())
+                            yield return child;
+                    }
                 }
             }
             else
@@ -45,13 +51,13 @@ namespace Pandoc.Comment.Render
         public class Options
         {
             [Option('i', "input", Required = false, HelpText = "Input File")]
-            public string InputFile { get; set; }
+            public string? InputFile { get; set; }
 
             //[Option('d', "databaseDir", Required = true, HelpText = "Database Directory, envVar=CDOCS_DB")]
             //public string DBDir { get; set; }
 
             [Option('o', "output", Required = false, HelpText = "Output File")]
-            public string OutputFile { get; set; }
+            public string? OutputFile { get; set; }
 
             [Option('r', "reverse", Required = false, Default = false, HelpText = "Reverse Direcion, envVar=CDOCS_REVERSE")]
             public bool Reverse { get; set; }
@@ -66,8 +72,8 @@ namespace Pandoc.Comment.Render
 
         class PandocObject
         {
-            public string t { get; set; }
-            public object c { get; set; }
+            public string t { get; set; } = string.Empty;
+            public object? c { get; set; }
 
             public PandocObject() { }
             public PandocObject(string _t, string _c)
@@ -100,7 +106,7 @@ namespace Pandoc.Comment.Render
             static string FindDBDirectory()
             {
                 // Find our root
-                string configDir = System.IO.Directory.GetCurrentDirectory();
+                string? configDir = System.IO.Directory.GetCurrentDirectory();
                 for(;;)
                 {
                     string root = Path.Combine(configDir, ".CDocs.config");
@@ -132,7 +138,11 @@ namespace Pandoc.Comment.Render
                 Console.Error.WriteLine($"CDOCS_FILTER: CONFIG : {configDir}");
                 Console.Error.WriteLine($"CDOCS_FILTER:    FILE: {file}");
 
-                string bits = Path.GetRelativePath(Directory.GetCurrentDirectory(), Path.GetDirectoryName(file));
+                string? dirName = Path.GetDirectoryName(file);
+                if (dirName == null)
+                    return file; // fallback to original file if can't get directory
+                    
+                string bits = Path.GetRelativePath(Directory.GetCurrentDirectory(), dirName);
                 Console.Error.WriteLine($"CDOCS_FILTER:     REL: {bits}");
                 bits += $"{Path.DirectorySeparatorChar}{Path.GetFileName(file)}";
                 return bits;/*
@@ -187,8 +197,10 @@ namespace Pandoc.Comment.Render
                 return docStack;
             }
 
-            string FindImage(JsonNode n)
+            string? FindImage(JsonNode? n)
             {
+                if (n == null) return null;
+                
                 foreach (var a in n.JsonNodeChildren().ToArray())
                 {
                     if (null == a)
@@ -203,7 +215,7 @@ namespace Pandoc.Comment.Render
 
                             if(0 == blah.CompareTo("Image"))
                             {
-                                string me = a["c"][2][0].ToString();
+                                string? me = a["c"]?[2]?[0]?.ToString();
                                 return me;
                             }
                         }
@@ -212,11 +224,14 @@ namespace Pandoc.Comment.Render
                 return null;
             }
 
-            private string FindScriptsDirectory()
+            private string? FindScriptsDirectory()
             {
-                string modulePath = Assembly.GetExecutingAssembly().Location;
+                string? modulePath = Assembly.GetExecutingAssembly().Location;
                 for(; ; )
                 {
+                    if (string.IsNullOrEmpty(modulePath))
+                        return null;
+                        
                     string scriptDir = Path.Combine(modulePath, "scripts");
                     if (Directory.Exists(scriptDir))
                         return scriptDir;
@@ -227,8 +242,10 @@ namespace Pandoc.Comment.Render
             }
 
 
-            void Recurse(Options options, JsonNode n)
+            void Recurse(Options options, JsonNode? n)
             {
+                if (n == null) return;
+                
                 foreach (var a in n.JsonNodeChildren().ToArray())
                 {
                     if (null == a)
@@ -247,12 +264,23 @@ namespace Pandoc.Comment.Render
 
                                 if (blah.Equals("CodeBlock") && !options.Reverse)
                                 {
-                                    if (0 == a["c"][0][1].AsArray().Count)
+                                    if (a["c"]?[0]?[1]?.AsArray()?.Count == 0)
                                         continue;
 
-                                    string mod = FindScriptsDirectory();
+                                    string? mod = FindScriptsDirectory();
+                                    if (mod == null)
+                                    {
+                                        Console.Error.WriteLine("CDOCS_FILTER: ERROR: Unable to find scripts directory");
+                                        Environment.Exit(6);
+                                    }
 
-                                    string type = a["c"][0][1][0].ToString();
+                                    string? typeNode = a["c"]?[0]?[1]?[0]?.ToString();
+                                    if (typeNode == null)
+                                    {
+                                        Console.Error.WriteLine("CDOCS_FILTER: ERROR: Unable to extract type from code block");
+                                        continue;
+                                    }
+                                    string type = typeNode;
                                     //string script = $"c:\\Source\\CDocs\\scripts\\CDocs-{type.ToLower()}.ps1";
 
                                     string script = Path.Combine(mod, $"CDocs-{type.ToLower()}.py");
@@ -263,7 +291,13 @@ namespace Pandoc.Comment.Render
                                         Environment.Exit(5);
                                     }
 
-                                    string code = a["c"][1].ToString();
+                                    string? codeNode = a["c"]?[1]?.ToString();
+                                    if (codeNode == null)
+                                    {
+                                        Console.Error.WriteLine("CDOCS_FILTER: ERROR: Unable to extract code from code block");
+                                        continue;
+                                    }
+                                    string code = codeNode;
 
                                     string html = code;
 
@@ -377,25 +411,29 @@ namespace Pandoc.Comment.Render
 
                                 else if (blah.Equals("Figure") && options.Reverse)
                                 {
-                                    string img = FindImage(a);
+                                    string? img = FindImage(a);
+                                    if (img == null)
+                                        continue;
+                                        
                                     try
                                     {
                                         var X = a["c"];
-                                        var y = X[1];
-                                        var z = y[1];
-                                        var g = z[0];
-                                        JsonObject jo = (JsonObject)g;
-
-                                        var p = jo.ToArray();
-                                        string heading = p[0].Value.ToString();
-
-                                        if ("Para".Equals(heading))
+                                        var y = X?[1];
+                                        var z = y?[1];
+                                        var g = z?[0];
+                                        if (g is JsonObject jo)
                                         {
-                                            PandocObject newPO = new PandocObject();
-                                            newPO.t = "Plain";
-                                            newPO.c = p[1].Value ;
+                                            var p = jo.ToArray();
+                                            string? heading = p[0].Value?.ToString();
 
-                                            a["c"][1][1][0].ReplaceWith(newPO);
+                                            if ("Para".Equals(heading))
+                                            {
+                                                PandocObject newPO = new PandocObject();
+                                                newPO.t = "Plain";
+                                                newPO.c = p[1].Value ;
+
+                                                a["c"]?[1]?[1]?[0]?.ReplaceWith(newPO);
+                                            }
                                         }
                                     }
                                     catch (Exception)
@@ -404,8 +442,7 @@ namespace Pandoc.Comment.Render
                                         Environment.Exit(4);
                                     }
 
-                                    string localFile;
-                                    if (!m_MappedFiles.TryGetValue(img, out localFile))
+                                    if (!m_MappedFiles.TryGetValue(img, out string? localFile) || localFile == null)
                                         continue;
 
 
@@ -435,8 +472,10 @@ namespace Pandoc.Comment.Render
 
             public Dictionary<string, string> m_MappedFiles = new Dictionary<string, string>();
 
-            void RecurseTab(Options options, JsonNode n, int inc)
+            void RecurseTab(Options options, JsonNode? n, int inc)
             {
+                if (n == null) return;
+                
                 foreach (var a in n.JsonNodeChildren().ToArray())
                 {
                     if (null == a)
@@ -455,8 +494,8 @@ namespace Pandoc.Comment.Render
                             {
                                 var c = a["c"];
 
-                                int depth = Convert.ToInt32(c[0].ToString());
-                                c[0].ReplaceWith(depth+inc);
+                                int depth = Convert.ToInt32(c?[0]?.ToString() ?? "1");
+                                c?[0]?.ReplaceWith(depth+inc);
                             }
                         }
                     }
@@ -464,8 +503,10 @@ namespace Pandoc.Comment.Render
                 }
             }
 
-            void Recurse_RemapImages(Options options, JsonNode n)
+            void Recurse_RemapImages(Options options, JsonNode? n)
             {
+                if (n == null) return;
+                
                 foreach (var a in n.JsonNodeChildren().ToArray())
                 {
                     if (null == a)
@@ -483,7 +524,8 @@ namespace Pandoc.Comment.Render
                             if (blah.Equals("Image") && options.Reverse)
                             {
                                 var c = a["c"];
-                                string img = c[2][0].GetValue<string>();
+                                string? img = c?[2]?[0]?.GetValue<string>();
+                                if (img == null) continue;
 
                                 FileInfo fi = new FileInfo(img);
 
@@ -497,7 +539,7 @@ namespace Pandoc.Comment.Render
                                     {
                                         string newImage = Path.GetRelativePath(Environment.CurrentDirectory, option.FullName).Replace("\\", "/");
                                         m_MappedFiles[newImage] = option.FullName;
-                                        c[2][0].ReplaceWith(newImage);
+                                        c?[2]?[0]?.ReplaceWith(newImage);
                                         found = true;
                                         break;
                                     }
@@ -525,7 +567,7 @@ namespace Pandoc.Comment.Render
 
                     simulatedArgs.Add("--filterMode");
 
-                    string reverse = Environment.GetEnvironmentVariable("CDOCS_REVERSE");
+                    string? reverse = Environment.GetEnvironmentVariable("CDOCS_REVERSE");
                     if (!String.IsNullOrEmpty(reverse))
                     {
                         simulatedArgs.Add("-r");
@@ -538,7 +580,7 @@ namespace Pandoc.Comment.Render
                         simulatedArgs.Add(db);
                     }*/
 
-                    string tab = Environment.GetEnvironmentVariable("CDOCS_TAB");
+                    string? tab = Environment.GetEnvironmentVariable("CDOCS_TAB");
                     if (!String.IsNullOrEmpty(tab))
                     {
                         simulatedArgs.Add("-t");
@@ -586,7 +628,7 @@ namespace Pandoc.Comment.Render
                             Directory.CreateDirectory(FindContentDirectory());
                         }
 
-                        string json;
+                        string json = "";
 
                         if (!filterMode)
                         {
@@ -601,14 +643,19 @@ namespace Pandoc.Comment.Render
                                 Console.Error.WriteLine($"CDOCS_FILTER: ERROR: output file not specified but is required");
                                 Environment.Exit(43);
                             }
-                            json = File.ReadAllText(o.InputFile);
+                            
+                            if (o.InputFile != null)
+                            {
+                                json = File.ReadAllText(o.InputFile);
 
-                            string inputFilesDirectory = Path.GetDirectoryName(o.InputFile);
-                            Directory.SetCurrentDirectory(inputFilesDirectory);
+                                string? inputFilesDirectory = Path.GetDirectoryName(o.InputFile);
+                                if (inputFilesDirectory != null)
+                                    Directory.SetCurrentDirectory(inputFilesDirectory);
+                            }
                         }
                         else
                         {
-                            string s = Console.ReadLine();
+                            string? s = Console.ReadLine();
                             StringBuilder sb = new StringBuilder();
                             sb.AppendLine(s);
                             while (!String.IsNullOrEmpty(s))
@@ -626,12 +673,16 @@ namespace Pandoc.Comment.Render
 
                         if (0 != o.TabIncrement)
                         {
-                            RecurseTab(o, x, o.TabIncrement);
+                            if (x != null)
+                                RecurseTab(o, x, o.TabIncrement);
                         }
                         else
                         {
-                            Recurse_RemapImages(o, x);
-                            Recurse(o, x);
+                            if (x != null)
+                            {
+                                Recurse_RemapImages(o, x);
+                                Recurse(o, x);
+                            }
                         }
 
                         // Write JSON from a JsonNode
@@ -646,7 +697,8 @@ namespace Pandoc.Comment.Render
                         if (!filterMode)
                         {
                             Console.Error.WriteLine($"CDOCS_FILTER: Output: {o.OutputFile}");
-                            File.WriteAllText(o.OutputFile, forecastNode!.ToJsonString(options));
+                            if (o.OutputFile != null)
+                                File.WriteAllText(o.OutputFile, forecastNode!.ToJsonString(options));
                         }
                         else
                         {
