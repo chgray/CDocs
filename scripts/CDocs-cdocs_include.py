@@ -25,7 +25,7 @@ def CSharp_Include(file, startToken, endToken, tabLeft=True ):
 
 
 def main():
-    
+
     if len(sys.argv) != 3:
         print("Usage: python CDocs-cdocs_include.py <input_filename> <output_filename>")
         sys.exit(1)
@@ -49,15 +49,34 @@ def main():
     print(f"EXEC: {execCmd}")
 
     exec(execCmd, globals())
-    print("STUFF : {}".format(stuff))
+    print("STUFF : {}".format(globals().get('stuff', 'NOT_FOUND')))
+
+    # Ensure stuff variable exists (it should be created by exec above)
+    if 'stuff' not in globals():
+        print("ERROR: stuff variable was not created by exec command")
+        sys.exit(2)
 
     input_filename = orig_input_filename + ".content.html"
     try:
-        with open(input_filename, "w") as f:
-            f.write(stuff)
+        # Use make_pretty.py instead of pandoc for HTML conversion
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        make_pretty_script = os.path.join(script_dir, "make_pretty.py")
 
-        convert = "pandoc -i {} -f markdown -o {} -t html".format(input_filename, input_filename)
-        os.system(convert)
+        # Create a temporary .cs file since make_pretty.py expects C# files
+        temp_cs_filename = orig_input_filename + ".temp.cs"
+        with open(temp_cs_filename, "w") as f:
+            f.write(globals()['stuff'])  # stuff is created dynamically by exec() above
+
+        try:
+            convert_cmd = f"python \"{make_pretty_script}\" \"{temp_cs_filename}\" \"{input_filename}\""
+            result = os.system(convert_cmd)
+            if result != 0:
+                print(f"ERROR: make_pretty.py failed with exit code {result}")
+                sys.exit(2)
+        finally:
+            # Clean up temporary .cs file
+            if os.path.exists(temp_cs_filename):
+                os.remove(temp_cs_filename)
 
         output_filename = sys.argv[2]
 
