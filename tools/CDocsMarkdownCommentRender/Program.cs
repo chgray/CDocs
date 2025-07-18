@@ -477,9 +477,6 @@ namespace Pandoc.Comment.Render
                                         a.ReplaceWith(x);
                                     }
                                 }
-
-
-                                Console.Error.WriteLine(blah);
                             }
                         }
                     }
