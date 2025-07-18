@@ -56,10 +56,6 @@ namespace Pandoc.Image.Merge
                 if (null == a)
                     continue;
 
-                //if(a.ToString().Contains("png"))
-                //   Console.WriteLine(a);
-
-
                 if (a is JsonObject)
                 {
                     var t = a["t"];

@@ -76,11 +76,13 @@ namespace Pandoc.Comment.Render
             [Option('r', "reverse", Required = false, Default = false, HelpText = "Reverse Direction - convert images back to code blocks, envVar=CDOCS_REVERSE")]
             public bool Reverse { get; set; }
 
-            [Option('t', "tab", Required = false, Default=null, HelpText = "Tab header levels by <n>, envVar=CDOCS_TAB")]
+            [Option('t', "tab", Required = false, Default = null, HelpText = "Tab header levels by <n>, envVar=CDOCS_TAB")]
             public int TabIncrement { get; set; }
 
             [Option('f', "filterMode", Required = false, Default = false, HelpText = "Pandoc Filter Mode - read from stdin/write to stdout, envVar=CDOCS_FILTER")]
             public bool FilterMode { get; set; }
+
+
         }
 
         /// <summary>
@@ -151,13 +153,16 @@ namespace Pandoc.Comment.Render
                 for(;;)
                 {
                     string root = Path.Combine(configDir, ".CDocs.config");
-                    //Console.Error.WriteLine($"CDOCS_FILTER: Looking for config file in {root}");
+                    Console.Error.WriteLine($"CDOCS_FILTER: Looking for config file in {root}");
 
-                    if(File.Exists(root))
+                    if (File.Exists(root))
+                    {
+                        Console.Error.WriteLine($"CDOCS_FILTER: FoundConfig {configDir}");
                         return configDir;
+                    }
 
                     // Move up one directory level
-                    configDir = Path.GetDirectoryName(configDir);
+                        configDir = Path.GetDirectoryName(configDir);
                     if(String.IsNullOrEmpty(configDir))
                     {
                         Console.Error.WriteLine("CDOCS_FILTER: Unable to locate .CDocs.config");
@@ -380,7 +385,7 @@ namespace Pandoc.Comment.Render
                                     Guid outputGuid = new Guid(hash);
 
                                     // Create cache file names with input and output hashes
-                                    string cacheName = type.ToString() + "." +inputGuid.ToString() + "." + outputGuid.ToString();
+                                    string cacheName = type.ToString() + "." + inputGuid.ToString() + "." + outputGuid.ToString();
                                     string cacheImage = Path.Combine(FindContentDirectory(), cacheName + ".png");
                                     string cacheContent = Path.Combine(FindContentDirectory(), cacheName + ".png.cdocs_orig");
 
@@ -391,7 +396,7 @@ namespace Pandoc.Comment.Render
                                     Console.Error.WriteLine($"CDOCS_FILTER: DELETING: {inputFile}");
                                     File.Delete(inputFile);
 
-                                     Console.Error.WriteLine($"CDOCS_FILTER: CACHE_IMAGE: {cacheImage}");
+                                    Console.Error.WriteLine($"CDOCS_FILTER: CACHE_IMAGE: {cacheImage}");
 
                                     // Create relative path for the image reference
                                     string realitivePath = CreeateHackyDirectPath(cacheImage, FindContentDirectory());
@@ -419,13 +424,15 @@ namespace Pandoc.Comment.Render
                                 }
 
                                 // Reverse direction: Convert Figure back to CodeBlock
-                                else if (blah.Equals("Figure") && options.Reverse)
+                                else if (blah.Equals("Para") && options.Reverse)
                                 {
+                                    Console.Error.WriteLine("REVERSE MODE AND FOUND IMAGE");
                                     // Find the image path within the figure
                                     string? img = FindImage(a);
                                     if (img == null)
                                         continue;
 
+#if false
                                     try
                                     {
                                         // Navigate the Figure JSON structure to modify Para to Plain
@@ -436,7 +443,7 @@ namespace Pandoc.Comment.Render
                                         var g = z?[0];
                                         if (g is JsonObject jo)
                                         {
-                                            var p = jo.ToArray();
+                                             var p = jo.ToArray();
                                             string? heading = p[0].Value?.ToString();
 
                                             // Convert "Para" elements to "Plain" for proper formatting
@@ -444,7 +451,7 @@ namespace Pandoc.Comment.Render
                                             {
                                                 PandocObject newPO = new PandocObject();
                                                 newPO.t = "Plain";
-                                                newPO.c = p[1].Value ;
+                                                newPO.c = p[1].Value;
 
                                                 a["c"]?[1]?[1]?[0]?.ReplaceWith(newPO);
                                             }
@@ -455,7 +462,7 @@ namespace Pandoc.Comment.Render
                                         Console.Error.WriteLine("CDOCS_FILTER: UNABLE To patchup para");
                                         Environment.Exit(4);
                                     }
-
+#endif
                                     // Look up the cached original code block content
                                     if (!m_MappedFiles.TryGetValue(img, out string? localFile) || localFile == null)
                                         continue;
@@ -470,6 +477,9 @@ namespace Pandoc.Comment.Render
                                         a.ReplaceWith(x);
                                     }
                                 }
+
+
+                                Console.Error.WriteLine(blah);
                             }
                         }
                     }
@@ -538,6 +548,8 @@ namespace Pandoc.Comment.Render
             /// <param name="n">Current JSON node being processed</param>
             private void Recurse_RemapImages(Options options, JsonNode? n)
             {
+                Console.Error.WriteLine("REVERSEIMAGE");
+
                 if (n == null) return;
 
                 foreach (var a in n.JsonNodeChildren().ToArray())
@@ -556,6 +568,8 @@ namespace Pandoc.Comment.Render
                             // Process Image objects during reverse conversion
                             if (blah.Equals("Image") && options.Reverse)
                             {
+                                Console.Error.WriteLine("  *** FOUND IMAGE");
+
                                 var c = a["c"];
                                 // Extract image path from Image structure
                                 string? img = c?[2]?[0]?.GetValue<string>();
@@ -569,10 +583,13 @@ namespace Pandoc.Comment.Render
                                 foreach (string file in System.IO.Directory.GetFiles(FindContentDirectory()))
                                 {
                                     FileInfo option = new FileInfo(file);
+                                    Console.Error.WriteLine($"     ....comparing : {file}");
 
                                     // Match files by size (simple but effective for cache lookup)
                                     if (fi.Length == option.Length)
                                     {
+                                        Console.Error.WriteLine($"     ....hit : {fi.Length}:{option.Length}");
+
                                         // Create relative path for the matched file
                                         string newImage = Path.GetRelativePath(Environment.CurrentDirectory, option.FullName).Replace("\\", "/");
                                         // Map the new path to the cache file for later lookup
@@ -696,8 +713,10 @@ namespace Pandoc.Comment.Render
                             {
                                 json = File.ReadAllText(o.InputFile);
 
+                                FileInfo fi = new FileInfo(o.InputFile);
+
                                 // Change to input file's directory for relative path resolution
-                                string? inputFilesDirectory = Path.GetDirectoryName(o.InputFile);
+                                string? inputFilesDirectory = Path.GetDirectoryName(fi.FullName);
                                 if (inputFilesDirectory != null)
                                     Directory.SetCurrentDirectory(inputFilesDirectory);
                             }
