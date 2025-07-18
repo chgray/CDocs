@@ -1,4 +1,4 @@
-# Title!
+# Title
 
 hello this is a test
 
@@ -9,3 +9,7 @@ hello this is a test
         A-->B
         B-->C
 ```
+
+## End of document
+
+this is the end
