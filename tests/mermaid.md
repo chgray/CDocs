@@ -4,7 +4,7 @@ hello this is a test
 
 ## Mermaid Diagram
 
-```mermaid
+``` mermaid
     flowchart TD
         A-->B
         B-->C
