@@ -119,9 +119,10 @@ execute_pandoc() {
     local reverse_mode="$3"
     local cdocs_filter="$4"
     local extract_media="$5"
-    export PATH=$PATH:/Source/CDocs/tools/CDocsMarkdownCommentRender/bin/Debug/net8.0:$PATH$:
+    export PATH=$PATH:/cdocs/tools/CDocsMarkdownCommentRender/bin/Debug/net8.0:$PATH$:
+    source /mkdocs_python/bin/activate
 
-    dotnet build /Source/CDocs/tools/CDocsMarkdownCommentRender
+    dotnet build /cdocs/tools/CDocsMarkdownCommentRender
 
     # Set environment variables
     export CDOCS_FILTER=1
