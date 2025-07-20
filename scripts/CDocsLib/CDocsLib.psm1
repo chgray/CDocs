@@ -13,8 +13,17 @@ function Start-CDocs.Container {
         [Parameter(Mandatory = $true)]
         [string]$Container,
 
+        [Parameter(Mandatory = $true)]
+        [string]$ContainerName,
+
         [Parameter(Mandatory = $false)]
         [string[]]$DirectoryMappings,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Privileged  = $false,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Persist  = $false,
 
         [Parameter(Mandatory = $true)]
         [string[]]$ArgumentList
@@ -36,7 +45,17 @@ function Start-CDocs.Container {
     #
     $toolArgs.Add("run")
     $toolArgs.Add("-it")
-    $toolArgs.Add("--rm")
+
+    $toolArgs.Add("--name")
+     $toolArgs.Add($ContainerName)
+
+    if(!$Persist) {
+        $toolArgs.Add("--rm")
+    }
+
+    if($Privileged) {
+        $toolArgs.Add("--privileged")
+    }
 
     #
     # Process folder mappings

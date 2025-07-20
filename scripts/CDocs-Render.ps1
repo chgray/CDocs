@@ -21,17 +21,11 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$InputFile = "GlobalSetup",
 
-    [Parameter(Mandatory = $false)]
-    [string]$OutputDir = $null,
+    [Parameter(Mandatory = $true)]
+    [string]$OutputFile = "GlobalSetup",
 
     [Parameter(Mandatory = $false)]
-    [switch]$ReverseRender = $false,
-
-    [Parameter(Mandatory = $false)]
-    [switch]$NormalMargins = $false,
-
-    [Parameter(Mandatory = $false)]
-    [switch]$EPUB = $false
+    [switch]$ReverseRender = $false
 )
 
 Import-Module $PSScriptRoot\CDocsLib\CDocsLib.psm1
@@ -43,12 +37,6 @@ if ($env:MY_VARIABLE) {
 
 $ErrorActionPreference = 'Break'
 #$ErrorActionPreference = 'Stop'
-
-$MergeTool = "C:\\Source\\CDocs\\tools\\CDocsMarkdownCommentRender\\bin\\Debug\\net8.0\\CDocsMarkdownCommentRender.exe"
-$CONTAINER="chgray123/chgray_repro:pandoc"
-
-# $CONTAINER="ubuntu:latest"
-
 
 #
 # Detect if we're using podman or docker
@@ -65,11 +53,11 @@ if (!(Test-Path -Path $InputFile)) {
 #
 $PROJECT_ROOT = Get-CDocs.ProjectRoot
 
-
 #$PROJECT_ROOT = Split-Path -Path $InputFile -Parent
 
 $InputFile = Resolve-Path -Path $InputFile
 $InputFileRootDir = Split-Path -Path $InputFile -Parent
+$InputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $InputFile -Base $PROJECT_ROOT
 $InputFileRootDir_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $InputFileRootDir -Base $PROJECT_ROOT
 $DatabaseDirectory = Join-Path -Path $PROJECT_ROOT -ChildPath "orig_media"
 
@@ -82,16 +70,16 @@ Set-Location -Path $InputFileRootDir
 
 #$InputFile_Relative = Resolve-Path -Path $InputFile -RelativeBasePath $PROJECT_ROOT -Relative
 #$InputFile_Relative = $InputFile_Relative -replace '\\', '/'
-$InputFile_Relative = Split-Path -Path $InputFile -Leaf
+#$InputFile_Relative = Split-Path -Path $InputFile -Leaf
 
 #
 # Determine the destination of output file
 #
-if ($EPUB) {
-    $OutputFile = $InputFile -replace ".md", ".pdf"
-} else {
-    $OutputFile = $InputFile -replace ".md", ".docx"
-}
+# if ($EPUB) {
+#     $OutputFile = $InputFile -replace ".md", ".pdf"
+# } else {
+#     $OutputFile = $InputFile -replace ".md", ".docx"
+# }
 
 
 #$OutputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $OutputFile -Base $PROJECT_ROOT
@@ -105,7 +93,6 @@ $templateMap = "$PSScriptRoot\:/templates"
 
 
 Write-Host "Running CDocs-Render.ps1"
-Write-Host "                MergeTool : $MergeTool"
 Write-Host "          Converting file : $InputFile"
 Write-Host "         InputFileRootDir : $InputFileRootDir"
 Write-Host "   InputFileRootDir_Linux : $InputFileRootDir_Linux"
@@ -116,22 +103,19 @@ Write-Host "             PROJECT_ROOT : $PROJECT_ROOT"
 Write-Host "             Template Map : $templateMap "
 Write-Host "               Output Dir : $outputDir"
 Write-Host "         OutputFile_Linux : $OutputFile_Linux"
+Write-Host "          InputFile_Linux : $InputFile_Linux"
 Write-Host "          ***  Input File : $InputFile_Relative"
 Write-Host "          *** Output File : $OutputFile_Relative"
 
-$InputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $InputFile -Base $PROJECT_ROOT
-
-$OutputFile_AST = Get-Temp.File -File $OutputFile -Op "OUT_AST"
-$OutputFile_AST_Linux = Get-Temp.File -File $OutputFile -Op "OUT_AST" -Linux
-
-$OutputFile_MERGED = Get-Temp.File -File $OutputFile -Op "OUT_MERGED"
-$OutputFile_MERGED_Linux = Get-Temp.File -File $OutputFile -Op "OUT_MERGED" -Linux
 
 if(!(Test-Path -Path $InputFile)) {
     Write-Error "Input file doesnt exist $InputFile"
     exit 1
 }
 
+exit 0
+
+#/cdocs/scripts/CDocs-Render.sh /data/./tests/mermaid.md -o /data/./tests/m.docx
 #
 # Convert the Word document to a pandoc AST
 #

@@ -11,8 +11,6 @@ if [ ! -d "${CDOCS_MARKDOWN_RENDER_PATH}" ]; then
 fi
 
 export PATH=${CDOCS_MARKDOWN_RENDER_PATH}/tools/CDocsMarkdownCommentRender/bin/Debug/net8.0:$PATH$
-export | grep CDOCS
-export | grep DT
 
 # Verify the path exists and contains the required binary
 if [ ! -f "${CDOCS_MARKDOWN_RENDER_PATH}/tools/CDocsMarkdownCommentRender/bin/Debug/net8.0/CDocsMarkdownCommentRender" ]; then
@@ -58,3 +56,5 @@ if [ $? -ne 0 ]; then
 fi
 set -e
 
+echo "Done"
+bash
