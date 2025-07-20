@@ -113,29 +113,11 @@ if(!(Test-Path -Path $InputFile)) {
     exit 1
 }
 
-exit 0
-
 #/cdocs/scripts/CDocs-Render.sh /data/./tests/mermaid.md -o /data/./tests/m.docx
 #
 # Convert the Word document to a pandoc AST
 #
-Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
-    -ContainerLauncher $CONTAINER_TOOL `
-    -Container $CONTAINER `
-    -DirectoryMappings @($templateMap, "C:\\Source\\cdocs:/cdocs") `
+Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
+    -ContainerName "cdocs_testing" `
+    -DebugMode `
     -ArgumentList "bash"
-
-    `
-    "/cdocs/CDoc.Launcher.sh",
-    $InputFileRootDir_Linux,
-    "-i", "$OutputFile_Linux", `
-    "--extract-media", ".", `
-    "-t", "json", `
-    "-o",$OutputFile_AST_Linux
-
-
-if (!(Test-Path -Path $OutputFile_AST)) {
-    Write-Error "Output file doesnt exist $OutputFile_AST"
-    exit 1
-}
-

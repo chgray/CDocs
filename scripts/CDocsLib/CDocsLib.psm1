@@ -121,6 +121,81 @@ function Start-CDocs.Container {
     }
 }
 
+
+function Start-Exec.CDocs.Container {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$ContainerLauncher,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ContainerName,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$ArgumentList,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$DebugMode = $true
+    )
+
+     Write-Host ""
+     Write-Host ""
+     Write-Host ""
+     Write-Host "Starting Container] ----------------------------------------------------------------"
+     Write-Host "ContainerLauncher : $ContainerLauncher"
+     Write-Host "ContainerName : $ContainerName"
+
+    $argString = ""
+    $toolArgs = New-Object System.Collections.Generic.List[string]
+
+    #
+    # Build 'real' arguments
+    #
+    $toolArgs.Add("exec")
+    $toolArgs.Add("-it")
+    $toolArgs.Add($ContainerName)
+
+    #
+    # Add the container, and then args
+    #
+    $toolArgs.Add($ArgumentList)
+
+    foreach ($arg in $toolArgs) {
+        $argString += $arg + " "
+    }
+
+
+    # -------------------------------------
+    $debugArgs = @()
+    $debugArgs += "run"
+    $debugArgs += "-it"
+    $debugArgs += "--rm"
+
+    #
+    # Process folder mappings
+    #
+    foreach($mapping in $DirectoryMappings) {
+        $debugArgs += "-v"
+        $debugArgs += $mapping
+    }
+
+    #
+    # Add the container, and then args
+    #
+    Write-Host "      Arguments : [$ContainerLauncher $argString]"
+    Write-Host "   PROJECT_ROOT : [$PROJECT_ROOT]"
+    $DebugMode = True
+
+    if($DebugMode) {
+        Write-Host "Debug Arguments : [$ContainerLauncher $debugArgs]"
+        Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $debugArgs
+        Write-Error "EXITING : Debug Mode is enabled"
+        exit 1
+    } else {
+        Write-Host "A[$toolArgs]"
+        Write-Host "B["+($toolArgs.ToArray())+"]"
+        Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $toolArgs.ToArray()
+    }
+}
 function Get-CDocs.Container.Tool
 {
     $temp = $ErrorActionPreference
