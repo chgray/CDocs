@@ -1,6 +1,7 @@
 import sys
 import os
 import subprocess
+import uuid
 
 import CDocs_Module_Utils as CDocs
 
@@ -24,20 +25,52 @@ def main():
         sys.exit(3)
 
 
+    #
+    # GhostScript has a security issue, it wont impact us (we're in a container)
+    #    so disable the check
+    #
+    subprocess.run([
+        'sed', '-i', '/disable ghostscript format types/,+6d', '/etc/ImageMagick-6/policy.xml'
+    ], capture_output=True, text=True, check=True)
+
+
+    print(f"Processing LaTeX file: {input_filename}")
+
+    # Generate temp PDF filename by replacing input extension with .pdf
+    temp_pdf_filename = os.path.splitext(input_filename)[0] + ".pdf"
+
+    # pdflatex command with output directory specified
+    result = subprocess.run([
+        'pdflatex',
+        input_filename,
+        '--output-directory=/data/orig_media'
+        '--halt-on-error',
+        '--jobname=hello'
+    ], capture_output=True, text=True, check=True)
+
+    print("pdflatex completed successfully")
+    print("STDOUT:", result.stdout)
+
+    # Check if the temporary PDF was created
+    if not os.path.exists(temp_pdf_filename):
+        print(f"ERROR: Temporary PDF {temp_pdf_filename} was not created")
+        sys.exit(6)
+
+
+    result = subprocess.run([
+        'convert', '-density', '300', temp_pdf_filename, '-quality', '90', output_filename
+    ], capture_output=True, text=True, check=True)
+
     #CONTAINER="chgray123/chgray_repro:cdocs.mermaid"
     #mapped_input_filename = CDocs.MapToDataDirectory(input_filename)
     #mapped_output_filename = CDocs.MapToDataDirectory(output_filename)
 
-    #CDocs.RunInContainer(CONTAINER, "/home/mermaidcli/node_modules/.bin/mmdc -p /puppeteer-config.json -i {} -o {} --width 1000".format(mapped_input_filename, mapped_output_filename), output_filename)
-
-
-
 
     if not os.path.exists(output_filename):
-        print("ERROR: MARKDOWN OUPUT {} doesnt exist".format(output_filename))
+        print("ERROR: FINAL OUTPUT {} doesnt exist".format(output_filename))
         raise ValueError("MISSING OUTPUT FILE")
-        os._exit(2)
-    #print("GOOD.  created {}".format(output_filename))
+        sys.exit(2)
+    print("SUCCESS: Created {}".format(output_filename))
 
 
 if __name__ == "__main__":

@@ -119,7 +119,7 @@ execute_pandoc() {
     local reverse_mode="$3"
     local cdocs_filter="$4"
     local extract_media="$5"
-    export PATH=$PATH:/cdocs/tools/CDocsMarkdownCommentRender/bin/Debug/net8.0:$PATH$:
+    export PATH=$PATH:/cdocs/tools/CDocsMarkdownCommentRender/bin/Debug/net8.0:$PATH$
     source /mkdocs_python/bin/activate
 
     dotnet build /cdocs/tools/CDocsMarkdownCommentRender
@@ -143,21 +143,15 @@ execute_pandoc() {
         pandoc_cmd="$pandoc_cmd --extract-media ."
     fi
 
-    if [[ "$VERBOSE" == "true" ]]; then
-        print_info "Executing: $pandoc_cmd"
-    fi
 
-    if [[ "$DRY_RUN" == "true" ]]; then
-        print_info "DRY RUN: Would execute: $pandoc_cmd"
-        return 0
-    fi
 
     # Execute the command
     if eval "$pandoc_cmd"; then
         print_success "Successfully rendered: $output_file"
         return 0
     else
-        print_error "Pandoc execution failed"
+        print_error "Pandoc execution failed."
+        print_error "    $pandoc_cmd"
         return 1
     fi
 }
