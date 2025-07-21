@@ -60,11 +60,12 @@ def RunInContainer(container, command, expected_output):
     # totalCommand.append("-c")
     # #totalCommand.append("ps")
     # totalCommand.append(command)
-    print(totalCommand)
 
-    print("RUNNING CONTAINER:")
+    print("")
+    print("PYTHON RUNNING CONTAINER:")
     print("-------------------------------------------------------------------------")
-
+    print(totalCommand)
+    print("-------------------------------------------------------------------------")
     print("")
 
     subprocess.run(totalCommand, shell=True)

@@ -25,7 +25,10 @@ param (
     [string]$OutputFile = "GlobalSetup",
 
     [Parameter(Mandatory = $false)]
-    [switch]$ReverseRender = $false
+    [switch]$ReverseRender = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$DebugMode = $false
 )
 
 Import-Module $PSScriptRoot\CDocsLib\CDocsLib.psm1
@@ -122,7 +125,15 @@ if(!(Test-Path -Path $InputFile)) {
 #
 # Convert the Word document to a pandoc AST
 #
+if($DebugMode)
+{
 Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
     -ContainerName "cdocs_testing" `
     -DebugMode `
+    -ArgumentList "bash"
+} else {
+    Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
+    -ContainerName "cdocs_testing" `
+    -DebugMode `
     -ArgumentList "/cdocs/scripts/CDocs-Render.sh /data/$InputFile_Linux -o /data/$OutputFile_Linux"
+}
