@@ -16,6 +16,13 @@ def main():
     input_filename = sys.argv[1]
     output_filename = sys.argv[2]
 
+    print(f"")
+    print(f"CDocs-Latex.py")
+    print(f"-------------------------------------------")
+    print(f"INPUT: {input_filename}")
+    print(f"OUTPUT: {output_filename}")
+    print(f"")
+
     if not os.path.exists(input_filename):
         print("ERROR: {} doesnt exist".format(input_filename))
         sys.exit(2)
@@ -42,10 +49,9 @@ def main():
     # pdflatex command with output directory specified
     result = subprocess.run([
         'pdflatex',
-        input_filename,
-        '--output-directory=/data/orig_media'
+        f'--output-directory={os.path.dirname(temp_pdf_filename)}',
         '--halt-on-error',
-        '--jobname=hello'
+        input_filename
     ], capture_output=True, text=True, check=True)
 
     print("pdflatex completed successfully")
