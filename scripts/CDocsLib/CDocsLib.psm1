@@ -244,7 +244,7 @@ function Convert-Path.To.LinuxRelativePath.BUGGY{
         [Parameter(Mandatory = $true)]
         [string]$Base
     )
-    #Write-Host "Making $Path relative to $Base"
+    Write-Host "Making $Path relative to $Base"
 
     if (!(Test-Path -Path $Path)) {
         $Path = $Path.Substring($Base.Length)

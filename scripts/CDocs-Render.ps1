@@ -83,7 +83,11 @@ Set-Location -Path $InputFileRootDir
 
 
 #$OutputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $OutputFile -Base $PROJECT_ROOT
-$OutputFile_Linux = Split-Path -Path $OutputFile -Leaf
+
+#$OutputFile_Linux = Split-Path -Path $OutputFile -Leaf
+
+$OutputFile_Linux = (New-Object -TypeName System.IO.FileInfo -ArgumentList $OutputFile).FullName
+$OutputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $OutputFile_Linux -Base $PROJECT_ROOT
 
 
 #
@@ -113,6 +117,7 @@ if(!(Test-Path -Path $InputFile)) {
     exit 1
 }
 
+
 #/cdocs/scripts/CDocs-Render.sh /data/./tests/mermaid.md -o /data/./tests/m.docx
 #
 # Convert the Word document to a pandoc AST
@@ -120,4 +125,4 @@ if(!(Test-Path -Path $InputFile)) {
 Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
     -ContainerName "cdocs_testing" `
     -DebugMode `
-    -ArgumentList "bash"
+    -ArgumentList "/cdocs/scripts/CDocs-Render.sh /data/$InputFile_Linux -o /data/$OutputFile_Linux"
