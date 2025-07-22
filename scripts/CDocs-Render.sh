@@ -162,6 +162,8 @@ main() {
     local output_file=""
     local reverse_mode=false
 
+    cd /data
+
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case $1 in

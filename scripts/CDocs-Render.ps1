@@ -127,13 +127,22 @@ if(!(Test-Path -Path $InputFile)) {
 #
 if($DebugMode)
 {
-Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
-    -ContainerName "cdocs_testing" `
-    -DebugMode `
-    -ArgumentList "bash"
-} else {
     Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
-    -ContainerName "cdocs_testing" `
-    -DebugMode `
-    -ArgumentList "/cdocs/scripts/CDocs-Render.sh /data/$InputFile_Linux -o /data/$OutputFile_Linux"
+        -ContainerName "cdocs_testing" `
+        -DebugMode `
+        -ArgumentList "bash"
+} else {
+
+    if($ReverseRender)
+    {
+        Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
+        -ContainerName "cdocs_testing" `
+        -ArgumentList "/cdocs/scripts/CDocs-Render.sh /data/$InputFile_Linux -o /data/$OutputFile_Linux --reverse"
+    }
+    else
+    {
+        Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
+        -ContainerName "cdocs_testing" `
+        -ArgumentList "/cdocs/scripts/CDocs-Render.sh /data/$InputFile_Linux -o /data/$OutputFile_Linux"
+    }
 }
