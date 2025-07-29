@@ -29,7 +29,7 @@ Write-Host "CONTAINER_NAME : $CONTAINER_NAME"
 Start-CDocs.Container -WorkingDir "/" `
     -ContainerLauncher $CONTAINER_TOOL `
     -Container $CONTAINER `
-    -DirectoryMappings @( "C:\\Source\\cdocs:/cdocs") `
+    -DirectoryMappings @( "${PROJECT_ROOT}:/cdocs") `
     -Persist `
     -Privileged `
     -ContainerName $CONTAINER_NAME `

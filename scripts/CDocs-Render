@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Get the directory of this script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Pass all arguments to PowerShell script
+pwsh "$SCRIPT_DIR/CDocs-Render.ps1" "$@"
+
