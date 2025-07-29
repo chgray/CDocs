@@ -123,8 +123,6 @@ if(!(Test-Path -Path $InputFile)) {
     exit 1
 }
 
-
-#/cdocs/scripts/CDocs-Render.sh /data/./tests/mermaid.md -o /data/./tests/m.docx
 #
 # Convert the Word document to a pandoc AST
 #

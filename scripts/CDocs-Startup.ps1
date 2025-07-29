@@ -18,7 +18,11 @@ $CONTAINER="chgray123/chgray_repro:pandoc"
 $CONTAINER_NAME = Get-CDocs.ContainerName
 $CDOCS_TOOLS_ROOT = (Resolve-Path "$PSScriptRoot/..").Path
 
-
+# Build directory mappings array - include Docker socket on Mac
+$DirectoryMappings = @("${CDOCS_TOOLS_ROOT}:/cdocs")
+if ($IsMacOS) {
+    $DirectoryMappings += "/var/run/docker.sock:/var/run/docker.sock"
+}
 
 Write-Host "CONTAINER_TOOL : $CONTAINER_TOOL"
 Write-Host "  PROJECT_ROOT : $PROJECT_ROOT"
@@ -27,7 +31,7 @@ Write-Host "CONTAINER_NAME : $CONTAINER_NAME"
 Start-CDocs.Container -WorkingDir "/" `
     -ContainerLauncher $CONTAINER_TOOL `
     -Container $CONTAINER `
-    -DirectoryMappings @( "${CDOCS_TOOLS_ROOT}:/cdocs") `
+    -DirectoryMappings $DirectoryMappings `
     -Persist `
     -Privileged `
     -ContainerName $CONTAINER_NAME `

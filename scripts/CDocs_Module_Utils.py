@@ -3,7 +3,7 @@ import sys
 import subprocess
 
 def DiscoverContainerTool():
-    return "podman"
+    return "docker"
 
 def GetCDocsProjectRoot():
 
