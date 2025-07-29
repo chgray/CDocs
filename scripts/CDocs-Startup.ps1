@@ -20,9 +20,8 @@ $CDOCS_TOOLS_ROOT = (Resolve-Path "$PSScriptRoot/..").Path
 
 # Build directory mappings array - include Docker socket on Mac
 $DirectoryMappings = @("${CDOCS_TOOLS_ROOT}:/cdocs")
-if ($IsMacOS) {
-    $DirectoryMappings += "/var/run/docker.sock:/var/run/docker.sock"
-}
+$DirectoryMappings += "/var/run/docker.sock:/var/run/docker.sock"
+
 
 Write-Host "CONTAINER_TOOL : $CONTAINER_TOOL"
 Write-Host "  PROJECT_ROOT : $PROJECT_ROOT"
@@ -33,6 +32,7 @@ Start-CDocs.Container -WorkingDir "/" `
     -Container $CONTAINER `
     -DirectoryMappings $DirectoryMappings `
     -Persist `
+    -DebugMode `
     -Privileged `
     -ContainerName $CONTAINER_NAME `
     -ArgumentList "bash -c /cdocs/scripts/_CDocs-Startup.sh"

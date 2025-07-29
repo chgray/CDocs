@@ -5,7 +5,7 @@ function Start-CDocs.Container {
         [string]$WorkingDir,
 
         [Parameter(Mandatory = $false)]
-        [switch]$DebugMode = $true,
+        [switch]$DebugMode,
 
         [Parameter(Mandatory = $true)]
         [string]$ContainerLauncher,
@@ -47,7 +47,12 @@ function Start-CDocs.Container {
     $toolArgs.Add("-it")
 
     $toolArgs.Add("--name")
-     $toolArgs.Add($ContainerName)
+    $toolArgs.Add($ContainerName)
+
+    if($DebugMode) {
+        Write-Host ("DEBUGMODE : force setting --rm (dont persist) to container")
+        $Persist = $false
+    }
 
     if(!$Persist) {
         $toolArgs.Add("--rm")
@@ -76,44 +81,27 @@ function Start-CDocs.Container {
     # Add the container, and then args
     #
     $toolArgs.Add($Container)
-    #$toolArgs.Add($WorkingDir)
-    $toolArgs.Add($ArgumentList)
 
+    if($DebugMode) {
+        $toolArgs.Add("bash")
+    } else {
+        $toolArgs.Add($ArgumentList)
+    }
+
+    #
+    # Print some diagnostic output
+    #
     foreach ($arg in $toolArgs) {
         $argString += $arg + " "
     }
 
-    # -------------------------------------
-    $debugArgs = @()
-    $debugArgs += "run"
-    $debugArgs += "-it"
-    $debugArgs += "--rm"
-
-    #
-    # Process folder mappings
-    #
-    foreach($mapping in $DirectoryMappings) {
-        $debugArgs += "-v"
-        $debugArgs += $mapping
-    }
-
-    #
-    # Add the container, and then args
-    #
-    $debugArgs += "ubuntu:latest"
-
     Write-Host "      Arguments : [$ContainerLauncher $argString]"
-    Write-Host "   PROJECT_ROOT : [$PROJECT_ROOT]"
-    $DebugMode = True
-
-    if($DebugMode) {
-        Write-Host "Debug Arguments : [$ContainerLauncher $debugArgs]"
-        Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $debugArgs
-        Write-Error "EXITING : Debug Mode is enabled"
-        exit 1
-    } else {
-        Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $toolArgs.ToArray()
+    if($DebugMode){
+        Write-Host "DEBUGMODE: using bash instead of ${ArgumentList}"
     }
+    Write-Host "   PROJECT_ROOT : [$PROJECT_ROOT]"
+
+    Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $toolArgs.ToArray()
 }
 
 
