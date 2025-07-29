@@ -45,6 +45,8 @@ $ErrorActionPreference = 'Break'
 # Detect if we're using podman or docker
 #
 $CONTAINER_TOOL= Get-CDocs.Container.Tool
+$CONTAINER_NAME = Get-CDocs.ContainerName
+
 
 if (!(Test-Path -Path $InputFile)) {
     Write-Error "Input file doesnt exist $InputFile"
@@ -107,6 +109,7 @@ Write-Host "             DB Directory : $DatabaseDirectory"
 Write-Host "                Container : $CONTAINER"
 Write-Host "        GNUPLOT Container : $CONTAINER_GNUPLOT"
 Write-Host "             PROJECT_ROOT : $PROJECT_ROOT"
+Write-Host "           CONTAINER_NAME : $CONTAINER_NAME"
 Write-Host "             Template Map : $templateMap "
 Write-Host "               Output Dir : $outputDir"
 Write-Host "         OutputFile_Linux : $OutputFile_Linux"
@@ -128,7 +131,7 @@ if(!(Test-Path -Path $InputFile)) {
 if($DebugMode)
 {
     Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
-        -ContainerName "cdocs_testing" `
+        -ContainerName $CONTAINER_NAME `
         -DebugMode `
         -ArgumentList "bash"
 } else {
@@ -136,13 +139,13 @@ if($DebugMode)
     if($ReverseRender)
     {
         Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
-        -ContainerName "cdocs_testing" `
+        -ContainerName $CONTAINER_NAME `
         -ArgumentList "/cdocs/scripts/CDocs-Render.sh /data/$InputFile_Linux -o /data/$OutputFile_Linux --reverse"
     }
     else
     {
         Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
-        -ContainerName "cdocs_testing" `
+        -ContainerName $CONTAINER_NAME `
         -ArgumentList "/cdocs/scripts/CDocs-Render.sh /data/$InputFile_Linux -o /data/$OutputFile_Linux"
     }
 }

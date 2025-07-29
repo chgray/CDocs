@@ -395,5 +395,34 @@ function Get-Temp.File {
     $tempFile
 }
 
+function Get-CDocs.ContainerName {
+    #
+    # Get the ContainerName from .CDocs.config file
+    #
+    try {
+        $PROJECT_ROOT = Get-CDocs.ProjectRoot
+        $configPath = Join-Path -Path $PROJECT_ROOT -ChildPath ".CDocs.config"
+
+        if (!(Test-Path -Path $configPath)) {
+            Write-Error "Unable to locate .CDocs.config file at $configPath"
+            return $null
+        }
+
+        $configContent = Get-Content -Path $configPath -Raw
+        $configJson = ConvertFrom-Json -InputObject $configContent
+
+        if ($configJson.PSObject.Properties["ContainerName"]) {
+            return $configJson.ContainerName
+        } else {
+            Write-Error "ContainerName property not found in .CDocs.config file"
+            return $null
+        }
+    }
+    catch {
+        Write-Error "Error reading .CDocs.config file: $($_.Exception.Message)"
+        return $null
+    }
+}
+
 
 Export-ModuleMember -Function *
