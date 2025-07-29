@@ -16,11 +16,9 @@ $ErrorActionPreference = 'Break'
 $CONTAINER_TOOL= Get-CDocs.Container.Tool
 $CONTAINER="chgray123/chgray_repro:pandoc"
 $CONTAINER_NAME = Get-CDocs.ContainerName
+$CDOCS_TOOLS_ROOT = (Resolve-Path "$PSScriptRoot/..").Path
 
-#
-# Locate the CDocs project root
-#
-$PROJECT_ROOT = Get-CDocs.ProjectRoot
+
 
 Write-Host "CONTAINER_TOOL : $CONTAINER_TOOL"
 Write-Host "  PROJECT_ROOT : $PROJECT_ROOT"
@@ -29,7 +27,7 @@ Write-Host "CONTAINER_NAME : $CONTAINER_NAME"
 Start-CDocs.Container -WorkingDir "/" `
     -ContainerLauncher $CONTAINER_TOOL `
     -Container $CONTAINER `
-    -DirectoryMappings @( "${PROJECT_ROOT}:/cdocs") `
+    -DirectoryMappings @( "${CDOCS_TOOLS_ROOT}:/cdocs") `
     -Persist `
     -Privileged `
     -ContainerName $CONTAINER_NAME `

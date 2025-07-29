@@ -1,4 +1,8 @@
 #!/bin/bash
+
+apt update
+apt install docker.io -y
+
 set -e
 
 SCRIPT_PATH=$(dirname "$(realpath "${BASH_SOURCE[0]}")")

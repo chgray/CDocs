@@ -61,7 +61,6 @@ function Start-CDocs.Container {
     # Process folder mappings
     #
     foreach($mapping in $DirectoryMappings) {
-        #Write-Host "Mapping : [$mapping]"
         $toolArgs.Add("-v")
         $toolArgs.Add($mapping)
     }
@@ -84,10 +83,8 @@ function Start-CDocs.Container {
         $argString += $arg + " "
     }
 
-
     # -------------------------------------
     $debugArgs = @()
-    $debugArgsString = ""
     $debugArgs += "run"
     $debugArgs += "-it"
     $debugArgs += "--rm"
@@ -115,8 +112,6 @@ function Start-CDocs.Container {
         Write-Error "EXITING : Debug Mode is enabled"
         exit 1
     } else {
-        Write-Host "A[$toolArgs]"
-        Write-Host "B["+($toolArgs.ToArray())+"]"
         Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $toolArgs.ToArray()
     }
 }
@@ -211,7 +206,6 @@ function Get-CDocs.Container.Tool
     } finally {
     }
 
-
     $ErrorActionPreference = $temp
     $ret
 }
@@ -234,7 +228,6 @@ function Get-CDocs.ProjectRoot {
     }
     $PROJECT_ROOT
 }
-
 
 function Convert-Path.To.LinuxRelativePath.BUGGY{
     param (
