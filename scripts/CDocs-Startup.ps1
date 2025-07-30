@@ -53,3 +53,8 @@ Start-Exec.CDocs.Container `
     -ContainerLauncher $CONTAINER_TOOL `
     -ContainerName $CONTAINER_NAME `
     -ArgumentList "bash", "-c", "echo export CDOCS_DATA_MOUNT_MAP=$CDOCS_PROJECT_ROOT_MAP >> /CDocs.env"
+
+Start-Exec.CDocs.Container `
+    -ContainerLauncher $CONTAINER_TOOL `
+    -ContainerName $CONTAINER_NAME `
+    -ArgumentList "bash -c /cdocs/scripts/_CDocs-Startup.sh"
