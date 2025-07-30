@@ -126,22 +126,27 @@ if(!(Test-Path -Path $InputFile)) {
 #
 # Convert the Word document to a pandoc AST
 #
-if($DebugMode)
+if($ReverseRender)
 {
-    Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
+    if($DebugMode) {
+        Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
         -ContainerName $CONTAINER_NAME `
         -DebugMode `
-        -ArgumentList "bash"
-} else {
-
-    if($ReverseRender)
-    {
+        -ArgumentList "/cdocs/scripts/_CDocs-Render.sh /data/$InputFile_Linux -o /data/$OutputFile_Linux --reverse"
+    } else {
         Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
         -ContainerName $CONTAINER_NAME `
         -ArgumentList "/cdocs/scripts/_CDocs-Render.sh /data/$InputFile_Linux -o /data/$OutputFile_Linux --reverse"
     }
-    else
-    {
+}
+else
+{
+    if($DebugMode) {
+        Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
+        -ContainerName $CONTAINER_NAME `
+        -DebugMode `
+        -ArgumentList "/cdocs/scripts/_CDocs-Render.sh /data/$InputFile_Linux -o /data/$OutputFile_Linux"
+    } else {
         Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
         -ContainerName $CONTAINER_NAME `
         -ArgumentList "/cdocs/scripts/_CDocs-Render.sh /data/$InputFile_Linux -o /data/$OutputFile_Linux"

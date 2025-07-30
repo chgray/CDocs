@@ -30,14 +30,12 @@ def main():
 
     CDocs.RunInContainer(CONTAINER, "/home/mermaidcli/node_modules/.bin/mmdc -p /puppeteer-config.json -i {} -o {} --width 1000".format(mapped_input_filename, mapped_output_filename), output_filename)
 
-
-
     if not os.path.exists(output_filename):
         print("ERROR: MARKDOWN OUPUT {} doesnt exist".format(output_filename))
         raise ValueError("MISSING OUTPUT FILE")
         os._exit(2)
-    #print("GOOD.  created {}".format(output_filename))
 
+    raise ValueError("BOOGERS")
 
 if __name__ == "__main__":
     main()

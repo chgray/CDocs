@@ -323,7 +323,6 @@ namespace Pandoc.Comment.Render
                                         continue;
                                     }
                                     string code = codeNode;
-
                                     string html = code;
 
                                     // Generate unique file names using MD5 hash
@@ -334,6 +333,7 @@ namespace Pandoc.Comment.Render
 
                                     string inputFile = String.Empty;
                                     string outputFile = String.Empty;
+                                    bool success = false;
                                     try
                                     {
                                         // Create temporary input file for the Python script
@@ -352,6 +352,8 @@ namespace Pandoc.Comment.Render
                                         string output = p.StandardOutput.ReadToEnd();
                                         p.WaitForExit();
 
+                                        success = (p.ExitCode == 0);
+
                                         Console.Error.WriteLine($"CDOCS_FILTER: Redirected python output : {script}");
                                         Console.Error.WriteLine("CDOCS_FILTER: -=-=----------------------------------------");
                                         Console.Error.WriteLine(output);
@@ -361,7 +363,7 @@ namespace Pandoc.Comment.Render
                                     finally
                                     {
                                         // Clean up temporary input file
-                                        if (!String.IsNullOrEmpty(inputFile) && File.Exists(inputFile))
+                                        if (!String.IsNullOrEmpty(inputFile) && File.Exists(inputFile) && success)
                                         {
                                             Console.Error.WriteLine($"CDOCS_FILTER: DELETING: {inputFile}");
                                             File.Delete(inputFile);
@@ -392,9 +394,6 @@ namespace Pandoc.Comment.Render
                                     // Cache the original JSON for reverse conversion
                                     File.WriteAllText(cacheContent, a.ToJsonString());
                                     File.Move(outputFile, cacheImage, true);
-
-                                    Console.Error.WriteLine($"CDOCS_FILTER: DELETING: {inputFile}");
-                                    File.Delete(inputFile);
 
                                     Console.Error.WriteLine($"CDOCS_FILTER: CACHE_IMAGE: {cacheImage}");
 

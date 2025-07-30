@@ -23,6 +23,12 @@ function Start-CDocs.Container {
         [switch]$Privileged  = $false,
 
         [Parameter(Mandatory = $false)]
+        [switch]$Detach  = $false,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Interactive  = $false,
+
+        [Parameter(Mandatory = $false)]
         [switch]$Persist  = $false,
 
         [Parameter(Mandatory = $true)]
@@ -44,7 +50,14 @@ function Start-CDocs.Container {
     # Build 'real' arguments
     #
     $toolArgs.Add("run")
-    $toolArgs.Add("-it")
+
+    if($Interactive) {
+        $toolArgs.Add("-it")
+    }
+
+    if($Detach) {
+        $toolArgs.Add("-d")
+    }
 
     $toolArgs.Add("--name")
     $toolArgs.Add($ContainerName)
@@ -92,6 +105,7 @@ function Start-CDocs.Container {
     # Print some diagnostic output
     #
     foreach ($arg in $toolArgs) {
+        Write-Host "ARG> $arg"
         $argString += $arg + " "
     }
 
@@ -101,6 +115,48 @@ function Start-CDocs.Container {
     }
     Write-Host "   PROJECT_ROOT : [$PROJECT_ROOT]"
 
+    Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $toolArgs.ToArray()
+}
+
+
+
+function Start-Start.CDocs.Container {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$ContainerLauncher,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ContainerName
+    )
+
+     Write-Host ""
+     Write-Host ""
+     Write-Host ""
+     Write-Host "Start Container] ----------------------------------------------------------------"
+     Write-Host "ContainerLauncher : $ContainerLauncher"
+     Write-Host "ContainerName : $ContainerName"
+
+    $argString = ""
+    $toolArgs = New-Object System.Collections.Generic.List[string]
+
+    #
+    # Build 'real' arguments
+    #
+    $toolArgs.Add("start")
+    $toolArgs.Add($ContainerName)
+
+    #
+    # Print some diagnostic output
+    #
+    $argString = ""
+    foreach ($arg in $toolArgs) {
+        $argString += $arg + " "
+    }
+
+    #
+    # Add the container, and then args
+    #
+    Write-Host "      Arguments : [$ContainerLauncher $argString]"
     Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $toolArgs.ToArray()
 }
 
@@ -117,67 +173,61 @@ function Start-Exec.CDocs.Container {
         [string[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
-        [switch]$DebugMode = $true
+        [switch[]]$Interactive,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$DebugMode
     )
 
      Write-Host ""
      Write-Host ""
      Write-Host ""
-     Write-Host "Starting Container] ----------------------------------------------------------------"
+     Write-Host "Exec Container] ----------------------------------------------------------------"
      Write-Host "ContainerLauncher : $ContainerLauncher"
      Write-Host "ContainerName : $ContainerName"
+     Write-Host "DebugMode: $DebugMode"
 
-    $argString = ""
     $toolArgs = New-Object System.Collections.Generic.List[string]
 
     #
     # Build 'real' arguments
     #
     $toolArgs.Add("exec")
-    $toolArgs.Add("-it")
+
+    if($Interactive) {
+        $toolArgs.Add("-it")
+    }
     $toolArgs.Add($ContainerName)
 
     #
     # Add the container, and then args
     #
-    $toolArgs.Add($ArgumentList)
-
-    foreach ($arg in $toolArgs) {
-        $argString += $arg + " "
+    if($DebugMode)
+    {
+        $toolArgs.Add("bash")
+    }
+    else
+    {
+        $toolArgs.AddRange($ArgumentList)
     }
 
-
-    # -------------------------------------
-    $debugArgs = @()
-    $debugArgs += "run"
-    $debugArgs += "-it"
-    $debugArgs += "--rm"
-
+    # PowerShells Start-Process seems to get confused with strings that contain
+    #   spaces, even though they're supplied as strings, in an array.
     #
-    # Process folder mappings
+    #   likely this is a bug in our CDocs scripts, but it could also be in
+    #   Start-Process.
     #
-    foreach($mapping in $DirectoryMappings) {
-        $debugArgs += "-v"
-        $debugArgs += $mapping
+    #   enumerate across each string, and add escape characters
+    # Create a readable diagnostic string
+    foreach ($arg in $toolArgs) {
+        $argString += "`"" + $arg + "`""+ " "
     }
 
     #
     # Add the container, and then args
     #
     Write-Host "      Arguments : [$ContainerLauncher $argString]"
-    Write-Host "   PROJECT_ROOT : [$PROJECT_ROOT]"
-    $DebugMode = True
-
-    if($DebugMode) {
-        Write-Host "Debug Arguments : [$ContainerLauncher $debugArgs]"
-        Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $debugArgs
-        Write-Error "EXITING : Debug Mode is enabled"
-        exit 1
-    } else {
-        Write-Host "A[$toolArgs]"
-        Write-Host "B["+($toolArgs.ToArray())+"]"
-        Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $toolArgs.ToArray()
-    }
+    Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $argString
 }
 function Get-CDocs.Container.Tool
 {
