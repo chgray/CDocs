@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-make_pretty.py - Convert C# source files to beautifully formatted HTML
+make_pretty.py - Convert C# source files to formatted HTML
 
 This script takes a C# source file and converts it to syntax-highlighted HTML
 using the Pygments library for beautiful code formatting.
