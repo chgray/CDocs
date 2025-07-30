@@ -84,13 +84,6 @@ function Start-CDocs.Container {
     }
 
     #
-    # Data directory mapping
-    #
-    $PROJECT_ROOT=Get-CDocs.ProjectRoot
-    $toolArgs.Add("-v")
-    $toolArgs.Add($PROJECT_ROOT + ":/data")
-
-    #
     # Add the container, and then args
     #
     $toolArgs.Add($Container)
