@@ -20,10 +20,10 @@ else
 fi
 
 if [[ ! -z "${CDOC_RECURSE}" ]]; then
-echo
-echo
-echo "                   Container ] -------------------------------------------------------------------------------"
-echo "                   Intercepted (debug) /cdocs/CDoc.Launcher.s"
+    echo
+    echo
+    echo "                   Container ] -------------------------------------------------------------------------------"
+    echo "                   Intercepted (debug) /cdocs/CDoc.Launcher.s"
 
     cd /cdocs
     chmod +x ./CDoc.Launcher.sh
@@ -32,6 +32,10 @@ echo "                   Intercepted (debug) /cdocs/CDoc.Launcher.s"
     unset CDOC_FIRST_CALL
     ./CDoc.Launcher.sh "$@"
 else
+    echo
+    echo
+    echo "                   Native Container ] -------------------------------------------------------------------------------"
+
     cd /data
 
     # ARGS protocol is [directory to run in ] [arg1] [arg2] ... [argN]

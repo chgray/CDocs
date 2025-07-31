@@ -5,7 +5,7 @@ function Start-CDocs.Container {
         [string]$WorkingDir,
 
         [Parameter(Mandatory = $false)]
-        [switch]$DebugMode = $false,
+        [switch]$DebugMode,
 
         [Parameter(Mandatory = $true)]
         [string]$ContainerLauncher,
@@ -13,20 +13,35 @@ function Start-CDocs.Container {
         [Parameter(Mandatory = $true)]
         [string]$Container,
 
+        [Parameter(Mandatory = $true)]
+        [string]$ContainerName,
+
         [Parameter(Mandatory = $false)]
         [string[]]$DirectoryMappings,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Privileged  = $false,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Detach  = $false,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Interactive  = $false,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Persist  = $false,
 
         [Parameter(Mandatory = $true)]
         [string[]]$ArgumentList
     )
 
-    # Write-Host ""
-    # Write-Host ""
-    # Write-Host ""
-    # Write-Host "Starting Container] ----------------------------------------------------------------"
-    # Write-Host "ContainerLauncher : $ContainerLauncher"
-    # Write-Host "Container : $Container"
-    # Write-Host "DebugMode: $DebugMode"
+     Write-Host ""
+     Write-Host ""
+     Write-Host ""
+     Write-Host "Starting Container] ----------------------------------------------------------------"
+     Write-Host "ContainerLauncher : $ContainerLauncher"
+     Write-Host "Container : $Container"
+     Write-Host "DebugMode: $DebugMode"
 
     $argString = ""
     $toolArgs = New-Object System.Collections.Generic.List[string]
@@ -35,99 +50,208 @@ function Start-CDocs.Container {
     # Build 'real' arguments
     #
     $toolArgs.Add("run")
-    $toolArgs.Add("-it")
-    $toolArgs.Add("--rm")
+
+    if($Interactive) {
+        $toolArgs.Add("-it")
+    }
+
+    if($Detach) {
+        $toolArgs.Add("-d")
+    }
+
+    $toolArgs.Add("--name")
+    $toolArgs.Add($ContainerName)
+
+    if($DebugMode) {
+        Write-Host ("DEBUGMODE : force setting --rm (dont persist) to container")
+        $Persist = $false
+    }
+
+    if(!$Persist) {
+        $toolArgs.Add("--rm")
+    }
+
+    if($Privileged) {
+        $toolArgs.Add("--privileged")
+    }
 
     #
     # Process folder mappings
     #
     foreach($mapping in $DirectoryMappings) {
-        #Write-Host "Mapping : [$mapping]"
         $toolArgs.Add("-v")
         $toolArgs.Add($mapping)
     }
 
     #
-    # Data directory mapping
-    #
-    $PROJECT_ROOT=Get-CDocs.ProjectRoot
-    $toolArgs.Add("-v")
-    $toolArgs.Add($PROJECT_ROOT + ":/data")
-
-    #
     # Add the container, and then args
     #
     $toolArgs.Add($Container)
-    $toolArgs.Add($WorkingDir)
-    $toolArgs.Add($ArgumentList)
 
+    if($DebugMode) {
+        $toolArgs.Add("bash")
+    } else {
+        $toolArgs.Add($ArgumentList)
+    }
+
+    #
+    # Print some diagnostic output
+    #
+    foreach ($arg in $toolArgs) {
+        Write-Host "ARG> $arg"
+        $argString += $arg + " "
+    }
+
+    Write-Host "      Arguments : [$ContainerLauncher $argString]"
+    if($DebugMode){
+        Write-Host "DEBUGMODE: using bash instead of ${ArgumentList}"
+    }
+    Write-Host "   PROJECT_ROOT : [$PROJECT_ROOT]"
+
+    Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $toolArgs.ToArray()
+}
+
+
+
+function Start-Start.CDocs.Container {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$ContainerLauncher,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ContainerName
+    )
+
+     Write-Host ""
+     Write-Host ""
+     Write-Host ""
+     Write-Host "Start Container] ----------------------------------------------------------------"
+     Write-Host "ContainerLauncher : $ContainerLauncher"
+     Write-Host "ContainerName : $ContainerName"
+
+    $argString = ""
+    $toolArgs = New-Object System.Collections.Generic.List[string]
+
+    #
+    # Build 'real' arguments
+    #
+    $toolArgs.Add("start")
+    $toolArgs.Add($ContainerName)
+
+    #
+    # Print some diagnostic output
+    #
+    $argString = ""
     foreach ($arg in $toolArgs) {
         $argString += $arg + " "
     }
 
+    #
+    # Add the container, and then args
+    #
+    Write-Host "      Arguments : [$ContainerLauncher $argString]"
+    Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $toolArgs.ToArray()
+}
 
-    # -------------------------------------
-    $debugArgs = @()
-    $debugArgsString = ""
-    $debugArgs += "run"
-    $debugArgs += "-it"
-    $debugArgs += "--rm"
+
+function Start-Exec.CDocs.Container {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$ContainerLauncher,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ContainerName,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$ArgumentList,
+
+        [Parameter(Mandatory = $false)]
+        [switch[]]$Interactive,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$DebugMode
+    )
+
+     Write-Host ""
+     Write-Host ""
+     Write-Host ""
+     Write-Host "Exec Container] ----------------------------------------------------------------"
+     Write-Host "ContainerLauncher : $ContainerLauncher"
+     Write-Host "ContainerName : $ContainerName"
+     Write-Host "DebugMode: $DebugMode"
+
+    $toolArgs = New-Object System.Collections.Generic.List[string]
 
     #
-    # Process folder mappings
+    # Build 'real' arguments
     #
-    foreach($mapping in $DirectoryMappings) {
-        $debugArgs += "-v"
-        $debugArgs += $mapping
+    $toolArgs.Add("exec")
+
+    if($Interactive) {
+        $toolArgs.Add("-it")
+    }
+    $toolArgs.Add($ContainerName)
+
+    #
+    # Add the container, and then args
+    #
+    if($DebugMode)
+    {
+        $toolArgs.Add("bash")
+    }
+    else
+    {
+        $toolArgs.AddRange($ArgumentList)
+    }
+
+    # PowerShells Start-Process seems to get confused with strings that contain
+    #   spaces, even though they're supplied as strings, in an array.
+    #
+    #   likely this is a bug in our CDocs scripts, but it could also be in
+    #   Start-Process.
+    #
+    #   enumerate across each string, and add escape characters
+    # Create a readable diagnostic string
+    foreach ($arg in $toolArgs) {
+        $argString += "`"" + $arg + "`""+ " "
     }
 
     #
     # Add the container, and then args
     #
-    $debugArgs += "ubuntu:latest"
-
-    # Write-Host "      Arguments : [$ContainerLauncher $argString]"
-    # Write-Host "   PROJECT_ROOT : [$PROJECT_ROOT]"
-
-    if($DebugMode) {
-        Write-Host "Debug Arguments : [$ContainerLauncher $debugArgs]"
-        Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $debugArgs
-        Write-Error "EXITING : Debug Mode is enabled"
-        exit 1
-    } else {
-    #    Write-Host "A[$toolArgs]"
-    #    Write-Host "B["+($toolArgs.ToArray())+"]"
-        Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $toolArgs.ToArray()
-    }
+    Write-Host "      Arguments : [$ContainerLauncher $argString]"
+    Start-Process -NoNewWindow -FilePath $ContainerLauncher -Wait -ArgumentList $argString
 }
-
 function Get-CDocs.Container.Tool
 {
+    Write-Host "***===***"
+
     $temp = $ErrorActionPreference
     $ErrorActionPreference = "SilentlyContinue"
-    try {
-        $process = Start-Process -NoNewWindow -FilePath "docker" -Wait -ErrorAction SilentlyContinue -PassThru -ArgumentList "-v"
 
-        if ($process.ExitCode -ne 0) {
-            throw "docker failed with exit code $($process.ExitCode)"
-        }
-        $ret="docker"
-    } catch {
-    } finally {
+    # Check for docker by looking for the binary file
+    if (Test-Path -Path "/usr/bin/docker") {
+        Write-Host "Using docker"
+        $ret = "docker"
+    } else {
+        $ret = $null
+        Write-Host "Docker isn't installed"
     }
 
-    if ($CONTAINER_TOOL -eq $null) {
-        try {
-            $process = (Start-Process -NoNewWindow -FilePath "podman" -Wait -ErrorAction SilentlyContinue -PassThru -ArgumentList "-v")
-
-            if ($process.ExitCode -ne 0) {
-                throw "podman failed with exit code $($process.ExitCode)"
-            }
-            $ret="podman"
-        } catch {
-        } finally {
+    if($ret -eq $null)
+    {
+        Write-Host "Trying podman"
+        # Check for podman by looking for the binary file
+        if (Test-Path -Path "/usr/bin/podman") {
+            $ret = "podman"
+        } else {
+            $ret = $null
         }
+        Write-Host "moving on"
     }
+
+    Write-Host "SELECTED CONTAINER TOOL ${ret}"
+
     $ErrorActionPreference = $temp
     $ret
 }
@@ -151,7 +275,6 @@ function Get-CDocs.ProjectRoot {
     $PROJECT_ROOT
 }
 
-
 function Convert-Path.To.LinuxRelativePath.BUGGY{
     param (
         [Parameter(Mandatory = $true)]
@@ -160,7 +283,7 @@ function Convert-Path.To.LinuxRelativePath.BUGGY{
         [Parameter(Mandatory = $true)]
         [string]$Base
     )
-    #Write-Host "Making $Path relative to $Base"
+    Write-Host "Making $Path relative to $Base"
 
     if (!(Test-Path -Path $Path)) {
         $Path = $Path.Substring($Base.Length)
@@ -182,7 +305,6 @@ function Convert-LocalPath.To.CDocContainerPath{
         [Parameter(Mandatory = $true)]
         [string]$Base
     )
-    #Write-Host "Making $Path relative to $Base"
 
     if (!(Test-Path -Path $Path)) {
         $Path = $Path.Substring($Base.Length)
@@ -310,6 +432,35 @@ function Get-Temp.File {
     }
     #Write-Host "      TempFile : $tempFile"
     $tempFile
+}
+
+function Get-CDocs.ContainerName {
+    #
+    # Get the ContainerName from .CDocs.config file
+    #
+    try {
+        $PROJECT_ROOT = Get-CDocs.ProjectRoot
+        $configPath = Join-Path -Path $PROJECT_ROOT -ChildPath ".CDocs.config"
+
+        if (!(Test-Path -Path $configPath)) {
+            Write-Error "Unable to locate .CDocs.config file at $configPath"
+            return $null
+        }
+
+        $configContent = Get-Content -Path $configPath -Raw
+        $configJson = ConvertFrom-Json -InputObject $configContent
+
+        if ($configJson.PSObject.Properties["ContainerName"]) {
+            return $configJson.ContainerName
+        } else {
+            Write-Error "ContainerName property not found in .CDocs.config file"
+            return $null
+        }
+    }
+    catch {
+        Write-Error "Error reading .CDocs.config file: $($_.Exception.Message)"
+        return $null
+    }
 }
 
 

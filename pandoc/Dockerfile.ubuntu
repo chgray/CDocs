@@ -12,11 +12,12 @@ ARG PROC_ARCH=amd64
 #
 #
 #
-# podman build -f Dockerfile.ubuntu --build-arg PROC_ARCH=arm64 --platform linux/arm64 -t "chgray123/chgray_repro:pandoc" .
-# podman build -f Dockerfile.ubuntu -t "chgray123/chgray_repro:pandoc" .
+# podman build -f Dockerfile.ubuntu --build-arg --platform linux/arm64 -t "chgray123/chgray_repro:pandoc_arm64" .
+# podman build -f Dockerfile.ubuntu --build-arg --platform linux/amd64 -t "chgray123/chgray_repro:pandoc_amd64" .
 
 # podman login docker.io
-# podman push chgray123/chgray_repro:pandoc
+# podman push --platform linux/amd64 chgray123/chgray_repro:pandoc_amd64
+# podman push --platform linux/arm64 chgray123/chgray_repro:pandoc_arm64
 
 
 #PlantUML
@@ -96,12 +97,15 @@ RUN dpkg -i ./pandoc-3.3-1-$PROC_ARCH.deb
 WORKDIR /root
 
 RUN apt-get install -y -q texlive-latex-base texlive-fonts-recommended texlive-latex-recommended
+RUN apt-get install -y -q cutycapt
+ENV QT_QPA_PLATFORM=offscreen
+
 
 COPY CDoc.Launcher.sh /CDoc.Launcher.sh
 WORKDIR /
 
 ENV CDOC_FIRST_CALL=1
-ENTRYPOINT [ "/CDoc.Launcher.sh" ]
+#ENTRYPOINT [ "/CDoc.Launcher.sh" ]
 WORKDIR /data
 
 #

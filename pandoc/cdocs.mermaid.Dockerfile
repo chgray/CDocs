@@ -1,5 +1,5 @@
 
-FROM minlag/mermaid-cli
+FROM docker.io/minlag/mermaid-cli
 #FROM node:18.20-alpine3.19
 
 
@@ -15,7 +15,16 @@ ARG PROC_ARCH=amd64
 #
 #
 # podman build -f cdocs.mermaid.Dockerfile --build-arg PROC_ARCH=arm64 --platform linux/arm64 -t "chgray123/chgray_repro:cdocs.mermaid" .
-# podman build -f cdocs.mermaid.Dockerfile -t "chgray123/chgray_repro:cdocs.mermaid" .
+# podman build -f cdocs.mermaid.Dockerfile --build-arg PROC_ARCH=amd64 --platform linux/amd64 -t "chgray123/chgray_repro:cdocs.mermaid" .
+
+
+# podman login docker.io
+# podman push --platform linux/amd64,linux/arm64 chgray123/chgray_repro:cdocs.mermaid
+# podman push --platform linux/arm64 chgray123/chgray_repro:cdocs.mermaid
+
+
+# docker build --platform linux/amd64,linux/arm64 -f cdocs.mermaid.Dockerfile -t chgray123/chgray_repro:cdocs.mermaid --push
+
 
 USER root
 RUN apk update
@@ -24,10 +33,13 @@ RUN apk add bash
 
 COPY CDoc.Launcher.sh /CDoc.Launcher.sh
 
-
 ENV CDOC_FIRST_CALL=1
-CMD [ ]
-ENTRYPOINT [ "/CDoc.Launcher.sh" ]
+
+#ENTRYPOINT [ "/bin/bash" ]
+ENTRYPOINT []
+
+#CMD [ ]
+#ENTRYPOINT [ "/CDoc.Launcher.sh" ]
 
 #CMD [ "--help"]
 #ENTRYPOINT [ "/home/mermaidcli/node_modules/.bin/mmdc -p /puppeteer-config.json" ]

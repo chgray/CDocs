@@ -21,17 +21,14 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$InputFile = "GlobalSetup",
 
-    [Parameter(Mandatory = $false)]
-    [string]$OutputDir = $null,
+    [Parameter(Mandatory = $true)]
+    [string]$OutputFile = "GlobalSetup",
 
     [Parameter(Mandatory = $false)]
     [switch]$ReverseRender = $false,
 
     [Parameter(Mandatory = $false)]
-    [switch]$NormalMargins = $false,
-
-    [Parameter(Mandatory = $false)]
-    [switch]$EPUB = $false
+    [switch]$DebugMode = $false
 )
 
 Import-Module $PSScriptRoot\CDocsLib\CDocsLib.psm1
@@ -44,16 +41,12 @@ if ($env:MY_VARIABLE) {
 $ErrorActionPreference = 'Break'
 #$ErrorActionPreference = 'Stop'
 
-
-$MergeTool = "C:\\Source\\CDocs\\tools\\CDocsMarkdownCommentRender\\bin\\Debug\\net8.0\\CDocsMarkdownCommentRender.exe"
-$CONTAINER="chgray123/chgray_repro:pandoc"
-# $CONTAINER="ubuntu:latest"
-
-
 #
 # Detect if we're using podman or docker
 #
 $CONTAINER_TOOL= Get-CDocs.Container.Tool
+$CONTAINER_NAME = Get-CDocs.ContainerName
+
 
 if (!(Test-Path -Path $InputFile)) {
     Write-Error "Input file doesnt exist $InputFile"
@@ -65,15 +58,13 @@ if (!(Test-Path -Path $InputFile)) {
 #
 $PROJECT_ROOT = Get-CDocs.ProjectRoot
 
-
-
 #$PROJECT_ROOT = Split-Path -Path $InputFile -Parent
 
 $InputFile = Resolve-Path -Path $InputFile
 $InputFileRootDir = Split-Path -Path $InputFile -Parent
+$InputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $InputFile -Base $PROJECT_ROOT
 $InputFileRootDir_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $InputFileRootDir -Base $PROJECT_ROOT
 $DatabaseDirectory = Join-Path -Path $PROJECT_ROOT -ChildPath "orig_media"
-
 
 #
 # BUGBUG: due to bugs, we need to set the working directory to the project root
@@ -84,20 +75,24 @@ Set-Location -Path $InputFileRootDir
 
 #$InputFile_Relative = Resolve-Path -Path $InputFile -RelativeBasePath $PROJECT_ROOT -Relative
 #$InputFile_Relative = $InputFile_Relative -replace '\\', '/'
-$InputFile_Relative = Split-Path -Path $InputFile -Leaf
+#$InputFile_Relative = Split-Path -Path $InputFile -Leaf
 
 #
 # Determine the destination of output file
 #
-if ($EPUB) {
-    $OutputFile = $InputFile -replace ".md", ".pdf"
-} else {
-    $OutputFile = $InputFile -replace ".md", ".docx"
-}
+# if ($EPUB) {
+#     $OutputFile = $InputFile -replace ".md", ".pdf"
+# } else {
+#     $OutputFile = $InputFile -replace ".md", ".docx"
+# }
 
 
 #$OutputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $OutputFile -Base $PROJECT_ROOT
-$OutputFile_Linux = Split-Path -Path $OutputFile -Leaf
+
+#$OutputFile_Linux = Split-Path -Path $OutputFile -Leaf
+
+$OutputFile_Linux = (New-Object -TypeName System.IO.FileInfo -ArgumentList $OutputFile).FullName
+$OutputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $OutputFile_Linux -Base $PROJECT_ROOT
 
 
 #
@@ -107,7 +102,6 @@ $templateMap = "$PSScriptRoot\:/templates"
 
 
 Write-Host "Running CDocs-Render.ps1"
-Write-Host "                MergeTool : $MergeTool"
 Write-Host "          Converting file : $InputFile"
 Write-Host "         InputFileRootDir : $InputFileRootDir"
 Write-Host "   InputFileRootDir_Linux : $InputFileRootDir_Linux"
@@ -115,138 +109,46 @@ Write-Host "             DB Directory : $DatabaseDirectory"
 Write-Host "                Container : $CONTAINER"
 Write-Host "        GNUPLOT Container : $CONTAINER_GNUPLOT"
 Write-Host "             PROJECT_ROOT : $PROJECT_ROOT"
+Write-Host "           CONTAINER_NAME : $CONTAINER_NAME"
 Write-Host "             Template Map : $templateMap "
 Write-Host "               Output Dir : $outputDir"
+Write-Host "         OutputFile_Linux : $OutputFile_Linux"
+Write-Host "          InputFile_Linux : $InputFile_Linux"
 Write-Host "          ***  Input File : $InputFile_Relative"
 Write-Host "          *** Output File : $OutputFile_Relative"
 
 
-if ($ReverseRender)
+if(!(Test-Path -Path $InputFile)) {
+    Write-Error "Input file doesnt exist $InputFile"
+    exit 1
+}
+
+#
+# Convert the Word document to a pandoc AST
+#
+if($ReverseRender)
 {
-    $InputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $InputFile -Base $PROJECT_ROOT
-
-    $OutputFile_AST = Get-Temp.File -File $OutputFile -Op "OUT_AST"
-    $OutputFile_AST_Linux = Get-Temp.File -File $OutputFile -Op "OUT_AST" -Linux
-
-    $OutputFile_MERGED = Get-Temp.File -File $OutputFile -Op "OUT_MERGED"
-    $OutputFile_MERGED_Linux = Get-Temp.File -File $OutputFile -Op "OUT_MERGED" -Linux
-
-    if(!(Test-Path -Path $OutputFile)) {
-        Write-Error "Input file doesnt exist $OutputFile"
-        exit 1
+    if($DebugMode) {
+        Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
+        -ContainerName $CONTAINER_NAME `
+        -DebugMode `
+        -ArgumentList "/cdocs/scripts/_CDocs-Render.sh", "/data/$InputFile_Linux", "-o", "/data/$OutputFile_Linux", "--reverse"
+    } else {
+        Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
+        -ContainerName $CONTAINER_NAME `
+        -ArgumentList "/cdocs/scripts/_CDocs-Render.sh", "/data/$InputFile_Linux", "-o", "/data/$OutputFile_Linux", "--reverse"
     }
-
-    #
-    # Convert the Word document to a pandoc AST
-    #
-    Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
-        -ContainerLauncher $CONTAINER_TOOL `
-        -Container $CONTAINER `
-        -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
-        -ArgumentList `
-        "-i", "$OutputFile_Linux", `
-        "--extract-media", ".", `
-        "-t", "json", `
-        "-o",$OutputFile_AST_Linux
-
-
-    if (!(Test-Path -Path $OutputFile_AST)) {
-        Write-Error "Output file doesnt exist $OutputFile_AST"
-        exit 1
-    }
-
-    #
-    # Filter the pandoc AST using our C# image tools
-    #
-    Write-Host ""
-    Write-Host ""
-    Write-Host ""
-    Write-Host "Running MergeTool] ----------------------------------------------------------------------------------------"
-    Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $OutputFile_AST,`
-                                                                        "-o", $OutputFile_MERGED,`
-                                                                        "-d", $DatabaseDirectory,`
-                                                                        "-r"
-
-    #
-    # Make sure we have an output file
-    #
-    if(!(Test-Path -Path $OutputFile_MERGED)) {
-        Write-Error "Output file from merge-tool doesnt exist $OutputFile_MERGED"
-        exit 1
-    }
-
-    #
-    # Rewrite the input Markdown file
-    #
-    Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
-        -ContainerLauncher $CONTAINER_TOOL `
-        -Container $CONTAINER `
-        -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
-        -ArgumentList `
-            "-i", $OutputFile_MERGED_Linux, `
-            "-f", "json",`
-            "-o",$InputFile_Relative
 }
 else
 {
-    $InputFile_Linux = Convert-Path.To.LinuxRelativePath.BUGGY -Path $InputFile -Base $InputFileRootDir
-
-    $InputFile_AST = Get-Temp.File -File $InputFile -Op "AST"
-    $InputFile_AST_Linux = Get-Temp.File -File $InputFile -Op "AST" -Linux
-
-    $InputFile_MERGED = Get-Temp.File -File $InputFile -Op "MERGED"
-    $InputFile_MERGED_Linux = Get-Temp.File -File $InputFile -Op "MERGED" -Linux
-
-    Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
-            -ContainerLauncher $CONTAINER_TOOL `
-            -Container $CONTAINER `
-            -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
-            -ArgumentList `
-            "$InputFile_Linux",`
-            "-t", "json", `
-            "-o",$InputFile_AST_Linux
-
-    if (!(Test-Path -Path $InputFile_AST)) {
-        Write-Error "ERROR: Container didnt produce the expected output file {$InputFile_AST}"
-        exit 1
-    }
-
-    # Filter the pandoc AST using our C# image tools
-    Write-Host ""
-    Write-Host ""
-    Write-Host ""
-    Write-Host "---------------------------------------------------------------"
-    Write-Host "Running MergeTool [$MergeTool] "
-    Start-Process -NoNewWindow -FilePath $MergeTool -Wait -ArgumentList "-i", $InputFile_AST,`
-                                                                        "-o", $InputFile_MERGED,`
-                                                                        "-d", $DatabaseDirectory
-
-    if (!(Test-Path -Path $InputFile_MERGED)) {
-        Write-Error "Output file doesnt exist $InputFile_MERGED"
-        exit 1
-    }
-
-
-    if ($NormalMargins) {
-        Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
-            -ContainerLauncher $CONTAINER_TOOL `
-            -Container $CONTAINER `
-            -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
-            -ArgumentList `
-            "-i", $InputFile_MERGED_Linux, `
-            "-f", "json", `
-            "-o",$OutputFile_Linux, `
-            "--reference-doc","/templates/numbered-sections.docx"
+    if($DebugMode) {
+        Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
+        -ContainerName $CONTAINER_NAME `
+        -DebugMode `
+        -ArgumentList "/cdocs/scripts/_CDocs-Render.sh", "/data/$InputFile_Linux", "-o", "/data/$OutputFile_Linux"
     } else {
-        Start-CDocs.Container -WorkingDir $InputFileRootDir_Linux `
-            -ContainerLauncher $CONTAINER_TOOL `
-            -Container $CONTAINER `
-            -DirectoryMappings @($templateMap, "C:\\Source\\DynamicTelemetry\\cdocs:/cdocs") `
-            -ArgumentList `
-            "-i", $InputFile_MERGED_Linux, `
-            "-f", "json", `
-            "-o",$OutputFile_Linux, `
-            "--reference-doc","/templates/numbered-sections-6x9.docx"
+        Start-Exec.CDocs.Container -ContainerLauncher $CONTAINER_TOOL `
+        -ContainerName $CONTAINER_NAME `
+        -ArgumentList "/cdocs/scripts/_CDocs-Render.sh", "/data/$InputFile_Linux", "-o", "/data/$OutputFile_Linux"
     }
 }
-

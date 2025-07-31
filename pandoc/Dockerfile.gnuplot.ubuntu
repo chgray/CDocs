@@ -13,11 +13,8 @@ LABEL maintainer chgray@gmail.com
 # podman login docker.io
 # podman push chgray123/chgray_repro:gnuplot
 
-
-
 RUN apt update
 RUN apt install -y -q gnuplot
-
 
 ENTRYPOINT ["/usr/bin/bash"]
 WORKDIR /data
