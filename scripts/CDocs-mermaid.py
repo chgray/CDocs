@@ -35,7 +35,5 @@ def main():
         raise ValueError("MISSING OUTPUT FILE")
         os._exit(2)
 
-    raise ValueError("BOOGERS")
-
 if __name__ == "__main__":
     main()
