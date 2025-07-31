@@ -153,19 +153,19 @@ namespace Pandoc.Comment.Render
                 for(;;)
                 {
                     string root = Path.Combine(configDir, ".CDocs.config");
-                    Console.Error.WriteLine($"CDOCS_FILTER: Looking for config file in {root}");
+                    //Console.Error.WriteLine($"CDOCS_FILTER: Looking for config file in {root}");
 
                     if (File.Exists(root))
                     {
-                        Console.Error.WriteLine($"CDOCS_FILTER: FoundConfig {configDir}");
+                        //Console.Error.WriteLine($"CDOCS_FILTER: FoundConfig {configDir}");
                         return configDir;
                     }
 
                     // Move up one directory level
-                        configDir = Path.GetDirectoryName(configDir);
+                    configDir = Path.GetDirectoryName(configDir);
                     if(String.IsNullOrEmpty(configDir))
                     {
-                        Console.Error.WriteLine("CDOCS_FILTER: Unable to locate .CDocs.config");
+                        Console.Error.WriteLine($"CDOCS_FILTER: Unable to locate .CDocs.config in {root}");
                         Environment.Exit(-122);
                     }
                 }
@@ -645,8 +645,8 @@ namespace Pandoc.Comment.Render
                 }
 
                 // Log all arguments for debugging
-                foreach (string arg in args)
-                    Console.Error.WriteLine("CDOCS_FILTER: CDocsMarkdownCommentRender ARG: " + arg);
+                //foreach (string arg in args)
+                //    Console.Error.WriteLine("CDOCS_FILTER: CDocsMarkdownCommentRender ARG: " + arg);
 
                 // Display startup information when not in filter mode
                 if(!filterMode)
