@@ -3,10 +3,13 @@ import sys
 import subprocess
 
 def DiscoverContainerTool():
-    return "docker"
+    return "podman"
 
 def GetCDocsProjectRoot_HostSide():
-    return "C://source//cdocs"
+    project_root = os.environ.get("CDOCS_PROJECT_ROOT")
+    if project_root is None:
+        return GetCDocsProjectRoot()
+    return project_root
 
 
 def GetCDocsProjectRoot():

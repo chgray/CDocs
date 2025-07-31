@@ -1,7 +1,7 @@
 #!/bin/bash
 
-apt update
-apt install docker.io -y
+#apt update
+#apt install docker.io -y
 
 set -e
 

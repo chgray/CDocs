@@ -224,18 +224,33 @@ function Start-Exec.CDocs.Container {
 }
 function Get-CDocs.Container.Tool
 {
+    Write-Host "***===***"
+
     $temp = $ErrorActionPreference
     $ErrorActionPreference = "SilentlyContinue"
-    try {
-        $process = Start-Process -NoNewWindow -FilePath "docker" -Wait -ErrorAction SilentlyContinue -PassThru -ArgumentList "-v"
 
-        if ($process.ExitCode -ne 0) {
-            throw "docker failed with exit code $($process.ExitCode)"
-        }
-        $ret="docker"
-    } catch {
-    } finally {
+    # Check for docker by looking for the binary file
+    if (Test-Path -Path "/usr/bin/docker") {
+        Write-Host "Using docker"
+        $ret = "docker"
+    } else {
+        $ret = $null
+        Write-Host "Docker isn't installed"
     }
+
+    if($ret -eq $null)
+    {
+        Write-Host "Trying podman"
+        # Check for podman by looking for the binary file
+        if (Test-Path -Path "/usr/bin/podman") {
+            $ret = "podman"
+        } else {
+            $ret = $null
+        }
+        Write-Host "moving on"
+    }
+
+    Write-Host "SELECTED CONTAINER TOOL ${ret}"
 
     $ErrorActionPreference = $temp
     $ret
