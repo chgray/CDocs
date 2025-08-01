@@ -3,7 +3,10 @@ import sys
 import subprocess
 
 def DiscoverContainerTool():
-    return "podman"
+    project_root = os.environ.get("CDOCS_PROJECT_INNER_CONTAINER_TOOL")
+    if project_root is None:
+        return "podman"
+    return "docker"
 
 def GetCDocsProjectRoot_HostSide():
     project_root = os.environ.get("CDOCS_PROJECT_ROOT")
@@ -53,14 +56,14 @@ def RunInContainer(container, command, expected_output):
         print("ERROR: {} must not exist; and it does".format(expected_output))
         sys.exit(40)
 
-    totalCommand = "{} run --rm -v {}:/data {} {}".format(DiscoverContainerTool(), PROJECT_ROOT, container, command)
+    # Check if CDOCS_DATA_MOUNT_MAP environment variable exists, otherwise use default
+    data_mount_map = os.environ.get("CDOCS_DATA_MOUNT_MAP")
+    if data_mount_map is not None:
+        data_map = data_mount_map
+    else:
+        data_map = "{}:/data".format(PROJECT_ROOT)
 
-    print("")
-    print("PYTHON RUNNING CONTAINER:")
-    print("-------------------------------------------------------------------------")
-    print(totalCommand)
-    print("-------------------------------------------------------------------------")
-    print("")
+    totalCommand = "{} run --rm -v {} {} {}".format(DiscoverContainerTool(), data_map, container, command)
 
     subprocess.run(totalCommand, shell=True)
 

@@ -34,15 +34,15 @@ Write-Host "       CDOCS_TOOLS_MAP : $CDOCS_TOOLS_MAP"
 Write-Host "CDOCS_PROJECT_ROOT_MAP : $CDOCS_PROJECT_ROOT_MAP"
 
 
-Start-CDocs.Container -WorkingDir "/" `
-    -ContainerLauncher $CONTAINER_TOOL `
-    -Container $CONTAINER `
-    -DirectoryMappings $DirectoryMappings `
-    -Persist `
-    -Privileged `
-    -Detach `
-    -ContainerName $CONTAINER_NAME `
-    -ArgumentList "sleep infinity"
+# Start-CDocs.Container -WorkingDir "/" `
+#     -ContainerLauncher $CONTAINER_TOOL `
+#     -Container $CONTAINER `
+#     -DirectoryMappings $DirectoryMappings `
+#     -Persist `
+#     -Privileged `
+#     -Detach `
+#     -ContainerName $CONTAINER_NAME `
+#     -ArgumentList "sleep infinity"
 
 Start-Exec.CDocs.Container `
     -ContainerLauncher $CONTAINER_TOOL `
@@ -53,6 +53,11 @@ Start-Exec.CDocs.Container `
     -ContainerLauncher $CONTAINER_TOOL `
     -ContainerName $CONTAINER_NAME `
     -ArgumentList "bash", "-c", "echo export CDOCS_DATA_MOUNT_MAP=$CDOCS_PROJECT_ROOT_MAP >> /CDocs.env"
+
+Start-Exec.CDocs.Container `
+    -ContainerLauncher $CONTAINER_TOOL `
+    -ContainerName $CONTAINER_NAME `
+    -ArgumentList "bash", "-c", "echo export CDOCS_PROJECT_INNER_CONTAINER_TOOL=docker >> /CDocs.env"
 
 Start-Exec.CDocs.Container `
     -ContainerLauncher $CONTAINER_TOOL `

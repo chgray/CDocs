@@ -11,6 +11,8 @@
 # Version: 1.0
 #
 
+
+
 # Script configuration
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -163,6 +165,12 @@ main() {
     local reverse_mode=false
 
     cd /data
+
+    # Source CDocs environment file if present
+    if [[ -f "/CDocs.env" ]]; then
+        print_info "Sourcing CDocs environment file: /CDocs.env"
+        source /CDocs.env
+    fi
 
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do

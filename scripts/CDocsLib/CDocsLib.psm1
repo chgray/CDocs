@@ -51,6 +51,13 @@ function Start-CDocs.Container {
     #
     $toolArgs.Add("run")
 
+    if($DebugMode) {
+        Write-Host ("DEBUGMODE : force setting --rm (dont persist) to container")
+        Write-Host ("ArgumentList : ${ArgumentList}")
+        $Persist = $false
+        $Interactive = $true
+    }
+
     if($Interactive) {
         $toolArgs.Add("-it")
     }
@@ -61,11 +68,6 @@ function Start-CDocs.Container {
 
     $toolArgs.Add("--name")
     $toolArgs.Add($ContainerName)
-
-    if($DebugMode) {
-        Write-Host ("DEBUGMODE : force setting --rm (dont persist) to container")
-        $Persist = $false
-    }
 
     if(!$Persist) {
         $toolArgs.Add("--rm")
@@ -187,7 +189,7 @@ function Start-Exec.CDocs.Container {
     #
     $toolArgs.Add("exec")
 
-    if($Interactive) {
+    if($Interactive -or $DebugMode) {
         $toolArgs.Add("-it")
     }
     $toolArgs.Add($ContainerName)
@@ -197,6 +199,7 @@ function Start-Exec.CDocs.Container {
     #
     if($DebugMode)
     {
+        Write-Host ("DEBUG: args - ${ArgumentList}")
         $toolArgs.Add("bash")
     }
     else
@@ -231,6 +234,9 @@ function Get-CDocs.Container.Tool
 
     # Check for docker by looking for the binary file
     if (Test-Path -Path "/usr/bin/docker") {
+        Write-Host "Using docker"
+        $ret = "docker"
+    } elseif (Test-Path -Path "/usr/local/bin/docker") {
         Write-Host "Using docker"
         $ret = "docker"
     } else {
