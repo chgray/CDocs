@@ -2,7 +2,7 @@ import os
 import sys
 import subprocess
 
-def DiscoverContainerTool():
+def DiscoverInnerContainerTool():
     project_root = os.environ.get("CDOCS_PROJECT_INNER_CONTAINER_TOOL")
     if project_root is None:
         return "podman"
@@ -63,7 +63,7 @@ def RunInContainer(container, command, expected_output):
     else:
         data_map = "{}:/data".format(PROJECT_ROOT)
 
-    totalCommand = "{} run --rm -v {} {} {}".format(DiscoverContainerTool(), data_map, container, command)
+    totalCommand = "{} run --rm -v {} {} {}".format(DiscoverInnerContainerTool(), data_map, container, command)
 
     subprocess.run(totalCommand, shell=True)
 

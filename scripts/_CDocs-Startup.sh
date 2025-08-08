@@ -1,7 +1,25 @@
 #!/bin/bash
 
-#apt update
-#apt install docker.io -y
+# Check if InnerContainerTool parameter is provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <InnerContainerTool>"
+    echo "  InnerContainerTool: docker or podman"
+    exit 1
+fi
+
+InnerContainerTool="$1"
+
+# Validate the InnerContainerTool parameter
+if [ "$InnerContainerTool" != "docker" ] && [ "$InnerContainerTool" != "podman" ]; then
+    echo "Error: InnerContainerTool must be either 'docker' or 'podman'"
+    echo "Usage: $0 <InnerContainerTool>"
+    exit 1
+fi
+
+if [ "$InnerContainerTool" == "docker" ]; then
+    apt update
+    apt install docker.io -y
+fi
 
 set -e
 
@@ -27,19 +45,10 @@ if [ ! -f "${CDOCS_MARKDOWN_RENDER_PATH}/tools/CDocsMarkdownCommentRender/bin/De
 fi
 
 #
-# See if the pandoc image exists; if not, pull it
+# Use the provided container tool instead of auto-detecting
 #
-echo "Determining if we're using docker or podman, docker preferred"
-if command -v docker &> /dev/null; then
-    echo "Using Docker."
-    container_tool="docker"
-elif command -v podman &> /dev/null; then
-    echo "Using podman"
-    container_tool="podman"
-else
-    echo "Either docker or podman are required"
-    exit 1
-fi
+echo "Using provided container tool: $InnerContainerTool"
+container_tool="$InnerContainerTool"
 
 set +e
 ${container_tool} image exists docker.io/chgray123/chgray_repro:pandoc
